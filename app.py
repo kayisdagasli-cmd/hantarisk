@@ -10,10 +10,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import matplotlib
-matplotlib.use('Agg')  # Sunucu ortamlarında grafik çizimi için
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 app = Flask(__name__, 
             static_folder='statik', 
@@ -34,15 +30,15 @@ class Kullanici(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     kullanici_adi = db.Column(db.String(50), unique=True, nullable=False)
     sifre = db.Column(db.String(100), nullable=False)
-    rol = db.Column(db.String(20), default='kullanici') # admin veya kullanici
+    rol = db.Column(db.String(20), default='kullanici')
 
 class AnalizGecmisi(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     kullanici_id = db.Column(db.Integer, db.ForeignKey('kullanici.id'), nullable=False)
     yas = db.Column(db.Integer)
     ates = db.Column(db.Float)
-    kas_agrisi = db.Column(db.Integer) # 1 veya 0
-    kemirgen_temas = db.Column(db.Integer) # 1 veya 0
+    kas_agrisi = db.Column(db.Integer)
+    kemirgen_temas = db.Column(db.Integer)
     risk_skoru = db.Column(db.Float)
     sonuc = db.Column(db.String(50))
     tarih = db.Column(db.DateTime, default=datetime.datetime.utcnow)
@@ -63,10 +59,9 @@ def model_egit():
     
     if os.path.exists(veri_yolu):
         try:
-            # Gerçek Kaggle verisini veya yapısını yükle
             df = pd.read_csv(veri_yolu)
             
-            # Eğer veri kümesinde eksik sütun varsa simüle et/temizle (Güvenli çalışma için)
+            # Veri kümesinde eksik sütun kontrolü ve düzeltme
             for col in features:
                 if col not in df.columns:
                     if col == 'Fever':
@@ -82,20 +77,18 @@ def model_egit():
             X = df[features]
             y = df['RiskResult']
             
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_test_split=0.2, random_state=42)
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
             model = RandomForestClassifier(n_estimators=100, random_state=42)
             model.fit(X_train, y_train)
-            print("Makine öğrenmesi modeli başarıyla eğitildi.")
+            print("Kaggle veri setiyle ML modeli başarıyla eğitildi.")
         except Exception as e:
-            print(f"Model eğitilirken hata oluştu, varsayılan model kuruluyor: {e}")
+            print(f"Veri okunurken hata çıktı, prototip model kuruluyor: {e}")
             varsayilan_model_kur()
     else:
-        print("Kaggle veri seti bulunamadı, prototip veriyle eğitiliyor.")
         varsayilan_model_kur()
 
 def varsayilan_model_kur():
     global model
-    # Veri seti yoksa veya okunamazsa sistemin çökmemesi için sentetik veri üretimi
     np.random.seed(42)
     data = {
         'Age': np.random.randint(18, 70, 500),
@@ -105,18 +98,17 @@ def varsayilan_model_kur():
     }
     df = pd.DataFrame(data)
     df['RiskResult'] = ((df['Fever'] > 38.2) & (df['RodentContact'] == 1) | (df['MusclePain'] == 1)).astype(int)
-    
     X = df[features]
     y = df['RiskResult']
     model = RandomForestClassifier(n_estimators=50, random_state=42)
     model.fit(X, y)
 
 # ------------------------------------------------------------------
-# ROUTER / SAYFA YÖNLENDİRMELERİ
+# DINAMIK ROUTERLAR (TEK HTML DOSYASINA VERI GÖNDERME)
 # ------------------------------------------------------------------
 @app.route('/')
 def ana_sayfa():
-    return render_template('index.html')
+    return render_template('index.html', sayfa='ana_sayfa')
 
 @app.route('/kayit', methods=['GET', 'POST'])
 def kayit():
@@ -129,15 +121,13 @@ def kayit():
             flash('Bu kullanıcı adı zaten alınmış!', 'danger')
             return redirect(url_for('kayit'))
         
-        # İlk kayıt olan kullanıcıyı test kolaylığı için admin yapalım
         rol = 'admin' if Kullanici.query.count() == 0 else 'kullanici'
-        
         yeni_kullanici = Kullanici(kullanici_adi=kadi, sifre=sifre, rol=rol)
         db.session.add(yeni_kullanici)
         db.session.commit()
         flash('Kayıt başarılı! Giriş yapabilirsiniz.', 'success')
         return redirect(url_for('giris'))
-    return render_template('kayit.html')
+    return render_template('index.html', sayfa='kayit')
 
 @app.route('/giris', methods=['GET', 'POST'])
 def giris():
@@ -152,19 +142,21 @@ def giris():
             return redirect(url_for('dashboard'))
         else:
             flash('Hatalı kullanıcı adı veya şifre!', 'danger')
-    return render_template('giris.html')
+            return redirect(url_for('giris'))
+    return render_template('index.html', sayfa='giris')
 
 @app.route('/cikis')
 @login_required
-def cikis():
+def src_cikis():
     logout_user()
+    flash('Güvenli çıkış yapıldı.', 'success')
     return redirect(url_for('ana_sayfa'))
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    gecmis = AnalizGecmisi.query.filter_by(kullanici_id=current_user.id).all()
-    return render_template('dashboard.html', gecmis=gecmis)
+    gecmis = AnalizGecmisi.query.filter_by(kullanici_id=current_user.id).order_by(AnalizGecmisi.tarih.desc()).all()
+    return render_template('index.html', sayfa='dashboard', gecmis=gecmis)
 
 @app.route('/analiz', methods=['GET', 'POST'])
 @login_required
@@ -175,28 +167,22 @@ def analiz():
         kas_agrisi = int(request.form.get('kas_agrisi'))
         kemirgen_temas = int(request.form.get('kemirgen_temas'))
         
-        # Yapay zeka tahmini
         girdi = [[yas, ates, kas_agrisi, kemirgen_temas]]
-        olasilik = model.predict_proba(girdi)[0][1] # Pozitif risk olasılığı
+        olasilik = model.predict_proba(girdi)[0][1]
         risk_skoru = round(olasilik * 100, 2)
-        
         sonuc = "Yüksek Risk" if risk_skoru >= 50 else "Düşük Risk"
         
-        # Veritabanına kaydet
         yeni_analiz = AnalizGecmisi(
-            kullanici_id=current_user.id,
-            yas=yas, ates=ates,
-            kas_agrisi=kas_agrisi,
-            kemirgen_temas=kemirgen_temas,
-            risk_skoru=risk_skoru,
-            sonuc=sonuc
+            kullanici_id=current_user.id, yas=yas, ates=ates,
+            kas_agrisi=kas_agrisi, kemirgen_temas=kemirgen_temas,
+            risk_skoru=risk_skoru, sonuc=sonuc
         )
         db.session.add(yeni_analiz)
         db.session.commit()
         
-        return render_template('analiz_sonuc.html', skor=risk_skoru, sonuc=sonuc)
+        return render_template('index.html', sayfa='analiz_sonuc', skor=risk_skoru, sonuc=sonuc)
         
-    return render_template('analiz.html')
+    return render_template('index.html', sayfa='analiz')
 
 @app.route('/rapor/<int:id>')
 @login_required
@@ -212,12 +198,12 @@ def rapor_indir(id):
     c.drawString(100, 700, f"Kullanıcı ID: {kayit.kullanici_id}")
     c.drawString(100, 660, "--------------------------------------------------")
     c.drawString(100, 640, f"Hasta Yaşı: {kayit.yas}")
-    c.drawString(100, 620, f"Vücut Ateşi: {kayit.ates} °C")
-    c.drawString(100, 600, f"Şiddetli Kas Ağrısı: {'Var' if kayit.kas_agrisi==1 else 'Yok'}")
-    c.drawString(100, 580, f"Kemirgen/Dışkı Teması: {'Var' if kayit.kemirgen_temas==1 else 'Yok'}")
+    c.drawString(100, 620, f"Vücut Ateşi: {kayit.ates} *C")
+    c.drawString(100, 600, f"Siddetli Kas Agrisi: {'Var' if kayit.kas_agrisi==1 else 'Yok'}")
+    c.drawString(100, 580, f"Kemirgen/Diski Temasi: {'Var' if kayit.kemirgen_temas==1 else 'Yok'}")
     c.drawString(100, 540, "--------------------------------------------------")
     c.drawString(100, 510, f"Hesaplanan Risk Skoru: %{kayit.risk_skoru}")
-    c.drawString(100, 490, f"Sonuç Değerlendirmesi: {kayit.sonuc}")
+    c.drawString(100, 490, f"Sonuc Degerlendirmesi: {kayit.sonuc}")
     c.save()
     
     return send_file(pdf_yolu, as_attachment=True)
@@ -230,13 +216,13 @@ def admin_panel():
         return redirect(url_for('dashboard'))
     tüm_kayitlar = AnalizGecmisi.query.all()
     kullanicilar = Kullanici.query.all()
-    return render_template('admin.html', kayitlar=tüm_kayitlar, kullanicilar=kullanicilar)
+    return render_template('index.html', sayfa='admin', kayitlar=tüm_kayitlar, kullanicilar=kullanicilar)
 
 # ------------------------------------------------------------------
 # UYGULAMA BAŞLANGICI
 # ------------------------------------------------------------------
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all() # SQLite veritabanı tablolarını oluşturur
-    model_egit() # ML modelini yükler veya eğiter
+        db.create_all()
+    model_egit()
     app.run(debug=True)
