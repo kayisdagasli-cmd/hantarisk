@@ -1,1 +1,28 @@
+/* Özel Kaydırma Çubuğu Tasarımı */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ef4444;
+}
 
+/* Sayfa Geçiş Yumuşatıcı */
+body {
+    scroll-behavior: smooth;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Kartlara Hafif Hover Parlaması */
+.premium-card {
+    transition: all 0.3s ease;
+}
+.premium-card:hover {
+    box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.1), 0 8px 10px -6px rgba(239, 68, 68, 0.1);
+}
