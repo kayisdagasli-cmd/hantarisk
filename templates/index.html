@@ -1,1 +1,263 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hantavirüs Risk Analiz Platformu</title>
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { darkBg: '#111827', cardBg: '#1f2937' } } }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
+    <!-- NAVİGASYON BAR -->
+    <nav class="bg-white dark:bg-cardBg shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-virus-covid text-red-500 text-xl animate-pulse"></i>
+                <a href="/" class="font-bold text-lg tracking-wider text-red-600 dark:text-red-500">HantaRisk</a>
+            </div>
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <a href="/" class="hover:text-red-500 transition"><i class="fa-solid fa-house mr-1"></i> Ana Sayfa</a>
+                {% if current_user.is_authenticated %}
+                    <a href="/dashboard" class="hover:text-red-500 transition"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</a>
+                    <a href="/analiz" class="hover:text-red-500 transition"><i class="fa-solid fa-heart-pulse mr-1"></i> Risk Analizi</a>
+                    {% if current_user.rol == 'admin' %}
+                        <a href="/admin" class="text-amber-500 hover:text-amber-400 transition"><i class="fa-solid fa-user-shield mr-1"></i> Admin</a>
+                    {% endif %}
+                    <a href="/cikis" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-right-from-bracket"></i></a>
+                {% else %}
+                    <a href="/giris" class="hover:text-red-500 transition">Giriş Yap</a>
+                    <a href="/kayit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition">Kayıt Ol</a>
+                {% endif %}
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    <i id="theme-icon" class="fa-solid fa-sun text-amber-500"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- BİLDİRİMLER -->
+    <div class="max-w-4xl mx-auto w-full px-4 mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-lg text-sm animate__animated animate__fadeIn {% if category == 'danger' %} bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 {% else %} bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- DİNAMİK İÇERİK ALANI -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8 animate__animated animate__fadeIn">
+        
+        <!-- 1. DURUM: ANA SAYFA GÖRÜNÜMÜ -->
+        {% if sayfa == 'ana_sayfa' or not sayfa %}
+        <div class="text-center max-w-2xl mx-auto my-12">
+            <h1 class="text-4xl font-extrabold mb-4 animate__animated animate__bounceInDown">Yapay Zeka Destekli Hantavirüs Risk Analizi</h1>
+            <p class="text-slate-600 dark:text-slate-400 mb-8">Kaggle 2026 gözetim veri setiyle eğitilmiş ML modeliyle semptomlarınızı saniyeler içinde analiz edin.</p>
+            <div class="flex justify-center gap-4">
+                {% if current_user.is_authenticated %}
+                    <a href="/analiz" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-red-600/20 transition">Analize Başla</a>
+                {% else %}
+                    <a href="/giris" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-red-600/20 transition">Hemen Giriş Yap</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 2. DURUM: GİRİŞ EKRANI -->
+        {% if sayfa == 'giris' %}
+        <div class="max-w-md mx-auto bg-white dark:bg-cardBg p-8 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800">
+            <h2 class="text-2xl font-bold mb-6 text-center">Giriş Yap</h2>
+            <form action="/giris" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Kullanıcı Adı</label>
+                    <input type="text" name="kullanici_adi" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Şifre</label>
+                    <input type="password" name="sifre" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700" required>
+                </div>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold transition">Giriş</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- 3. DURUM: KAYIT EKRANI -->
+        {% if sayfa == 'kayit' %}
+        <div class="max-w-md mx-auto bg-white dark:bg-cardBg p-8 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800">
+            <h2 class="text-2xl font-bold mb-6 text-center">Yeni Hesap Oluştur</h2>
+            <form action="/kayit" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Kullanıcı Adı</label>
+                    <input type="text" name="kullanici_adi" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Şifre</label>
+                    <input type="password" name="sifre" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700" required>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-semibold transition">Kayıt Ol</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- 4. DURUM: RISK ANALİZ FORMU -->
+        {% if sayfa == 'analiz' %}
+        <div class="max-w-xl mx-auto bg-white dark:bg-cardBg p-8 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800">
+            <h2 class="text-2xl font-bold mb-2 text-center">Semptom ve Risk Analiz Ekranı</h2>
+            <p class="text-xs text-center text-slate-400 mb-6">Lütfen bilgileri eksiksiz doldurunuz.</p>
+            <form action="/analiz" method="POST" class="space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Yaşınız</label>
+                        <input type="number" name="yas" min="1" max="120" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Vücut Ateşi (°C)</label>
+                        <input type="number" step="0.1" name="ates" min="35" max="43" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Şiddetli Kas ve Eklem Ağrısı Var mı?</label>
+                    <select name="kas_agrisi" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700">
+                        <option value="0">Hayır / Yok</option>
+                        <option value="1">Evet / Var</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Son 1 Ayda Kemirgen (Fare vb.) veya Dışkısıyla Temas Ettiniz mi?</label>
+                    <select name="kemirgen_temas" class="w-full p-2.5 rounded-xl border dark:bg-slate-900 dark:border-slate-700">
+                        <option value="0">Hayır / Temas Etmedim</option>
+                        <option value="1">Evet / Temas Ettim</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold tracking-wide shadow-lg shadow-red-600/20 transition">Yapay Zeka İle Analiz Et</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- 5. DURUM: TAHMİN SONUÇ EKRANI -->
+        {% if sayfa == 'analiz_sonuc' %}
+        <div class="max-w-md mx-auto bg-white dark:bg-cardBg p-8 rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 text-center">
+            <h2 class="text-2xl font-bold mb-4">Analiz Sonucu</h2>
+            <div class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 {% if skor >= 50 %} bg-red-100 text-red-600 dark:bg-red-950 {% else %} bg-green-100 text-green-600 dark:bg-green-950 {% endif %}">
+                <span class="text-2xl font-extrabold">%{{ skor }}</span>
+            </div>
+            <h3 class="text-xl font-semibold mb-2 {% if sonuc == 'Yüksek Risk' %} text-red-500 {% else %} text-green-500 {% endif %}">{{ sonuc }}</h3>
+            <p class="text-sm text-slate-500 mb-6">Yapay zeka modelimiz girdileriniz doğrultusunda risk seviyenizi bu şekilde hesapladı.</p>
+            <div class="flex gap-2">
+                <a href="/analiz" class="flex-1 bg-slate-200 dark:bg-slate-800 py-2 rounded-xl text-sm transition">Yeni Analiz</a>
+                <a href="/dashboard" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl text-sm transition">Dashboard'a Git</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 6. DURUM: KULLANICI DASHBOARD (VERİ GEÇMİŞİ & İSTATİSTİK) -->
+        {% if sayfa == 'dashboard' %}
+        <div class="space-y-6">
+            <h2 class="text-2xl font-bold"><i class="fa-solid fa-chart-pie text-red-500 mr-2"></i>Kişisel Takip Paneli</h2>
+            <div class="bg-white dark:bg-cardBg rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 overflow-x-auto">
+                <h3 class="text-md font-semibold mb-4 text-slate-400">Geçmiş Risk Analiz Kayıtlarınız</h3>
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b dark:border-slate-700 text-slate-400">
+                            <th class="py-2">Tarih</th>
+                            <th>Yaş</th>
+                            <th>Ateş</th>
+                            <th>Kas Ağrısı</th>
+                            <th>Kemirgen Temas</th>
+                            <th>Risk Skoru</th>
+                            <th>Sonuç</th>
+                            <th class="text-right">Rapor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kayit in gecmis %}
+                        <tr class="border-b dark:border-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-700/30">
+                            <td class="py-3">{{ kayit.tarih.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ kayit.yas }}</td>
+                            <td>{{ kayit.ates }} °C</td>
+                            <td>{{ 'Var' if kayit.kas_agrisi == 1 else 'Yok' }}</td>
+                            <td>{{ 'Var' if kayit.kemirgen_temas == 1 else 'Yok' }}</td>
+                            <td class="font-bold">%{{ kayit.risk_skoru }}</td>
+                            <td>
+                                <span class="px-2 py-0.5 rounded text-xs {% if kayit.sonuc == 'Yüksek Risk' %} bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 {% else %} bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 {% endif %}">
+                                    {{ kayit.sonuc }}
+                                </span>
+                            </td>
+                            <td class="text-right"><a href="/rapor/{{ kayit.id }}" class="text-blue-500 hover:underline text-xs"><i class="fa-solid fa-file-pdf mr-1"></i>PDF</a></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="8" class="text-center py-4 text-slate-500">Henüz bir risk analizi yapmadınız.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 7. DURUM: ADMIN PANEL -->
+        {% if sayfa == 'admin' %}
+        <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-amber-500"><i class="fa-solid fa-user-shield mr-2"></i>Sistem Yönetim Paneli</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-cardBg p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                    <h3 class="font-semibold mb-4 text-slate-400">Kayıtlı Kullanıcılar (Toplam: {{ kullanicilar|length }})</h3>
+                    <div class="space-y-2 max-h-60 overflow-y-auto text-sm">
+                        {% for k in kullanicilar %}
+                        <div class="flex justify-between p-2 border-b dark:border-slate-800">
+                            <span>{{ k.kullanici_adi }}</span>
+                            <span class="text-xs uppercase px-1.5 py-0.5 rounded {% if k.rol == 'admin' %} bg-amber-500/20 text-amber-400 {% else %} bg-slate-500/20 text-slate-400 {% endif %}">{{ k.rol }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-cardBg p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                    <h3 class="font-semibold mb-4 text-slate-400">Sistem Genelindeki Tüm Analizler</h3>
+                    <div class="space-y-2 max-h-60 overflow-y-auto text-sm">
+                        {% for r in kayitlar %}
+                        <div class="flex justify-between items-center p-2 border-b dark:border-slate-800">
+                            <span>User ID: {{ r.kullanici_id }}</span>
+                            <span class="font-bold {% if r.sonuc == 'Yüksek Risk' %} text-red-500 {% else %} text-green-500 {% endif %}">%{{ r.risk_skoru }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-cardBg border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-500 dark:text-slate-400">
+        &copy; 2026 HantaRisk Analiz Platformu. Tüm Hakları Saklıdır.
+    </footer>
+
+    <!-- Tema Değiştirme Scripti -->
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+        themeToggleBtn.addEventListener('click', () => {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                themeIcon.className = 'fa-solid fa-moon text-slate-600';
+            } else {
+                htmlElement.classList.add('dark');
+                themeIcon.className = 'fa-solid fa-sun text-amber-500';
+            }
+        });
+    </script>
+</body>
+</html>
