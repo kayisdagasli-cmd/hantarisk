@@ -3,149 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HantaRisk — Kaggle Destekli Risk İstihbaratı</title>
+    <title>HantaRisk - Küresel Erken Uyarı ve Klinik Karar Destek Sistemi</title>
+    <!-- CSS Bağlantısı -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts (Modern Yazı Tipi) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome (Lüks İkon Kütüphanesi) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-    <div class="top-banner">
-        Bu geçici bir geliştirme önizlemesidir. Veriler <strong>global_hantavirus_surveillance_dataset_2026.csv</strong> dosyasından gerçek zamanlı beslenmektedir.
-    </div>
+    <!-- Fareyi Takip Eden Virüs Animasyonu İçin Canvas Alanı -->
+    <canvas id="animation-canvas"></canvas>
 
+    <!-- %100 Mobil Uyumlu Üst Menü (Navbar) -->
     <nav class="navbar">
-        <div class="logo">🛡️ HANTARISK</div>
-        <div class="nav-links">
-            <button class="nav-btn active" onclick="switchTab('ana-sayfa')">Ana Sayfa</button>
-            <button class="nav-btn" onclick="switchTab('pano-sekme')">Pano</button>
-            <button class="nav-btn" onclick="switchTab('harita-sekme')">Bölgesel Harita (81 İl)</button>
-            <button class="nav-btn-highlight" onclick="switchTab('test-sekme')">⚡ Risk Değerlendirmesi</button>
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
+            </a>
+            <div class="nav-menu">
+                <a href="/" class="nav-link active"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
+                <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
+                <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
+                <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
+                <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+            </div>
+            <div class="system-status">
+                <span class="status-pulse"></span> SISTEM: <strong>ONLINE</strong>
+            </div>
         </div>
-        <div class="system-status">SİSTEM: <span class="online">● VERİ SETİ AKTİF</span></div>
     </nav>
 
-    <main class="container">
-
-        <!-- ANA SAYFA -->
-        <section id="ana-sayfa" class="tab-content active-tab">
-            <div class="alert-badge">⚠️ KLİNİK UYARI AKTİF</div>
-            <h1 class="main-title">Hantavirüs Risk İstihbaratı</h1>
-            <p class="subtitle">Kaggle gözetim veri setiyle senkronize, Türkiye genelindeki maruziyet ve vaka kırılımlarını izleyen klinik platform.</p>
-            
+    <!-- Kahraman (Hero) Karşılama Alanı -->
+    <header class="hero-section">
+        <div class="hero-content">
+            <div class="badge-premium">
+                <i class="fa-solid fa-shield-halved"></i> 2026 Küresel Gözetim Veri Seti Entegre Edildi
+            </div>
+            <h1>Hantavirüs Risklerini <br><span class="text-gradient">Yapay Zeka Teknoloji</span> ile Yönetin</h1>
+            <p>Gerçek zamanlı Kaggle gözetim verileriyle desteklenen, biyoistatistiksel modellemelerle klinik karar destek süreçlerinizi optimize eden yeni nesil epidemiyoloji platformu.</p>
             <div class="hero-actions">
-                <button class="btn btn-primary" onclick="switchTab('test-sekme')">⚡ RİSK DEĞERLENDİRMESİ BAŞLAT &gt;</button>
-                <button class="btn btn-secondary" onclick="switchTab('pano-sekme')">📊 PANOYU GÖRÜNTÜLE</button>
-                <button class="btn btn-secondary" onclick="switchTab('harita-sekme')">🗺️ 81 İL HARİTASINI GÖRÜNTÜLE</button>
+                <a href="/klinik-test" class="btn btn-primary"><i class="fa-solid fa-clipboard-check"></i> Hemen Klinik Test Başlat</a>
+                <button id="btn-info-modal" class="btn btn-outline"><i class="fa-solid fa-circle-info"></i> Hantavirüs Rehberi</button>
             </div>
+        </div>
+    </header>
 
-            <div class="stats-grid">
-                <div class="stat-card"><h3>TOPLAM VAKA / DEĞERLENDİRME</h3><p id="txt-toplam-degerlendirme">0</p></div>
-                <div class="stat-card"><h3>KRİTİK DURUMDAKİ VAKALAR</h3><p id="txt-kritik-vaka" class="text-danger">0</p></div>
-                <div class="stat-card"><h3>EN ÇOK ETKİLENEN BÖLGE (İL)</h3><p id="txt-en-etkili" class="text-warning">-</p></div>
+    <!-- Temel Özellikler Modülleri (Grid Yapı) -->
+    <section class="features-section">
+        <div class="section-title">
+            <h2>Gelişmiş Tanı ve Analiz Modülleri</h2>
+            <p>Platformumuzun sunduğu yüksek doğruluk oranlı biyoenformatik çözümler</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-microscope"></i></div>
+                <h3>Dinamik Risk Korelasyonu</h3>
+                <p>Girdiğiniz semptom, yaş, cinsiyet ve çevre tipini (tarım, orman, ev) veri setindeki binlerce gerçek vakayla eş zamanlı karşılaştırır.</p>
             </div>
-        </section>
-
-        <!-- ANALİTİK PANO -->
-        <section id="pano-sekme" class="tab-content">
-            <h2 class="section-title">Genel İstatistikler ve Trend Analizi</h2>
-            <div class="stats-grid">
-                <div class="stat-card"><h3>ORT. RİSK SKORU</h3><p>64,5 <span class="small">/100</span></p></div>
-                <div class="stat-card"><h3>TOPLAM VERİ GİRİŞİ</h3><p id="lbl-toplam">0</p></div>
-                <div class="stat-card"><h3>BU AY YENİ BİLDİRİM</h3><p class="text-cyan">4</p></div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                <h3>Coğrafi Lokasyon Filtresi</h3>
+                <p>Veri setindeki ülkeleri ve şehirleri dinamik olarak süzerek, bulunduğunuz bölgedeki tarihsel hantavirüs yoğunluğunu hesaba katar.</p>
             </div>
-
-            <div class="charts-flex">
-                <div class="chart-box">
-                    <h3>Risk Faktör Yaygınlığı</h3>
-                    <div class="bar-row"><span class="bar-label">Kemirgen Teması</span><div class="bar-wrap"><div class="bar-fill" style="width: 85%;"></div></div></div>
-                    <div class="bar-row"><span class="bar-label">Açık Alan Aktivitesi</span><div class="bar-wrap"><div class="bar-fill" style="width: 75%;"></div></div></div>
-                    <div class="bar-row"><span class="bar-label">Toz Maruziyeti</span><div class="bar-wrap"><div class="bar-fill" style="width: 65%;"></div></div></div>
-                </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                <h3>Gerçek Zamanlı Analitik</h3>
+                <p>Yıllık trendleri, vaka dağılımlarını ve ölüm/iyileşme oranlarını lüks grafiklerle panonuzda görselleştirir.</p>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- 81 İL HARİTASI VE DETAYLI KARTLAR -->
-        <section id="harita-sekme" class="tab-content">
-            <h2 class="section-title">Türkiye Geneli 81 İl Risk Dağılım Grafiği</h2>
-            
-            <div class="map-layout">
-                <div class="map-visual-container">
-                    <h3>81 İl İnteraktif Grid Görünümü</h3>
-                    <div class="map-fallback-grid" id="svg-turkiye-haritasi"></div>
-                </div>
-                <div class="map-list-side">
-                    <h3>Veri Setinde Öne Çıkan İlk 10 İl</h3>
-                    <div id="donut-top-10" class="donut-list"></div>
-                </div>
+    <!-- Canlı Haberler Alanı (News API) -->
+    <section class="news-section">
+        <div class="section-title">
+            <h2><i class="fa-solid fa-rss text-gradient"></i> Küresel Sağlık Haberleri</h2>
+            <p>News API üzerinden anlık olarak çekilen dünya genelindeki en güncel hantavirüs ve salgın gelişmeleri</p>
+        </div>
+        <div id="news-grid" class="news-grid">
+            <!-- JavaScript burayı otomatik dolduracak, boş kalırsa yükleniyor dönecek -->
+            <div class="loading-spinner">
+                <i class="fa-solid fa-spinner fa-spin"></i> Canlı haber akışı güncelleniyor...
             </div>
+        </div>
+    </section>
 
-            <div class="filter-bar">
-                <button class="filter-btn active" onclick="filterMap('Tümü')">Tümü (81 İl)</button>
-                <button class="filter-btn" onclick="filterMap('Kritik')">Kritik</button>
-                <button class="filter-btn" onclick="filterMap('Yüksek')">Yüksek</button>
-                <button class="filter-btn" onclick="filterMap('Orta')">Orta</button>
-                <button class="filter-btn" onclick="filterMap('Düşük')">Düşük</button>
+    <!-- Hantavirüs Rehber Modalı (Popup) -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-book-medical"></i> Hantavirüs Bilgilendirme Rehberi</h3>
+                <span class="close-modal">&times;</span>
             </div>
+            <div class="modal-body">
+                <h4>Hantavirüs Nedir?</h4>
+                <p>Hantavirüsler, çoğunlukla kemirgenler (fareler, sıçanlar) tarafından taşınan ve insanlara virüs barındıran dışkı, idrar veya tükürükle temas ya da bunların havaya karışan partiküllerinin solunması yoluyla bulaşan tehlikeli bir virüs ailesidir.</p>
+                
+                <h4>En Sık Görülen Belirtiler</h4>
+                <ul>
+                    <li><i class="fa-solid fa-temperature-high"></i> Ani başlayan yüksek ateş ve titreme</li>
+                    <li><i class="fa-solid fa-crutch"></i> Şiddetli kas ve sırt ağrıları</li>
+                    <li><i class="fa-solid fa-lungs"></i> İlerleyen safhalarda nefes darlığı ve kuru öksürük</li>
+                    <li><i class="fa-solid fa-stomach"></i> Bulantı, kusma ve karın ağrısı</li>
+                </ul>
 
-            <div class="iller-card-grid" id="iller-kart-alani"></div>
-        </section>
-
-        <!-- RISK DEĞERLENDİRME SİHİRBAZI -->
-        <section id="test-sekme" class="tab-content">
-            <div class="wizard-nav">
-                <span class="wiz-step active" id="step-btn-1">Kişisel Bilgiler</span>
-                <span class="wiz-step" id="step-btn-2">Maruziyet</span>
-                <span class="wiz-step" id="step-btn-3">Belirtiler</span>
-                <span class="wiz-step" id="step-btn-4">Sonuç</span>
+                <h4>Korunma Yöntemleri</h4>
+                <p>Depo, bodrum ve ambar gibi kemirgenlerin bulunabileceği alanları temizlemeden önce mutlaka havalandırın, temizlik esnasında maske ve eldiven kullanın. Kemirgenlerin ev içine girmesini engelleyecek önlemler alın.</p>
             </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary close-modal-btn">Anladım</button>
+            </div>
+        </div>
+    </div>
 
-            <form id="risk-form" onsubmit="event.preventDefault();">
-                <div class="form-step active-step" id="step-1">
-                    <h3>Kişisel Bilgiler ve Konum</h3>
-                    <div class="field"><label>AD SOYAD</label><input type="text" id="form-ad" placeholder="Adınız" required></div>
-                    <div class="field"><label>YAŞ</label><input type="number" id="form-yas" min="1" max="80" placeholder="Yaşınız" required></div>
-                    <div class="field"><label>GÖZETİM ALTINDAKİ İL (81 İL)</label><select id="form-il" required></select></div>
-                    <div class="form-actions"><button type="button" class="btn btn-primary" onclick="nextStep(2)">İleri &gt;</button></div>
-                </div>
+    <!-- Sayfa Alt Bilgisi -->
+    <footer class="main-footer">
+        <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
+    </footer>
 
-                <div class="form-step" id="step-2">
-                    <h3>Çevresel Maruziyet</h3>
-                    <label class="check-box-container"><input type="checkbox" name="maruziyet" value="kemirgen"><div class="check-text"><strong>Kemirgen Teması</strong></div></label>
-                    <label class="check-box-container"><input type="checkbox" name="maruziyet" value="acik_alan"><div class="check-text"><strong>Açık Alan Aktivitesi</strong></div></label>
-                    <label class="check-box-container"><input type="checkbox" name="maruziyet" value="toz"><div class="check-text"><strong>Toz Maruziyeti</strong></div></label>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep(1)">Geri</button>
-                        <button type="button" class="btn btn-primary" onclick="nextStep(3)">İleri &gt;</button>
-                    </div>
-                </div>
-
-                <div class="form-step" id="step-3">
-                    <h3>Klinik Belirtiler</h3>
-                    <div class="symptom-grid">
-                        <label class="check-box-card"><input type="checkbox" name="belirti" value="ateş"> Ateş</label>
-                        <label class="check-box-card"><input type="checkbox" name="belirti" value="bas_agrisi"> Baş Ağrısı</label>
-                        <label class="check-box-card"><input type="checkbox" name="belirti" value="nefes"> Nefes Güçlüğü</label>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Geri</button>
-                        <button type="button" class="btn btn-primary" onclick="hesaplaRisk()">Analizi Tamamla 🚀</button>
-                    </div>
-                </div>
-
-                <div class="form-step" id="step-4">
-                    <div class="result-box">
-                        <h2>Değerlendirme Raporu</h2>
-                        <p id="lbl-result-user" class="text-cyan">-</p>
-                        <div class="score-circle"><span id="lbl-result-score">0</span><small>/100</small></div>
-                        <div id="badge-risk-seviye" class="risk-level-badge">YÜKLENİYOR</div>
-                    </div>
-                    <div class="form-actions"><button type="button" class="btn btn-primary" onclick="resetForm()">YENİ DEĞERLENDİRME BAŞLAT</button></div>
-                </div>
-            </form>
-        </section>
-
-    </main>
-
-    <footer class="footer">HantaRisk Klinik İstihbarat Platformu v1.0</footer>
+    <!-- JavaScript Dosyası Bağlantısı -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
