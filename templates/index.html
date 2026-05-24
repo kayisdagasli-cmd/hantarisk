@@ -17,18 +17,24 @@
     <canvas id="animation-canvas"></canvas>
 
     <!-- %100 Mobil Uyumlu Üst Menü (Navbar) -->
-    <nav class="navbar">
+   <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
                 <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
             </a>
-            <div class="nav-menu">
+            
+            <div class="menu-toggle" id="mobile-menu-btn">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+
+            <div class="nav-menu" id="nav-menu-container">
                 <a href="/" class="nav-link active"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
                 <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
                 <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
                 <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
                 <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
             </div>
+            
             <div class="system-status">
                 <span class="status-pulse"></span> SISTEM: <strong>ONLINE</strong>
             </div>
