@@ -4,7 +4,8 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
-DATABASE = 'database.db'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, 'database.db')
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -47,6 +48,9 @@ def init_db():
                 (4, 'İç Anadolu', 'Ankara', 'Düşük', 45, 12),
                 (5, 'Marmara', 'Bursa', 'Çok Düşük', 22, 5);
         ''')
+
+# Gunicorn ile çalışırken de init_db çalışsın
+init_db()
 
 def hesapla_risk_skoru(semptom_siddeti, temas_tipi, yas):
     skor = 0
@@ -121,13 +125,6 @@ def vaka_ekle():
 
         risk_skoru = hesapla_risk_skoru(semptom_siddeti, temas_tipi, yas_int)
 
-        if risk_skoru >= 70:
-            risk_seviyesi = 'Yüksek'
-        elif risk_skoru >= 40:
-            risk_seviyesi = 'Orta'
-        else:
-            risk_seviyesi = 'Düşük'
-
         db = get_db()
         db.execute(
             '''INSERT INTO vakalar
@@ -175,6 +172,5 @@ def api_aylik_vaka():
     return jsonify([dict(r) for r in rows])
 
 if __name__ == '__main__':
-    init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
