@@ -1,133 +1,134 @@
-const SEHIRLER = [
-    "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir",
-    "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli",
-    "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari",
-    "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir",
-    "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir",
-    "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat",
-    "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman",
-    "Kırıkkale", "Batman", "Şırnak", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
-];
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. MODAL (VİRÜS BİLGİ BUTONU) SİSTEMİ
+    const modal = document.getElementById("info-modal");
+    const btn = document.getElementById("btn-info-modal");
+    if (modal && btn) {
+        const closeSpan = modal.querySelector(".close-modal");
+        const closeBtn = modal.querySelector(".close-modal-btn");
 
-let globalIllerData = [];
-
-document.addEventListener("DOMContentLoaded", function() {
-    setupIlDropdown();
-    loadDashboardData();
-});
-
-function setupIlDropdown() {
-    const select = document.getElementById("form-il");
-    if(select) {
-        select.innerHTML = SEHIRLER.sort((a,b) => a.localeCompare(b, 'tr')).map(il => `<option value="${il}">${il}</option>`).join("");
+        btn.onclick = () => modal.style.display = "flex";
+        if (closeSpan) closeSpan.onclick = () => modal.style.display = "none";
+        if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
+        
+        window.onclick = (e) => {
+            if (e.target === modal) modal.style.display = "none";
+        };
     }
-}
 
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
-    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active-tab');
-    loadDashboardData();
-}
+    // 2. NEWS API CANLI HABER AKIŞI
+    const newsGrid = document.getElementById("news-grid");
+    if (newsGrid) {
+        fetch("/api/guncel-haberler")
+            .then(res => res.json())
+            .then(data => {
+                if (data.articles && data.articles.length > 0) {
+                    newsGrid.innerHTML = data.articles.slice(0, 6).map(article => `
+                        <div class="news-card">
+                            <div class="news-source"><i class="fa-solid fa-newspaper"></i> ${article.source.name || 'Global Sağlık'}</div>
+                            <h3>${article.title}</h3>
+                            <p>${article.description || 'Haber içeriği yüklenemedi.'}</p>
+                            <a href="${article.url}" target="_blank" class="news-link">Detayları Oku <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        </div>
+                    `).join("");
+                } else {
+                    newsGrid.innerHTML = `<div class="no-news">Şu anda güncel hantavirüs haberi bulunamadı.</div>`;
+                }
+            })
+            .catch(err => {
+                console.error("Haber çekme hatası:", err);
+                newsGrid.innerHTML = `<div class="no-news">Haber servisine bağlanırken bir hata oluştu.</div>`;
+            });
+    }
 
-function loadDashboardData() {
-    fetch('/api/istatistikler')
-        .then(res => res.json())
-        .then(data => {
-            globalIllerData = data.iller;
-            
-            document.getElementById("txt-toplam-degerlendirme").innerText = data.toplam_degerlendirme;
-            document.getElementById("txt-kritik-vaka").innerText = data.kritik_vaka;
-            document.getElementById("txt-en-etkili").innerText = data.en_cok_etkilenen_bolge;
-            if(document.getElementById("lbl-toplam")) document.getElementById("lbl-toplam").innerText = data.toplam_degerlendirme;
+    // 3. FAREYİ TAKİP EDEN İNTERAKTİF VİRÜS ANİMASYONU (CANVAS)
+    const canvas = document.getElementById("animation-canvas");
+    if (canvas) {
+        const ctx = canvas.getContext("2d");
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resize);
+        resize();
 
-            renderMapGrid(data.iller);
+        // Fare koordinatları
+        let mouse = { x: canvas.width / 2, y: canvas.height / 2, targetX: canvas.width / 2, targetY: canvas.height / 2 };
 
-            // Eğer veri setindeki tüm iller 0 ise listeyi canlandırmak için ilk 10 şehri göster
-            const top10 = data.iller.slice(0, 10);
-            document.getElementById("donut-top-10").innerHTML = top10.map(il => `
-                <div style="margin-bottom: 8px; font-size:13px;">
-                    ● <strong>${il.il_adi}</strong>: ${il.vaka_sayisi} Vaka 
-                    <span style="color:var(--warning-orange)">(${il.risk_seviyesi})</span>
-                </div>
-            `).join("");
+        window.addEventListener("mousemove", function (e) {
+            mouse.targetX = e.clientX;
+            mouse.targetY = e.clientY;
+        });
 
-            filterMap('Tümü');
-        }).catch(err => console.error("Veri yükleme hatası:", err));
-}
+        // Virüs Hücresi Sınıfı
+        class VirusCell {
+            constructor() {
+                this.x = mouse.x;
+                this.y = mouse.y;
+                this.radius = 23;
+                this.angle = 0;
+            }
 
-function renderMapGrid(iller) {
-    const haritaAlani = document.getElementById("svg-turkiye-haritasi");
-    if(!haritaAlani) return;
+            update() {
+                this.x += (mouse.targetX - this.x) * 0.08;
+                this.y += (mouse.targetY - this.y) * 0.08;
+                this.angle += 0.015;
+            }
 
-    haritaAlani.innerHTML = iller.map(il => {
-        let color = "#38a169"; 
-        if(il.risk_seviyesi === "Kritik") color = "var(--danger-red)";
-        else if(il.risk_seviyesi === "Yüksek") color = "var(--warning-orange)";
-        else if(il.risk_seviyesi === "Orta") color = "yellow";
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
 
-        return `
-            <div class="map-province-node" style="border-bottom: 3px solid ${color};" title="${il.il_adi}: ${il.vaka_sayisi} Vaka">
-                <strong>${il.il_adi.substring(0, 5)}</strong><br>${il.vaka_sayisi}
-            </div>
-        `;
-    }).join("");
-}
+                // Parlama (Neon) Efekti
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = "rgba(239, 68, 68, 0.7)";
 
-function filterMap(riskSeviyesi) {
-    const kartAlani = document.getElementById("iller-kart-alani");
-    if(!kartAlani) return;
+                // Hücre Gövdesi
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(239, 68, 68, 0.2)";
+                ctx.strokeStyle = "#ef4444";
+                ctx.lineWidth = 3;
+                ctx.fill();
+                ctx.stroke();
 
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        if(btn.innerText.includes(riskSeviyesi)) btn.classList.add('active');
-        else btn.classList.remove('active');
-    });
+                // Virüs Reseptör Uzantıları (Spikes)
+                const spikes = 10;
+                for (let i = 0; i < spikes; i++) {
+                    const spikeAngle = (i * Math.PI * 2) / spikes;
+                    const x1 = Math.cos(spikeAngle) * this.radius;
+                    const y1 = Math.sin(spikeAngle) * this.radius;
+                    
+                    const dynamicLength = this.radius + 14 + Math.sin(this.angle * 4 + i) * 3;
+                    const x2 = Math.cos(spikeAngle) * dynamicLength;
+                    const y2 = Math.sin(spikeAngle) * dynamicLength;
 
-    const filtrelenmis = globalIllerData.filter(il => riskSeviyesi === 'Tümü' || il.risk_seviyesi === riskSeviyesi);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.strokeStyle = "#ef4444";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
 
-    kartAlani.innerHTML = filtrelenmis.map(il => `
-        <div class="il-card risk-${il.risk_seviyesi}">
-            <h4>${il.il_adi}</h4>
-            <p>Mevcut Vaka: ${il.vaka_sayisi}</p>
-            <small>Durum: ${il.risk_seviyesi}</small>
-        </div>
-    `).join("");
-}
+                    ctx.beginPath();
+                    ctx.arc(x2, y2, 4.5, 0, Math.PI * 2);
+                    ctx.fillStyle = "#f87171";
+                    ctx.fill();
+                }
 
-function nextStep(stepNum) {
-    document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active-step'));
-    document.getElementById(`step-${stepNum}`).classList.add('active-step');
-    document.querySelectorAll('.wiz-step').forEach(el => el.classList.remove('active'));
-    document.getElementById(`step-btn-${stepNum}`).classList.add('active');
-}
+                ctx.restore();
+            }
+        }
 
-function prevStep(stepNum) { nextStep(stepNum); }
+        const virus = new VirusCell();
 
-function hesaplaRisk() {
-    const ad = document.getElementById("form-ad").value;
-    const il = document.getElementById("form-il").value;
-
-    const maruziyetler = [];
-    document.querySelectorAll('input[name="maruziyet"]:checked').forEach(el => maruziyetler.push(el.value));
-
-    const belirtiler = [];
-    document.querySelectorAll('input[name="belirti"]:checked').forEach(el => belirtiler.push(el.value));
-
-    fetch('/api/risk-analizi', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ad: ad, il: il, maruziyet: maruziyetler, belirtiler: belirtiler })
-    })
-    .then(res => res.json())
-    .then(resData => {
-        document.getElementById("lbl-result-user").innerText = `${ad} — İnceleme Bölgesi: ${il}`;
-        document.getElementById("lbl-result-score").innerText = resData.skor;
-        document.getElementById("badge-risk-seviye").innerText = `HESAPLANAN DURUM: ${resData.risk_seviyesi}`;
-        nextStep(4);
-    });
-}
-
-function resetForm() {
-    document.getElementById("risk-form").reset();
-    nextStep(1);
-}
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            virus.update();
+            virus.draw();
+            requestAnimationFrame(animate);
+        }
+        animate();
+    }
+});
