@@ -33,7 +33,7 @@
             </a>
             <div class="menu-toggle" id="mobile-menu-btn">
                 <i class="fa-solid fa-bars"></i>
-            }</div>
+            </div>
             <div class="nav-menu" id="nav-menu-container">
                 <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
                 <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
@@ -82,12 +82,12 @@
     </div>
 
     <script>
-        // Basit ve Şık Test Hesaplama Simülasyonu
         document.getElementById('hanta-test-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const checkedCount = document.querySelectorAll('input[type="checkbox"]:checked').length;
             const resultBox = document.getElementById('test-result');
             
+            resultBox.style.with = "100%";
             resultBox.style.display = "block";
             if(checkedCount >= 2) {
                 resultBox.className = "result-box result-high";
