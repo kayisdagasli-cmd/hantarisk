@@ -1,6 +1,6 @@
 import os
 import sqlite3
-import pandas as pd
+import csv  # Pandas yerine sunucuyu yormayan gömülü kütüphane
 from flask import Flask, render_template, jsonify, request
 import requests
 
@@ -41,35 +41,43 @@ def veritabanı_hazırla():
     ''')
     conn.commit()
 
-    # Eğer tablo boşsa CSV dosyasından verileri yükle
+    # Eğer tablo boşsa CSV dosyasından verileri yükle (Pandas olmadan hızlı sürüm)
     cursor.execute("SELECT COUNT(*) FROM vakalar")
     if cursor.fetchone()[0] == 0 and os.path.exists(CSV_FILE):
         try:
-            df = pd.read_csv(CSV_FILE)
-            
-            # CSV sütun isimlerini temizle ve küçük harfe çevir
-            df.columns = [c.strip().lower() for c in df.columns]
-            
-            # Sütun eşleştirme haritası (Olası varyasyonlar için koruma)
-            ulke_col = 'country' if 'country' in df.columns else df.columns[0]
-            sehir_col = 'city' if 'city' in df.columns else df.columns[1]
-            enlem_col = 'latitude' if 'latitude' in df.columns else (df.columns[2] if 'lat' in ''.join(df.columns) else df.columns[2])
-            boylam_col = 'longitude' if 'longitude' in df.columns else (df.columns[3] if 'long' in ''.join(df.columns) else df.columns[3])
-            yil_col = 'year' if 'year' in df.columns else 'yil'
-            sonuc_col = 'outcome' if 'outcome' in df.columns else 'clinical_outcome'
-            
-            for _, row in df.iterrows():
-                ulke = str(row.get(ulke_col, 'Bilinmiyor'))
-                sehir = str(row.get(sehir_col, 'Bilinmiyor'))
-                enlem = float(row.get(enlem_col, 0.0))
-                boylam = float(row.get(boylam_col, 0.0))
-                yil = int(row.get(yil_col, 2026)) if yil_col in df.columns else 2026
-                sonuc = str(row.get(sonuc_col, 'Recovered')) if sonuc_col in df.columns else 'Recovered'
+            with open(CSV_FILE, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
                 
-                cursor.execute(
-                    "INSERT INTO vakalar (ulke, sehir, enlem, boylam, yil, sonuc) VALUES (?, ?, ?, ?, ?, ?)",
-                    (ulke, sehir, enlem, boylam, yil, sonuc)
-                )
+                # Sütun isimlerini temizle ve küçük harfe çevir
+                headers = [h.strip().lower() for h in reader.fieldnames]
+                reader.fieldnames = headers
+                
+                ulke_col = 'country' if 'country' in headers else headers[0]
+                sehir_col = 'city' if 'city' in headers else headers[1]
+                enlem_col = 'latitude' if 'latitude' in headers else (headers[2] if 'lat' in ''.join(headers) else headers[2])
+                boylam_col = 'longitude' if 'longitude' in headers else (headers[3] if 'long' in ''.join(headers) else headers[3])
+                yil_col = 'year' if 'year' in headers else 'yil'
+                sonuc_col = 'outcome' if 'outcome' in headers else 'clinical_outcome'
+                
+                for row in reader:
+                    ulke = str(row.get(ulke_col, 'Bilinmiyor'))
+                    sehir = str(row.get(sehir_col, 'Bilinmiyor'))
+                    
+                    try: enlem = float(row.get(enlem_col, 0.0))
+                    except: enlem = 0.0
+                    
+                    try: boylam = float(row.get(boylam_col, 0.0))
+                    except: boylam = 0.0
+                    
+                    try: yil = int(row.get(yil_col, 2026))
+                    except: yil = 2026
+                    
+                    sonuc = str(row.get(sonuc_col, 'Recovered'))
+                    
+                    cursor.execute(
+                        "INSERT INTO vakalar (ulke, sehir, enlem, boylam, yil, sonuc) VALUES (?, ?, ?, ?, ?, ?)",
+                        (ulke, sehir, enlem, boylam, yil, sonuc)
+                    )
             conn.commit()
             print("Kaggle veri seti başarıyla veritabanına aktarıldı.")
         except Exception as e:
@@ -86,7 +94,7 @@ def ana_sayfa():
 
 @app.route('/klinik-test')
 def klinik_test_sayfasi():
-    return render_template('klinik_test.html')
+    return render_template('klinik-test.html') # Burası düzeltildi!
 
 @app.route('/profil')
 def profil_sayfasi():
