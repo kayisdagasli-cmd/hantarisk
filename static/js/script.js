@@ -132,3 +132,23 @@ document.addEventListener("DOMContentLoaded", function () {
         animate();
     }
 });
+
+// Mobil Menü Açma/Kapama Tetikleyicisi
+document.addEventListener("DOMContentLoaded", function() {
+    const menuBtn = document.getElementById("mobile-menu-btn");
+    const navMenu = document.getElementById("nav-menu-container");
+
+    if (menuBtn && navMenu) {
+        menuBtn.addEventListener("click", function() {
+            navMenu.classList.toggle("active");
+            
+            # İkonu üç çizgiden çarpı işaretine (X) dönüştürür
+            const icon = menuBtn.querySelector("i");
+            if(navMenu.classList.contains("active")) {
+                icon.className = "fa-solid fa-xmark";
+            } else {
+                icon.className = "fa-solid fa-bars";
+            }
+        });
+    }
+});
