@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klinik Karar Testi - HantaRisk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Test Sayfasına Özel Lüks Panel Tasarımı */
+        .test-container { max-width: 800px; margin: 8rem auto 4rem auto; padding: 2rem; }
+        .test-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .form-group { margin-bottom: 2rem; }
+        .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 1rem; }
+        .form-control { width: 100%; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 1rem; transition: all 0.3s ease; }
+        .form-control:focus { border-color: var(--primary); outline: none; background: rgba(255,255,255,0.05); box-shadow: 0 0 10px var(--primary-glow); }
+        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px), 1fr); gap: 1rem; margin-top: 0.5rem; }
+        .checkbox-label { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; }
+        .checkbox-label:hover { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.3); }
+        .checkbox-label input { width: 18px; height: 18px; accent-color: var(--primary); }
+        .result-box { margin-top: 2rem; padding: 2rem; border-radius: 12px; display: none; text-align: center; font-weight: 600; font-size: 1.2rem; }
+        .result-high { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; }
+        .result-low { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #34d399; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
+            </a>
+            <div class="menu-toggle" id="mobile-menu-btn">
+                <i class="fa-solid fa-bars"></i>
+            }</div>
+            <div class="nav-menu" id="nav-menu-container">
+                <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
+                <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
+                <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
+                <a href="/klinik-test" class="nav-link active"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
+                <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="test-container">
+        <div class="test-card">
+            <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Vaka verileri ve semptom korelasyonu ile hantavirüs risk analizi.</p>
+            
+            <form id="hanta-test-form">
+                <div class="form-group">
+                    <label>Yaşınız</label>
+                    <input type="number" class="form-control" required min="0" max="120" placeholder="Örn: 34">
+                </div>
+
+                <div class="form-group">
+                    <label>Bulunduğunuz Çevre Tipi</label>
+                    <select class="form-control" required>
+                        <option value="orman">Kırsal / Ormanlık Alan</option>
+                        <option value="tarim">Tarım / Tarla Alanı</option>
+                        <option value="sehir">Kentsel / Şehir Merkezi</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Mevcut Semptomlar (Eşleşenleri Seçiniz)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" value="ates"> Ani Yüksek Ateş</label>
+                        <label class="checkbox-label"><input type="checkbox" value="kas"> Şiddetli Kas Ağrısı</label>
+                        <label class="checkbox-label"><input type="checkbox" value="nefes"> Nefes Darlığı</label>
+                        <label class="checkbox-label"><input type="checkbox" value="bulanti"> Bulantı / Kusma</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem;"><i class="fa-solid fa-calculator"></i> Riski Hesapla ve Analiz Et</button>
+            </form>
+
+            <div id="test-result" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // Basit ve Şık Test Hesaplama Simülasyonu
+        document.getElementById('hanta-test-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const checkedCount = document.querySelectorAll('input[type="checkbox"]:checked').length;
+            const resultBox = document.getElementById('test-result');
+            
+            resultBox.style.display = "block";
+            if(checkedCount >= 2) {
+                resultBox.className = "result-box result-high";
+                resultBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> YÜKSEK RİSK! Semptomlarınız Hantavirüs profili ile eşleşiyor. Lütfen en yakın sağlık kuruluşuna başvurun.`;
+            } else {
+                resultBox.className = "result-box result-low";
+                resultBox.innerHTML = `<i class="fa-solid fa-circle-check"></i> DÜŞÜK RİSK. Belirtileriniz şu an için kritik bir risk barındırmıyor ancak takibe devam edin.`;
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
