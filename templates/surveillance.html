@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Küresel Harita Sürveyansı - HantaRisk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- İnteraktif Harita Kütüphanesi (Leaflet CSS & JS) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        /* Karanlık moda uygun, lüks harita kapsayıcı ayarları */
+        #map {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #0d1321;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        }
+        /* Harita üzerindeki popupları karanlık moda uydurma */
+        .leaflet-popup-content-wrapper {
+            background: #151e2f !important;
+            color: #f3f4f6 !important;
+            border: 1px solid var(--border-color);
+            font-family: 'Inter', sans-serif;
+        }
+        .leaflet-popup-tip {
+            background: #151e2f !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Arka Plan Hücre Animasyonu -->
+    <canvas id="animation-canvas"></canvas>
+
+    <!-- Üst Menü / Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
+            </a>
+            <div class="nav-menu">
+                <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
+                <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
+                <a href="/surveillance" class="nav-link active"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
+                <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
+                <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+            </div>
+            <div class="system-status">
+                <span class="status-pulse"></span> SISTEM: <strong style="color:var(--success)">ONLINE</strong>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Harita Ekranı -->
+    <main class="hero-section">
+        <div class="hero-container-center" style="max-width: 1100px;">
+            
+            <div class="premium-card">
+                <div class="card-header-block">
+                    <div class="card-header-icon"><i class="fa-solid fa-earth-africa"></i></div>
+                    <div>
+                        <h2>Küresel Coğrafi Sürveyans Haritası</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Veri setindeki enlem ve boylam koordinatlarına göre canlı hantavirüs sıcak nokta (hotspot) takibi</p>
+                    </div>
+                </div>
+
+                <!-- Dinamik Harita Alanı -->
+                <div id="map"></div>
+                
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; text-align: center;">
+                    <i class="fa-solid fa-circle-info"></i> Haritadaki kırmızı halkalar vaka yoğunluğunu temsil eder. Detayları görmek için halkaların üzerine tıklayabilirsiniz.
+                </p>
+            </div>
+            
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
+    </footer>
+
+    <!-- Harita Motoru Scripti -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Haritayı dünya merkezli (0, 0 koordinatı) ve gece moduna yakın koyu bir altlık ile başlatıyoruz
+            const map = L.map('map').setView([20, 0], 2);
+
+            // Karanlık ve lüks harita teması (CartoDB Positron Dark)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // 2. Sunucudaki veri setinden harita lokasyon noktalarını çekiyoruz
+            fetch('/api/harita-noktalari')
+                .then(res => res.json())
+                .then(noktalar => {
+                    noktalar.forEach(nokta => {
+                        // Her vaka bölgesi için parlayan kırmızı bir risk çemberi çiziyoruz
+                        L.circle([nokta.enlem, nokta.boylam], {
+                            color: '#ef4444',
+                            fillColor: '#ef4444',
+                            fillOpacity: 0.4,
+                            radius: 150000 + (nokta.vaka_sayisi * 500) // Vaka sayısına göre halkanın büyüklüğü dinamik artar
+                        })
+                        .addTo(map)
+                        .bindPopup(`
+                            <div style="font-family:'Inter',sans-serif;">
+                                <strong style="color:#ef4444; font-size:1rem;"><i class="fa-solid fa-location-dot"></i> ${nokta.sehir}, ${nokta.ulke}</strong><br>
+                                <span style="display:block; margin-top:5px; font-size:0.85rem;">
+                                    <i class="fa-solid fa-virus"></i> Toplam Kayıtlı Vaka: <strong>${nokta.vaka_sayisi}</strong>
+                                </span>
+                            </div>
+                        `);
+                    });
+                })
+                .catch(() => {
+                    console.error("Harita verileri yüklenirken bir hata oluştu.");
+                });
+        });
+    </script>
+
+    <!-- O çok beğendiğin virüs hücre animasyonu -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
