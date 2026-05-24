@@ -33,7 +33,7 @@
             display: flex;
             align-items: center;
             gap: 1.5rem;
-            flex-shrink: 0; /* Menünün daralıp sağa sola kaymasını kesin engeller */
+            flex-shrink: 0;
         }
 
         /* Test Sayfası Genel Yapısı */
@@ -44,7 +44,6 @@
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
         
-        /* Çökme ve Beyaz Ekran Yapmayan Lüks Input/Select Çözümü */
         .form-control { 
             width: 100%; 
             padding: 1rem; 
@@ -56,15 +55,9 @@
             transition: all 0.3s ease;
             box-sizing: border-box;
         }
-        
-        .form-control option {
-            background-color: #11141a !important;
-            color: #ffffff !important;
-            padding: 12px;
-        }
         .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
         
-        /* Şehir Arama Sonuç Listesi CSS Kartı */
+        /* Şehir Arama Sonuç Listesi */
         .sehir-arama-listesi {
             position: absolute;
             top: 100%;
@@ -79,21 +72,12 @@
             display: none;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6);
         }
-        .sehir-arama-kalemi {
-            padding: 0.8rem 1rem;
-            color: #ffffff;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        .sehir-arama-kalemi:hover {
-            background: var(--primary);
-            color: white;
-        }
+        .sehir-arama-kalemi { padding: 0.8rem 1rem; color: #ffffff; cursor: pointer; transition: background 0.2s ease; }
+        .sehir-arama-kalemi:hover { background: var(--primary); color: white; }
 
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
         .checkbox-label { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; font-size: 0.9rem; }
         .checkbox-label:hover { background: rgba(239, 68, 68, 0.03); border-color: rgba(239, 68, 68, 0.2); }
-        .checkbox-label input { width: 18px; height: 18px; accent-color: var(--primary); }
         
         /* Animasyonlu Sonuç Paneli */
         .result-panel { margin-top: 3rem; padding: 2.5rem; border-radius: 12px; display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); }
@@ -104,7 +88,6 @@
         .risk-badge { display: inline-block; padding: 0.5rem 1.5rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; }
         .badge-kritik { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; }
         .badge-yuksek { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; }
-        .badge-orta { background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; }
         .badge-dusuk { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
         
         .oneriler-title { font-weight: 700; color: white; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
@@ -116,16 +99,14 @@
         @media (max-width: 768px) {
             .test-card { padding: 1.5rem !important; }
             .form-grid { grid-template-columns: 1fr !important; gap: 0rem; }
-            .nav-menu { display: none; } /* Mobilde gerekirse gizlensin */
             .action-buttons { flex-direction: column; }
-            .action-buttons .btn { width: 100%; justify-content: center; }
             .test-container { margin-top: 6rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Üst Menü (Navbar) - Artık Asla Sağa Sola Kaymaz -->
+    <!-- Üst Menü -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
@@ -141,7 +122,7 @@
         </div>
     </nav>
 
-    <!-- Test Kartı Alanı -->
+    <!-- Test Alanı -->
     <div class="test-container">
         <div class="test-card">
             <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
@@ -169,7 +150,7 @@
                         </div>
                     </div>
 
-                    <!-- Bölge Seçim Kutusu -->
+                    <!-- Bölge Seçimi -->
                     <div class="form-group">
                         <label>Bulunduğunuz Coğrafi Bölge</label>
                         <select id="form-bolge" class="form-control" required>
@@ -184,7 +165,7 @@
                         </select>
                     </div>
 
-                    <!-- Klavyeden Yazılarak Çağrılan 81 İl Arama Alanı -->
+                    <!-- Yazarak Arama Alanı -->
                     <div class="form-group">
                         <label>Bulunduğunuz Şehir (Yazarak Arayın)</label>
                         <input type="text" id="form-sehir-input" class="form-control" required placeholder="Örn: İstanbul, Ankara, Gaziantep...">
@@ -219,7 +200,7 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
 
-            <!-- Sonuç Paneli -->
+            <!-- Canlı Sonuç Ekranı -->
             <div id="result-panel" class="result-panel">
                 <div class="animated-counter-box">
                     <div id="animated-score" class="animated-score">%0</div>
@@ -236,7 +217,7 @@
                 <ul id="oneriler-list" class="oneriler-list"></ul>
 
                 <div class="action-buttons">
-                    <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-pdf"></i> Tıbbi Raporu İndir</button>
+                    <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Düzenli Sayfada Aç</button>
                     <a id="btn-emergency" href="https://maps.google.com/?q=en+yakin+hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
                 </div>
             </div>
@@ -244,7 +225,6 @@
     </div>
 
     <script>
-        // Türkiye'nin Bölgesel 81 İl Veritabanı
         const tumSehirlerDizisi = {
             "Marmara": ["Balıkesir", "Bilecik", "Bursa", "Çanakkale", "Edirne", "İstanbul", "Kırklareli", "Kocaeli", "Sakarya", "Tekirdağ", "Yalova"],
             "İç Anadolu": ["Aksaray", "Ankara", "Çankırı", "Eskişehir", "Karaman", "Kayseri", "Kırıkkale", "Kırşehir", "Konya", "Nevşehir", "Niğde", "Sivas", "Yozgat"],
@@ -259,7 +239,6 @@
         const sehirInput = document.getElementById('form-sehir-input');
         const sehirDropdown = document.getElementById('sehir-dropdown');
 
-        // Şehir Kutusuna Tıklayınca veya Yazınca Canlı Süzme Modülü
         sehirInput.addEventListener('input', tetikleFiltreleme);
         sehirInput.addEventListener('focus', tetikleFiltreleme);
 
@@ -268,7 +247,6 @@
             const arananKelime = sehirInput.value.trim().toLowerCase();
             sehirDropdown.innerHTML = '';
 
-            // Bölge seçildiyse sadece o bölgenin, seçilmediyse 81 ilin tamamında ara!
             let aranacakHavuz = [];
             if(secilenBolge && tumSehirlerDizisi[secilenBolge]) {
                 aranacakHavuz = tumSehirlerDizisi[secilenBolge];
@@ -276,12 +254,9 @@
                 Object.values(tumSehirlerDizisi).forEach(b => { aranacakHavuz = aranacakHavuz.concat(b); });
             }
 
-            // Çift kayıtları temizle ve alfabetik yap
             aranacakHavuz = [...new Set(aranacakHavuz)].sort();
 
-            const eslesenler = aranacakHavuz.filter(s => s.toLowerCase().includes(araner => {
-                return s.toLowerCase().indexOf(arananKelime) > -1;
-            }));
+            const eslesenler = aranacakHavuz.filter(s => s.toLowerCase().indexOf(arananKelime) > -1);
 
             if(eslesenler.length > 0) {
                 sehirDropdown.style.display = 'block';
@@ -293,13 +268,11 @@
                         sehirInput.value = sehir;
                         sehirDropdown.style.display = 'none';
                         
-                        // Eğer şehir yazarak seçildiyse ve bölge seçilmemişse, bölgesini otomatik eşleştir!
-                        if(!bolgeSelect.value) {
-                            for(let b in tumSehirlerDizisi) {
-                                if(tumSehirlerDizisi[b].includes(sehir)) {
-                                    bolgeSelect.value = b;
-                                    break;
-                                }
+                        // Görseldeki "Yozgat / Ege Bölgesi" gibi yanlış eşleşmeleri çözen otomatik atama mantığı
+                        for(let b in tumSehirlerDizisi) {
+                            if(tumSehirlerDizisi[b].includes(sehir)) {
+                                bolgeSelect.value = b;
+                                break;
                             }
                         }
                     });
@@ -310,12 +283,10 @@
             }
         }
 
-        // Boşluğa tıklayınca şehir listesini kapatır
         document.addEventListener('click', function(e) {
             if (e.target !== sehirInput) { sehirDropdown.style.display = 'none'; }
         });
 
-        // Form Gönderildiğinde Analiz Yapma Mantığı
         document.getElementById('hanta-test-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -374,46 +345,108 @@
                 const onerilerList = document.getElementById('oneriler-list');
                 onerilerList.innerHTML = '';
                 const varsayilanOneriler = data.oneriler || [
-                    "Lütfen en yakın sağlık kuruluşuna başvurarak Hantavirüs spesifik PCR veya IgM/IgG seroloji testi talep ediniz.",
-                    "Belirtilerinizi günlük olarak izole bir ortamda takip edin."
+                    "Kemirgenlerin bulunduğu ortamlardan ve atıklardan uzak durun.",
+                    "ACİL DURUM: En yakın tam teşekküllü sağlık kuruluşuna başvurun.",
+                    "Hekiminize hantavirüs olası maruziyet senaryonuzu ve semptomlarınızı aktarın.",
+                    "Solunum destek üniteleri gerekebileceğinden istirahat edin."
                 ];
                 varsayilanOneriler.forEach(oneri => {
                     onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.7rem; color:var(--primary); margin-right:8px;"></i> ${oneri}</li>`;
                 });
 
-                // --- SENİN İSTEDİĞİN DÜZENLİ, SATIR SATIR PREMIUM PDF YAZI ÇIKTISI ---
+                // --- SENİN İSTEDİĞİN GÖZE HİTAP EDEN SÜPER DÜZENLİ RAPOR SAYFASI MODÜLÜ ---
                 document.getElementById('btn-pdf').onclick = function() {
-                    const cizgi = "=========================================================";
-                    let pdfMetni = "";
-                    pdfMetni += `               HANTARISK LABORATUVAR RAPORU              \n`;
-                    pdfMetni += `${cizgi}\n`;
-                    pdfMetni += `HASTA KİMLİK BİLGİLERİ:\n`;
-                    pdfMetni += `  Adı Soyadı       : ${payload.ad}\n`;
-                    pdfMetni += `  Yaş / Cinsiyet   : ${payload.yas} / ${payload.cinsiyet}\n`;
-                    pdfMetni += `  Coğrafi Lokasyon : ${payload.sehir} / ${payload.bolge} Bölgesi\n`;
-                    pdfMetni += `  Tarih            : ${new Date().toLocaleString('tr-TR')}\n`;
-                    pdfMetni += `${cizgi}\n`;
-                    pdfMetni += `KLİNİK BULGULAR VE MARUZİYET:\n`;
-                    pdfMetni += `  Çevresel Öykü    : ${document.getElementById('form-cevre').options[document.getElementById('form-cevre').selectedIndex].text}\n`;
-                    pdfMetni += `  Aktif Semptomlar : ${semptomlar.join(', ') || 'Belirtilmedi'}\n`;
-                    pdfMetni += `${cizgi}\n`;
-                    pdfMetni += `YAPAY ZEKA DIAGNOSTİK ANALİZ SONUCU:\n`;
-                    pdfMetni += `  Kritik Risk Skoru: %${targetScore}\n`;
-                    pdfMetni += `  Risk Seviyesi    : ${riskSeviye}\n`;
-                    pdfMetni += `${cizgi}\n`;
-                    pdfMetni += `HEKİM KLİNİK DESTEK ÖNERİLERİ:\n`;
-                    varsayilanOneriler.forEach((onr, i) => {
-                        pdfMetni += `  [${i+1}] ${onr}\n`;
+                    const cevreMetni = document.getElementById('form-cevre').options[document.getElementById('form-cevre').selectedIndex].text;
+                    const semptomMetni = semptomlar.join(', ') || 'Belirtilmedi';
+                    const tarihMetni = new Date().toLocaleString('tr-TR');
+                    
+                    let oneriLiElementleri = '';
+                    varsayilanOneriler.forEach(o => {
+                        oneriLiElementleri += `<li style="margin-bottom:12px; font-size:15px; color:#444;">${o}</li>`;
                     });
-                    pdfMetni += `${cizgi}\n`;
-                    pdfMetni += `* Bu tıbbi destek dokümanı HantaRisk yapay zeka otomasyon\n`;
-                    pdfMetni += `  tarafından üretilmiştir. Laboratuvar doğrulaması önerilir.\n`;
 
-                    const blob = new Blob([pdfMetni], { type: "text/plain;charset=utf-8" });
-                    const indirmeLinki = document.createElement("a");
-                    indirmeLinki.href = URL.createObjectURL(blob);
-                    indirmeLinki.download = `HantaRisk_Klinik_Rapor_${payload.ad.replace(/\s+/g, '_')}.txt`;
-                    indirmeLinki.click();
+                    // Tarayıcıda tertemiz, geniş aralıklı, goze hitap eden yepyeni bir sayfa açar!
+                    const yeniPencere = window.open('', '_blank');
+                    yeniPencere.document.write(`
+                        <html>
+                        <head>
+                            <title>HantaRisk Klinik Raporu - ${payload.ad}</title>
+                            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+                            <style>
+                                body { font-family: 'Inter', sans-serif; background-color: #f8fafc; padding: 40px; margin: 0; color: #1e293b; }
+                                .rapor-kart { max-width: 800px; margin: 0 auto; background: #ffffff; padding: 50px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+                                .baslik-alani { border-bottom: 2px solid #ef4444; padding-bottom: 20px; margin-bottom: 35px; text-align: center; }
+                                .ana-baslik { margin: 0; color: #ef4444; font-size: 26px; font-weight: 800; letter-spacing: 0.5px; }
+                                .alt-baslik { margin: 8px 0 0 0; color: #64748b; font-size: 14px; text-transform: uppercase; }
+                                .bolum-basligi { font-size: 16px; font-weight: 700; color: #0f172a; border-left: 4px solid #ef4444; padding-left: 12px; margin: 30px 0 15px 0; text-transform: uppercase; }
+                                .bilgi-tablosu { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                                .bilgi-tablosu td { padding: 14px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
+                                .alan-adi { font-weight: 600; color: #475569; width: 30%; }
+                                .alan-deger { color: #0f172a; }
+                                .skor-kutusu { background: #fff7ed; border: 1px solid #ffedd5; border-radius: 8px; padding: 25px; text-align: center; margin: 30px 0; }
+                                .skor-rakam { font-size: 42px; font-weight: 800; color: #ef4444; margin: 5px 0; }
+                                .skor-seviye { display: inline-block; padding: 6px 20px; background: #ef4444; color: #ffffff; border-radius: 50px; font-weight: 700; font-size: 14px; margin-top: 5px; }
+                                .not-alani { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.6; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="rapor-kart">
+                                <div class="baslik-alani">
+                                    <h1 class="ana-baslik">HANTARISK TÜRKİYE TIBBİ ANALİZ RAPORU</h1>
+                                    <div class="alt-baslik">Klinik Karar Destek Otomasyon Belgesi</div>
+                                </div>
+
+                                <div class="bolum-basligi">Hasta Kimlik Bilgileri</div>
+                                <table class="bilgi-tablosu">
+                                    <tr>
+                                        <td class="alan-adi">Adı Soyadı</td>
+                                        <td class="alan-deger">${payload.ad}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="alan-adi">Yaş / Cinsiyet</td>
+                                        <td class="alan-deger">${payload.yas} / ${payload.cinsiyet}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="alan-adi">Coğrafi Konum</td>
+                                        <td class="alan-deger">${payload.sehir} / ${payload.bolge} Bölgesi</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="alan-adi">Rapor Tarihi</td>
+                                        <td class="alan-deger">${tarihMetni}</td>
+                                    </tr>
+                                </table>
+
+                                <div class="bolum-basligi">Klinik Bulgular ve Maruziyet</div>
+                                <table class="bilgi-tablosu">
+                                    <tr>
+                                        <td class="alan-adi">Çevresel Öykü</td>
+                                        <td class="alan-deger">${cevreMetni}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="alan-adi">Mevcut Semptomlar</td>
+                                        <td class="alan-deger">${semptomMetni}</td>
+                                    </tr>
+                                </table>
+
+                                <div class="skor-kutusu">
+                                    <div style="font-size: 13px; color: #7c2d12; font-weight: 600; text-transform: uppercase;">Yapay Zeka Klinik Hesaplama Skoru</div>
+                                    <div class="skor-rakam">%${targetScore}</div>
+                                    <div class="skor-seviye">${riskSeviye}</div>
+                                </div>
+
+                                <div class="bolum-basligi">Hekim Karar Destek Önerileri</div>
+                                <ul style="padding-left: 20px; margin: 0; line-height: 1.8;">
+                                    ${oneriLiElementleri}
+                                </ul>
+
+                                <div class="not-alani">
+                                    * Bu doküman HantaRisk yazılım algoritmaları tarafından klinik veri korelasyonu kullanılarak üretilmiştir. Kesin tıbbi tanı ve teşhis yerine geçmez. Doğrulama için spesifik laboratuvar testleri yapılmalıdır.
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                    `);
+                    yeniPencere.document.close();
                 };
             });
         });
