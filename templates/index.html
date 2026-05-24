@@ -4,20 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HantaRisk - Küresel Erken Uyarı ve Klinik Karar Destek Sistemi</title>
-    <!-- CSS Bağlantısı -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Google Fonts (Modern Yazı Tipi) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome (Lüks İkon Kütüphanesi) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Telefonda Çok Büyük ve Düzensiz Görünen Yazılar İçin Mobil Optimizasyon (Responsive) */
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem !important;
+                line-height: 1.3 !important;
+            }
+            .hero-section p {
+                font-size: 0.95rem !important;
+                padding: 0 10px;
+            }
+            .hero-actions {
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+                padding: 0 20px;
+            }
+            .hero-actions .btn {
+                width: 100% !important;
+                justify-content: center;
+                padding: 1rem !important;
+            }
+            .section-title h2 {
+                font-size: 1.6rem !important;
+            }
+            .section-title p {
+                font-size: 0.9rem !important;
+            }
+            .features-grid, .news-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+                padding: 0 15px;
+            }
+            .modal-content {
+                width: 95% !important;
+                margin: 10% auto !important;
+                padding: 1.5rem !important;
+            }
+        }
+
+        /* Hantavirüs Rehberi Sağ Alt "Anladım" Butonu ve Yazıların Lüks Hizalanması */
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end; /* Sağda daha hoş durması için sağa yasladık */
+            margin-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 1rem;
+        }
+        
+        .modal-body ul li {
+            list-style: none;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Haber Kartları Düzenlemesi */
+        .news-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Fareyi Takip Eden Virüs Animasyonu İçin Canvas Alanı -->
     <canvas id="animation-canvas"></canvas>
 
-    <!-- %100 Mobil Uyumlu Üst Menü (Navbar) -->
-   <nav class="navbar">
+    <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
                 <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
@@ -33,6 +99,13 @@
                 <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
                 <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
                 <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+                
+                <div class="hamburger-only-modules" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); padding-left: 15px; text-transform: uppercase; letter-spacing: 1px;">Analiz Modülleri</span>
+                    <a href="#" class="nav-link" style="font-size: 0.9rem; opacity: 0.8;"><i class="fa-solid fa-microscope"></i> Risk Korelasyonu</a>
+                    <a href="#" class="nav-link" style="font-size: 0.9rem; opacity: 0.8;"><i class="fa-solid fa-map-location-dot"></i> Lokasyon Filtresi</a>
+                    <a href="#" class="nav-link" style="font-size: 0.9rem; opacity: 0.8;"><i class="fa-solid fa-chart-pie"></i> Gerçek Zamanlı Trendler</a>
+                </div>
             </div>
             
             <div class="system-status">
@@ -41,13 +114,12 @@
         </div>
     </nav>
 
-    <!-- Kahraman (Hero) Karşılama Alanı -->
     <header class="hero-section">
         <div class="hero-content">
             <div class="badge-premium">
                 <i class="fa-solid fa-shield-halved"></i> 2026 Küresel Gözetim Veri Seti Entegre Edildi
             </div>
-            <h1>Hantavirüs Risklerini <br><span class="text-gradient">Yapay Zeka Teknoloji</span> ile Yönetin</h1>
+            <h1>Hantavirüs Risklerini <br><span class="text-gradient">Yapay Zeka Teknolojisi</span> ile Yönetin</h1>
             <p>Gerçek zamanlı Kaggle gözetim verileriyle desteklenen, biyoistatistiksel modellemelerle klinik karar destek süreçlerinizi optimize eden yeni nesil epidemiyoloji platformu.</p>
             <div class="hero-actions">
                 <a href="/klinik-test" class="btn btn-primary"><i class="fa-solid fa-clipboard-check"></i> Hemen Klinik Test Başlat</a>
@@ -56,46 +128,18 @@
         </div>
     </header>
 
-    <!-- Temel Özellikler Modülleri (Grid Yapı) -->
-    <section class="features-section">
-        <div class="section-title">
-            <h2>Gelişmiş Tanı ve Analiz Modülleri</h2>
-            <p>Platformumuzun sunduğu yüksek doğruluk oranlı biyoenformatik çözümler</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fa-solid fa-microscope"></i></div>
-                <h3>Dinamik Risk Korelasyonu</h3>
-                <p>Girdiğiniz semptom, yaş, cinsiyet ve çevre tipini (tarım, orman, ev) veri setindeki binlerce gerçek vakayla eş zamanlı karşılaştırır.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fa-solid fa-map-location-dot"></i></div>
-                <h3>Coğrafi Lokasyon Filtresi</h3>
-                <p>Veri setindeki ülkeleri ve şehirleri dinamik olarak süzerek, bulunduğunuz bölgedeki tarihsel hantavirüs yoğunluğunu hesaba katar.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="fa-solid fa-chart-pie"></i></div>
-                <h3>Gerçek Zamanlı Analitik</h3>
-                <p>Yıllık trendleri, vaka dağılımlarını ve ölüm/iyileşme oranlarını lüks grafiklerle panonuzda görselleştirir.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Canlı Haberler Alanı (News API) -->
     <section class="news-section">
         <div class="section-title">
             <h2><i class="fa-solid fa-rss text-gradient"></i> Küresel Sağlık Haberleri</h2>
-            <p>News API üzerinden anlık olarak çekilen dünya genelindeki en güncel hantavirüs ve salgın gelişmeleri</p>
+            <p>News API üzerinden anlık olarak çekilen dünya genelindeki en güncel 3 hantavirüs ve salgın gelişmesi</p>
         </div>
-        <div id="news-grid" class="news-grid">
-            <!-- JavaScript burayı otomatik dolduracak, boş kalırsa yükleniyor dönecek -->
-            <div class="loading-spinner">
+        <div id="news-grid" class="news-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div class="loading-spinner" style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-muted);">
                 <i class="fa-solid fa-spinner fa-spin"></i> Canlı haber akışı güncelleniyor...
             </div>
         </div>
     </section>
 
-    <!-- Hantavirüs Rehber Modalı (Popup) -->
     <div id="info-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -106,29 +150,60 @@
                 <h4>Hantavirüs Nedir?</h4>
                 <p>Hantavirüsler, çoğunlukla kemirgenler (fareler, sıçanlar) tarafından taşınan ve insanlara virüs barındıran dışkı, idrar veya tükürükle temas ya da bunların havaya karışan partiküllerinin solunması yoluyla bulaşan tehlikeli bir virüs ailesidir.</p>
                 
-                <h4>En Sık Görülen Belirtiler</h4>
-                <ul>
-                    <li><i class="fa-solid fa-temperature-high"></i> Ani başlayan yüksek ateş ve titreme</li>
-                    <li><i class="fa-solid fa-crutch"></i> Şiddetli kas ve sırt ağrıları</li>
-                    <li><i class="fa-solid fa-lungs"></i> İlerleyen safhalarda nefes darlığı ve kuru öksürük</li>
-                    <li><i class="fa-solid fa-stomach"></i> Bulantı, kusma ve karın ağrısı</li>
+                <h4 style="margin-top: 1.5rem;">En Sık Görülen Belirtiler</h4>
+                <ul style="padding-left: 0;">
+                    <li><i class="fa-solid fa-temperature-high" style="color: var(--primary);"></i> Ani başlayan yüksek ateş ve titreme</li>
+                    <li><i class="fa-solid fa-crutch" style="color: var(--primary);"></i> Şiddetli kas ve sırt ağrıları</li>
+                    <li><i class="fa-solid fa-lungs" style="color: var(--primary);"></i> İlerleyen safhalarda nefes darlığı ve kuru öksürük</li>
+                    <li><i class="fa-solid fa-stomach" style="color: var(--primary);"></i> Bulantı, kusma ve karın ağrısı</li>
                 </ul>
 
-                <h4>Korunma Yöntemleri</h4>
+                <h4 style="margin-top: 1.5rem;">Korunma Yöntemleri</h4>
                 <p>Depo, bodrum ve ambar gibi kemirgenlerin bulunabileceği alanları temizlemeden önce mutlaka havalandırın, temizlik esnasında maske ve eldiven kullanın. Kemirgenlerin ev içine girmesini engelleyecek önlemler alın.</p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary close-modal-btn">Anladım</button>
+                <button class="btn btn-primary close-modal-btn" style="padding: 0.6rem 2rem;"><i class="fa-solid fa-check"></i> Anladım</button>
             </div>
         </div>
     </div>
 
-    <!-- Sayfa Alt Bilgisi -->
     <footer class="main-footer">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
     </footer>
 
-    <!-- JavaScript Dosyası Bağlantısı -->
+    <script>
+        // News API'den gelen haberleri tam 3 adet olacak şekilde sınırlayan ve ekrana basan entegrasyon
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/api/guncel-haberler')
+                .then(response => response.json())
+                .then(data => {
+                    const newsGrid = document.getElementById('news-grid');
+                    if (data.articles && data.articles.length > 0) {
+                        newsGrid.innerHTML = '';
+                        // En fazla 3 adet haberi döngüye alıyoruz
+                        data.articles.slice(0, 3).forEach(article => {
+                            const date = new Date(article.publishedAt).toLocaleDateString('tr-TR');
+                            const title = article.title ? article.title.substring(0, 60) + '...' : 'Hantavirüs Gelişmesi';
+                            const desc = article.description ? article.description.substring(0, 120) + '...' : 'Detaylar için kaynak bağlantıyı ziyaret ediniz.';
+                            
+                            newsGrid.innerHTML += `
+                                <div class="news-card">
+                                    <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600;"><i class="fa-solid fa-calendar-days"></i> ${date}</span>
+                                    <h3 style="margin: 0.5rem 0; font-size: 1.1rem; color: white;">${title}</h3>
+                                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">${desc}</p>
+                                    <a href="${article.url}" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: 600;">Devamını Oku <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        newsGrid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Şu an için güncel haber bulunamadı.</p>';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('news-grid').innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Haberler yüklenirken bir sorun oluştu.</p>';
+                });
+        });
+    </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
