@@ -3,169 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hanta Virüsü Risk Analiz Sistemi</title>
+    <title>HantaRisk — Kaggle Destekli Risk İstihbaratı</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-<aside class="sidebar">
-    <div class="sidebar-brand">
-        <div class="brand-icon">🦠</div>
-        <div>
-            <span class="brand-title">HantaRisk</span>
-            <span class="brand-sub">v2.0</span>
-        </div>
+    <div class="top-banner">
+        Bu geçici bir geliştirme önizlemesidir. Veriler <strong>global_hantavirus_surveillance_dataset_2026.csv</strong> dosyasından gerçek zamanlı beslenmektedir.
     </div>
-    <nav class="sidebar-nav">
-        <a href="{{ url_for('index') }}" class="nav-item active">
-            <span class="nav-icon">📊</span> Dashboard
-        </a>
-        <a href="{{ url_for('vaka_ekle') }}" class="nav-item">
-            <span class="nav-icon">➕</span> Vaka Ekle
-        </a>
-        <a href="/api/vakalar" class="nav-item" target="_blank">
-            <span class="nav-icon">📡</span> API
-        </a>
+
+    <nav class="navbar">
+        <div class="logo">🛡️ HANTARISK</div>
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="switchTab('ana-sayfa')">Ana Sayfa</button>
+            <button class="nav-btn" onclick="switchTab('pano-sekme')">Pano</button>
+            <button class="nav-btn" onclick="switchTab('harita-sekme')">Bölgesel Harita (81 İl)</button>
+            <button class="nav-btn-highlight" onclick="switchTab('test-sekme')">⚡ Risk Değerlendirmesi</button>
+        </div>
+        <div class="system-status">SİSTEM: <span class="online">● VERİ SETİ AKTİF</span></div>
     </nav>
-    <div class="sidebar-footer">
-        <div class="status-dot"></div>
-        <span>Sistem Aktif</span>
-    </div>
-</aside>
 
-<main class="main-content">
-    <header class="topbar">
-        <div>
-            <h1 class="page-title">Hanta Virüsü Risk Analizi</h1>
-            <p class="page-sub">Son güncelleme: <span id="current-time"></span></p>
-        </div>
-        <a href="{{ url_for('vaka_ekle') }}" class="btn-primary">+ Yeni Vaka</a>
-    </header>
+    <main class="container">
 
-    <!-- Metrik Kartlar -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-icon" style="background:#ffebee;">🔴</div>
-            <div>
-                <div class="metric-label">Toplam Vaka</div>
-                <div class="metric-value" style="color:#c62828;">{{ toplam_vaka }}</div>
+        <!-- ANA SAYFA -->
+        <section id="ana-sayfa" class="tab-content active-tab">
+            <div class="alert-badge">⚠️ KLİNİK UYARI AKTİF</div>
+            <h1 class="main-title">Hantavirüs Risk İstihbaratı</h1>
+            <p class="subtitle">Kaggle gözetim veri setiyle senkronize, Türkiye genelindeki maruziyet ve vaka kırılımlarını izleyen klinik platform.</p>
+            
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="switchTab('test-sekme')">⚡ RİSK DEĞERLENDİRMESİ BAŞLAT &gt;</button>
+                <button class="btn btn-secondary" onclick="switchTab('pano-sekme')">📊 PANOYU GÖRÜNTÜLE</button>
+                <button class="btn btn-secondary" onclick="switchTab('harita-sekme')">🗺️ 81 İL HARİTASINI GÖRÜNTÜLE</button>
             </div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-icon" style="background:#fff3e0;">🟠</div>
-            <div>
-                <div class="metric-label">Aktif Risk Bölgesi</div>
-                <div class="metric-value" style="color:#e65100;">{{ aktif_bolge }}</div>
-            </div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-icon" style="background:#fce4ec;">⚠️</div>
-            <div>
-                <div class="metric-label">Ortalama Risk Skoru</div>
-                <div class="metric-value" style="color:#ad1457;">{{ ort_risk }}<span style="font-size:16px;font-weight:400;">/100</span></div>
-            </div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-icon" style="background:#e3f2fd;">📍</div>
-            <div>
-                <div class="metric-label">İzlenen Bölge</div>
-                <div class="metric-value" style="color:#1565c0;">{{ bolgeler|length }}</div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Grafikler -->
-    <div class="two-col">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">📈 Aylık Vaka Trendi</h2>
+            <div class="stats-grid">
+                <div class="stat-card"><h3>TOPLAM VAKA / DEĞERLENDİRME</h3><p id="txt-toplam-degerlendirme">0</p></div>
+                <div class="stat-card"><h3>KRİTİK DURUMDAKİ VAKALAR</h3><p id="txt-kritik-vaka" class="text-danger">0</p></div>
+                <div class="stat-card"><h3>EN ÇOK ETKİLENEN BÖLGE (İL)</h3><p id="txt-en-etkili" class="text-warning">-</p></div>
             </div>
-            <div style="position:relative; height:220px;">
-                <canvas id="trendChart" role="img" aria-label="Aylık vaka sayısı trendi grafiği">Aylık vaka trendi yükleniyor.</canvas>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">🎯 Risk Seviyesi Dağılımı</h2>
-            </div>
-            <div style="position:relative; height:220px;">
-                <canvas id="riskChart" role="img" aria-label="Risk seviyesi dağılım grafiği">Risk dağılımı yükleniyor.</canvas>
-            </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Risk Bölgeleri & Son Vakalar -->
-    <div class="two-col">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">🗺️ Bölgesel Risk Skorları</h2>
+        <!-- ANALİTİK PANO -->
+        <section id="pano-sekme" class="tab-content">
+            <h2 class="section-title">Genel İstatistikler ve Trend Analizi</h2>
+            <div class="stats-grid">
+                <div class="stat-card"><h3>ORT. RİSK SKORU</h3><p>64,5 <span class="small">/100</span></p></div>
+                <div class="stat-card"><h3>TOPLAM VERİ GİRİŞİ</h3><p id="lbl-toplam">0</p></div>
+                <div class="stat-card"><h3>BU AY YENİ BİLDİRİM</h3><p class="text-cyan">4</p></div>
             </div>
-            {% for bolge in bolgeler %}
-            <div class="risk-row">
-                <div class="risk-row-header">
-                    <span class="risk-name">{{ bolge.il }}</span>
-                    <span class="risk-score
-                        {% if bolge.risk_skoru >= 70 %}risk-high
-                        {% elif bolge.risk_skoru >= 40 %}risk-medium
-                        {% else %}risk-low{% endif %}">
-                        {{ bolge.risk_skoru }}%
-                    </span>
+
+            <div class="charts-flex">
+                <div class="chart-box">
+                    <h3>Risk Faktör Yaygınlığı</h3>
+                    <div class="bar-row"><span class="bar-label">Kemirgen Teması</span><div class="bar-wrap"><div class="bar-fill" style="width: 85%;"></div></div></div>
+                    <div class="bar-row"><span class="bar-label">Açık Alan Aktivitesi</span><div class="bar-wrap"><div class="bar-fill" style="width: 75%;"></div></div></div>
+                    <div class="bar-row"><span class="bar-label">Toz Maruziyeti</span><div class="bar-wrap"><div class="bar-fill" style="width: 65%;"></div></div></div>
                 </div>
-                <div class="risk-bar-bg">
-                    <div class="risk-bar-fill
-                        {% if bolge.risk_skoru >= 70 %}fill-high
-                        {% elif bolge.risk_skoru >= 40 %}fill-medium
-                        {% else %}fill-low{% endif %}"
-                        style="width:{{ bolge.risk_skoru }}%;">
+            </div>
+        </section>
+
+        <!-- 81 İL HARİTASI VE DETAYLI KARTLAR -->
+        <section id="harita-sekme" class="tab-content">
+            <h2 class="section-title">Türkiye Geneli 81 İl Risk Dağılım Grafiği</h2>
+            
+            <div class="map-layout">
+                <div class="map-visual-container">
+                    <h3>81 İl İnteraktif Grid Görünümü</h3>
+                    <div class="map-fallback-grid" id="svg-turkiye-haritasi"></div>
+                </div>
+                <div class="map-list-side">
+                    <h3>Veri Setinde Öne Çıkan İlk 10 İl</h3>
+                    <div id="donut-top-10" class="donut-list"></div>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterMap('Tümü')">Tümü (81 İl)</button>
+                <button class="filter-btn" onclick="filterMap('Kritik')">Kritik</button>
+                <button class="filter-btn" onclick="filterMap('Yüksek')">Yüksek</button>
+                <button class="filter-btn" onclick="filterMap('Orta')">Orta</button>
+                <button class="filter-btn" onclick="filterMap('Düşük')">Düşük</button>
+            </div>
+
+            <div class="iller-card-grid" id="iller-kart-alani"></div>
+        </section>
+
+        <!-- RISK DEĞERLENDİRME SİHİRBAZI -->
+        <section id="test-sekme" class="tab-content">
+            <div class="wizard-nav">
+                <span class="wiz-step active" id="step-btn-1">Kişisel Bilgiler</span>
+                <span class="wiz-step" id="step-btn-2">Maruziyet</span>
+                <span class="wiz-step" id="step-btn-3">Belirtiler</span>
+                <span class="wiz-step" id="step-btn-4">Sonuç</span>
+            </div>
+
+            <form id="risk-form" onsubmit="event.preventDefault();">
+                <div class="form-step active-step" id="step-1">
+                    <h3>Kişisel Bilgiler ve Konum</h3>
+                    <div class="field"><label>AD SOYAD</label><input type="text" id="form-ad" placeholder="Adınız" required></div>
+                    <div class="field"><label>YAŞ</label><input type="number" id="form-yas" min="1" max="80" placeholder="Yaşınız" required></div>
+                    <div class="field"><label>GÖZETİM ALTINDAKİ İL (81 İL)</label><select id="form-il" required></select></div>
+                    <div class="form-actions"><button type="button" class="btn btn-primary" onclick="nextStep(2)">İleri &gt;</button></div>
+                </div>
+
+                <div class="form-step" id="step-2">
+                    <h3>Çevresel Maruziyet</h3>
+                    <label class="check-box-container"><input type="checkbox" name="maruziyet" value="kemirgen"><div class="check-text"><strong>Kemirgen Teması</strong></div></label>
+                    <label class="check-box-container"><input type="checkbox" name="maruziyet" value="acik_alan"><div class="check-text"><strong>Açık Alan Aktivitesi</strong></div></label>
+                    <label class="check-box-container"><input type="checkbox" name="maruziyet" value="toz"><div class="check-text"><strong>Toz Maruziyeti</strong></div></label>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(1)">Geri</button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep(3)">İleri &gt;</button>
                     </div>
                 </div>
-                <div class="risk-row-meta">{{ bolge.vaka_sayisi }} vaka · {{ bolge.risk_seviyesi }}</div>
-            </div>
-            {% endfor %}
-        </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">📋 Son Vakalar</h2>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Konum</th>
-                        <th>Tarih</th>
-                        <th>Risk</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vaka in vakalar %}
-                    <tr>
-                        <td><code>#{{ vaka.id }}</code></td>
-                        <td>{{ vaka.il }} / {{ vaka.ilce }}</td>
-                        <td>{{ vaka.tani_tarihi }}</td>
-                        <td>
-                            <span class="pill
-                                {% if vaka.risk_skoru >= 70 %}pill-red
-                                {% elif vaka.risk_skoru >= 40 %}pill-amber
-                                {% else %}pill-green{% endif %}">
-                                {{ vaka.risk_skoru }}/100
-                            </span>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align:center; padding:24px; color:#888;">
-                            Henüz vaka kaydı yok. <a href="{{ url_for('vaka_ekle') }}">İlk vakayı ekle →</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</main>
+                <div class="form-step" id="step-3">
+                    <h3>Klinik Belirtiler</h3>
+                    <div class="symptom-grid">
+                        <label class="check-box-card"><input type="checkbox" name="belirti" value="ateş"> Ateş</label>
+                        <label class="check-box-card"><input type="checkbox" name="belirti" value="bas_agrisi"> Baş Ağrısı</label>
+                        <label class="check-box-card"><input type="checkbox" name="belirti" value="nefes"> Nefes Güçlüğü</label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Geri</button>
+                        <button type="button" class="btn btn-primary" onclick="hesaplaRisk()">Analizi Tamamla 🚀</button>
+                    </div>
+                </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+                <div class="form-step" id="step-4">
+                    <div class="result-box">
+                        <h2>Değerlendirme Raporu</h2>
+                        <p id="lbl-result-user" class="text-cyan">-</p>
+                        <div class="score-circle"><span id="lbl-result-score">0</span><small>/100</small></div>
+                        <div id="badge-risk-seviye" class="risk-level-badge">YÜKLENİYOR</div>
+                    </div>
+                    <div class="form-actions"><button type="button" class="btn btn-primary" onclick="resetForm()">YENİ DEĞERLENDİRME BAŞLAT</button></div>
+                </div>
+            </form>
+        </section>
+
+    </main>
+
+    <footer class="footer">HantaRisk Klinik İstihbarat Platformu v1.0</footer>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
