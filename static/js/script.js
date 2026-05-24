@@ -43,16 +43,17 @@ function loadDashboardData() {
 
             renderMapGrid(data.iller);
 
+            // Eğer veri setindeki tüm iller 0 ise listeyi canlandırmak için ilk 10 şehri göster
             const top10 = data.iller.slice(0, 10);
             document.getElementById("donut-top-10").innerHTML = top10.map(il => `
-                <div style="margin-bottom: 8px;">
+                <div style="margin-bottom: 8px; font-size:13px;">
                     ● <strong>${il.il_adi}</strong>: ${il.vaka_sayisi} Vaka 
                     <span style="color:var(--warning-orange)">(${il.risk_seviyesi})</span>
                 </div>
             `).join("");
 
             filterMap('Tümü');
-        });
+        }).catch(err => console.error("Veri yükleme hatası:", err));
 }
 
 function renderMapGrid(iller) {
@@ -61,13 +62,13 @@ function renderMapGrid(iller) {
 
     haritaAlani.innerHTML = iller.map(il => {
         let color = "#38a169"; 
-        if(il.risk_seviyesi === "Kritik" || il.risk_seviyesi === "Critical") color = "var(--danger-red)";
-        else if(il.risk_seviyesi === "Yüksek" || il.risk_seviyesi === "High") color = "var(--warning-orange)";
-        else if(il.risk_seviyesi === "Orta" || il.risk_seviyesi === "Medium") color = "yellow";
+        if(il.risk_seviyesi === "Kritik") color = "var(--danger-red)";
+        else if(il.risk_seviyesi === "Yüksek") color = "var(--warning-orange)";
+        else if(il.risk_seviyesi === "Orta") color = "yellow";
 
         return `
             <div class="map-province-node" style="border-bottom: 3px solid ${color};" title="${il.il_adi}: ${il.vaka_sayisi} Vaka">
-                <strong>${il.il_adi.substring(0, 6)}</strong><br>${il.vaka_sayisi}
+                <strong>${il.il_adi.substring(0, 5)}</strong><br>${il.vaka_sayisi}
             </div>
         `;
     }).join("");
