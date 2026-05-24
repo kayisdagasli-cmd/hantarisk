@@ -131,10 +131,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         animate();
     }
-});
 
-// Mobil Menü Açma/Kapama Tetikleyicisi
-document.addEventListener("DOMContentLoaded", function() {
+    // 4. MOBİL HAMBURGER MENÜ MEKANİZMASI
     const menuBtn = document.getElementById("mobile-menu-btn");
     const navMenu = document.getElementById("nav-menu-container");
 
@@ -142,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function() {
         menuBtn.addEventListener("click", function() {
             navMenu.classList.toggle("active");
             
-            # İkonu üç çizgiden çarpı işaretine (X) dönüştürür
+            // İkonu üç çizgiden çarpı işaretine (X) dönüştürür
             const icon = menuBtn.querySelector("i");
             if(navMenu.classList.contains("active")) {
                 icon.className = "fa-solid fa-xmark";
