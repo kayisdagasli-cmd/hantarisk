@@ -131,4 +131,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         animate();
     }
+
+    // 4. %100 GÜVENLİ VE BAĞIMSIZ HAMBURGER MENÜ MEKANİZMASI
+    const menuBtn = document.getElementById("mobile-menu-btn");
+    const navMenu = document.getElementById("nav-menu-container");
+
+    if (menuBtn && navMenu) {
+        menuBtn.addEventListener("click", function (e) {
+            e.stopPropagation(); // Tıklamanın diğer elementleri etkilemesini önler
+            navMenu.classList.toggle("active");
+            
+            const icon = menuBtn.querySelector("i");
+            if (navMenu.classList.contains("active")) {
+                icon.className = "fa-solid fa-xmark"; // Açılınca çarpı butonu olur
+            } else {
+                icon.className = "fa-solid fa-bars"; // Kapanınca üç çizgi olur
+            }
+        });
+
+        // Menü açıkken ekranda veya sayfa üzerinde herhangi bir yere basılırsa otomatik kapatır
+        document.addEventListener("click", function (e) {
+            if (!navMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                navMenu.classList.remove("active");
+                const icon = menuBtn.querySelector("i");
+                if (icon) icon.className = "fa-solid fa-bars";
+            }
+        });
+    }
 });
