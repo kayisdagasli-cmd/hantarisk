@@ -17,7 +17,7 @@
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
         
-        /* WhatsApp Image 2026-05-24 at 21.16.55.jpeg Beyaz Ekran Hatasını Çözen Lüks Form Kontrolleri */
+        /* 81 İlin Görünmeme Sorununu Çözen Standart Uyumlu Koyu Seçim Kutuları */
         .form-control { 
             width: 100%; 
             padding: 1rem; 
@@ -27,15 +27,14 @@
             color: #ffffff !important; 
             font-size: 1rem; 
             transition: all 0.3s ease;
-            appearance: none; 
-            -webkit-appearance: none;
-            -moz-appearance: none;
+            display: block;
         }
         
+        /* Açılır listenin görünürlüğünü garanti altına alan kurallar */
         .form-control option {
             background-color: #11141a !important;
             color: #ffffff !important;
-            padding: 12px;
+            padding: 12px !important;
         }
 
         .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
@@ -63,6 +62,14 @@
         
         .action-buttons { display: flex; gap: 1rem; }
         
+        /* ÇIKTI VE YAZDIRMA (PDF) TASARIMI: Raporun harika görünmesini sağlar */
+        @media print {
+            body * { visibility: hidden; background: white !important; color: black !important; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 30px; font-family: 'Inter', sans-serif; }
+            .no-print { display: none !important; }
+        }
+
         @media (max-width: 768px) {
             .test-card { padding: 1.5rem !important; }
             .form-grid { grid-template-columns: 1fr !important; gap: 0rem; }
@@ -76,7 +83,6 @@
 </head>
 <body>
 
-    <!-- Üst Menü (Navbar) -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
@@ -95,7 +101,6 @@
         </div>
     </nav>
 
-    <!-- Test Alanı -->
     <div class="test-container">
         <div class="test-card">
             <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
@@ -123,7 +128,6 @@
                         </div>
                     </div>
 
-                    <!-- Doğrudan Bölge Seçimi -->
                     <div class="form-group">
                         <label>Bulunduğunuz Coğrafi Bölge</label>
                         <select id="form-bolge" class="form-control" required>
@@ -138,7 +142,6 @@
                         </select>
                     </div>
 
-                    <!-- Bölgeye Göre Filtrelenen Eksiksiz 81 İl -->
                     <div class="form-group">
                         <label>Bulunduğunuz Şehir (İl)</label>
                         <select id="form-sehir" class="form-control" required>
@@ -174,25 +177,65 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
 
-            <!-- Lüks Sonuç Ekranı Modülü -->
             <div id="result-panel" class="result-panel">
-                <div class="animated-counter-box">
+                <div id="print-area">
+                    <div style="border-bottom: 2px solid #ef4444; padding-bottom: 15px; margin-bottom: 20px; text-align: center;">
+                        <h1 style="margin: 0; color: #ef4444; font-size: 24px; font-weight: 800; letter-spacing: 1px;">HANTARISK TIBBİ ANALİZ RAPORU</h1>
+                        <p style="margin: 5px 0 0 0; color: #666; font-size: 12px;">Klinik Karar Destek ve Yapay Zeka Teşhis Modülü</p>
+                    </div>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 14px;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold; width: 25%;">Hasta Adı Soyadı:</td>
+                            <td id="pdf-ad" style="padding: 8px; border: 1px solid #ddd;">-</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold; width: 25%;">Tarih / Saat:</td>
+                            <td id="pdf-tarih" style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Yaş / Cinsiyet:</td>
+                            <td id="pdf-yas-cinsiyet" style="padding: 8px; border: 1px solid #ddd;">-</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Coğrafi Konum:</td>
+                            <td id="pdf-lokasyon" style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Maruziyet Öyküsü:</td>
+                            <td id="pdf-cevre" colspan="3" style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                    </table>
+
+                    <div style="background: #fdf2f2; border: 1px solid #f59e0b; padding: 20px; border-radius: 6px; text-align: center; margin-bottom: 25px;">
+                        <div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold;">Hesaplanan Kritik Risk Skoru</div>
+                        <div id="pdf-skor" style="font-size: 36px; font-weight: 800; color: #ef4444; margin: 5px 0;">%0</div>
+                        <div id="pdf-badge" style="display: inline-block; padding: 4px 15px; background: #ef4444; color: white; border-radius: 20px; font-weight: bold; font-size: 14px;">-</div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="border-left: 4px solid #ef4444; padding-left: 10px; margin-bottom: 10px; color: #111;">Hekim Klinik Destek Önerileri</h3>
+                        <ul id="pdf-oneriler" style="padding-left: 20px; margin: 0; line-height: 1.6; color: #333;"></ul>
+                    </div>
+
+                    <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 40px; font-size: 11px; color: #777; text-align: center;">
+                        * Bu rapor HantaRisk otomasyon algoritmaları tarafından oluşturulmuştur. Kesin tıbbi teşhis yerine geçmez. Doğrulama için laboratuvar (PCR / Seroloji) testleri yapılmalıdır.
+                    </div>
+                </div>
+                
+                <div class="animated-counter-box no-print">
                     <div id="animated-score" class="animated-score">%0</div>
                     <div class="score-label">Yapay Zeka Klinik Risk Skoru</div>
                 </div>
                 
-                <div style="text-align: center;">
+                <div style="text-align: center;" class="no-print">
                     <div id="risk-badge" class="risk-badge">HESAPLANIYOR</div>
                 </div>
 
-                <div class="oneriler-title">
+                <div class="oneriler-title no-print">
                     <i class="fa-solid fa-stethoscope text-gradient"></i> Klinik Karar Destek Önerileri:
                 </div>
-                <ul id="oneriler-list" class="oneriler-list"></ul>
+                <ul id="oneriler-list" class="oneriler-list no-print"></ul>
 
-                <div class="action-buttons">
-                    <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-pdf"></i> Tıbbi Raporu PDF İndir</button>
-                    <a id="btn-emergency" href="https://maps.google.com/?q=en+yakin+hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
+                <div class="action-buttons no-print">
+                    <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-pdf"></i> Resmi Tıbbi Raporu PDF İndir</button>
+                    <a id="btn-emergency" href="https://maps.google.com" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
                 </div>
             </div>
         </div>
@@ -213,14 +256,17 @@
         const bolgeSelect = document.getElementById('form-bolge');
         const sehirSelect = document.getElementById('form-sehir');
 
-        // Bölge Seçildiğinde İlgili İlleri Sıralayan Fonksiyon
+        // Bölge Seçildiğinde İlleri Görünür Kılan javascript Entegrasyonu
         bolgeSelect.addEventListener('change', function() {
             const secilenBolge = this.value;
             sehirSelect.innerHTML = '<option value="">Şehir Seçiniz...</option>';
             
             if(secilenBolge && turkiyeBolgeSehirEşleşmesi[secilenBolge]) {
                 turkiyeBolgeSehirEşleşmesi[secilenBolge].forEach(il => {
-                    sehirSelect.innerHTML += `<option value="${il}">${il}</option>`;
+                    let opt = document.createElement('option');
+                    opt.value = il;
+                    opt.innerHTML = il;
+                    sehirSelect.appendChild(opt);
                 });
             } else {
                 sehirSelect.innerHTML = '<option value="">Önce Bölge Seçiniz...</option>';
@@ -295,16 +341,24 @@
                     onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.7rem; color:var(--primary); margin-right:8px;"></i> ${oneri}</li>`;
                 });
 
+                // --- Gelişmiş Tıbbi PDF Bilgilerini Doldurma ---
+                document.getElementById('pdf-ad').innerText = payload.ad;
+                document.getElementById('pdf-tarih').innerText = new Date().toLocaleString('tr-TR');
+                document.getElementById('pdf-yas-cinsiyet').innerText = `${payload.yas} / ${payload.cinsiyet}`;
+                document.getElementById('pdf-lokasyon').innerText = `${payload.sehir} (İl) / ${payload.bolge} Bölgesi`;
+                document.getElementById('pdf-cevre').innerText = document.getElementById('form-cevre').options[document.getElementById('form-cevre').selectedIndex].text;
+                document.getElementById('pdf-skor').innerText = `%${targetScore}`;
+                document.getElementById('pdf-badge').innerText = riskSeviye;
+
+                const pdfOneriler = document.getElementById('pdf-oneriler');
+                pdfOneriler.innerHTML = '';
+                varsayilanOneriler.forEach(oneri => {
+                    pdfOneriler.innerHTML += `<li>${oneri}</li>`;
+                });
+
+                // Resmi PDF Olarak Yazdır / Kaydet Butonu
                 document.getElementById('btn-pdf').onclick = function() {
-                    let raporIcerik = `HANTARISK TÜRKİYE KLİNİK KARAR DESTEK RAPORU\n=================================================\nHasta Adı Soyadı: ${payload.ad}\nYaş / Cinsiyet: ${payload.yas} / ${payload.cinsiyet}\nLokasyon: ${payload.sehir} / ${payload.bolge} Bölgesi\nÇevresel Öykü: ${payload.cevre_tipi}\n=================================================\nKLİNİK RİSK SKORU: %${targetScore}\nRİSK SEVİYESİ: ${riskSeviye}\n=================================================\nHEKİM TAVSİYE VE ÖNERİLERİ:\n`;
-                    varsayilanOneriler.forEach((o, index) => { raporIcerik += `${index + 1}. ${o}\n`; });
-                    raporIcerik += `\n* Bu rapor yapay zeka algoritması ile üretilmiştir. Kesin tanı için laboratuvar doğrulaması şarttır.`;
-                    
-                    const blob = new Blob([raporIcerik], { type: "text/plain;charset=utf-8" });
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `HantaRisk_Turkiye_Rapor_${payload.ad.replace(/\s+/g, '_')}.txt`;
-                    link.click();
+                    window.print(); // Tarayıcının resmi, çizelgeli PDF yazdırma ekranını çağırır!
                 };
             });
         });
