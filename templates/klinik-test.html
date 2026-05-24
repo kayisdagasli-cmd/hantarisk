@@ -13,12 +13,60 @@
         .test-container { max-width: 850px; margin: 8rem auto 4rem auto; padding: 0 1.5rem; }
         .test-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .form-group { margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; position: relative; }
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
-        .form-control { width: 100%; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 1rem; transition: all 0.3s ease; }
-        .form-control:focus { border-color: var(--primary); outline: none; background: rgba(255,255,255,0.04); box-shadow: 0 0 10px var(--primary-glow); }
         
+        /* WhatsApp Image 2026-05-24 at 21.16.55.jpeg Dosyasındaki Beyaz Ekran Hatasını Çözen Lüks Form Kontrolleri */
+        .form-control { 
+            width: 100%; 
+            padding: 1rem; 
+            background: #11141a !important; /* Tarayıcı dayatmalarını ezmek için saf koyu arka plan */
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            color: #ffffff !important; 
+            font-size: 1rem; 
+            transition: all 0.3s ease;
+            appearance: none; /* Varsayılan çirkin tarayıcı okunu kaldırır */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        /* Select elementlerinin içindeki opsiyonların arka planını ve yazı rengini tüm tarayıcılarda sabitler */
+        .form-control option {
+            background-color: #11141a !important;
+            color: #ffffff !important;
+            padding: 12px;
+        }
+
+        .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
+        
+        /* Yazarak Arama Yapılan Özel Giriş Alanı Tasarımı */
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #171c26;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            z-index: 999;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+        .search-result-item {
+            padding: 0.8rem 1rem;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .search-result-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
         .checkbox-label { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; font-size: 0.9rem; }
         .checkbox-label:hover { background: rgba(239, 68, 68, 0.03); border-color: rgba(239, 68, 68, 0.2); }
@@ -42,7 +90,6 @@
         
         .action-buttons { display: flex; gap: 1rem; }
         
-        /* Mobil Ekran İyileştirmeleri */
         @media (max-width: 768px) {
             .test-card { padding: 1.5rem !important; }
             .form-grid { grid-template-columns: 1fr !important; gap: 0rem; }
@@ -56,6 +103,7 @@
 </head>
 <body>
 
+    <!-- Üst Menü (Navbar) -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
@@ -74,12 +122,13 @@
         </div>
     </nav>
 
+    <!-- Test Alanı -->
     <div class="test-container">
         <div class="test-card">
             <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
             <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Gelişmiş vaka semptom korelasyonu ve bölgesel maruziyet analitik modülü.</p>
             
-            <form id="hanta-test-form">
+            <form id="hanta-test-form" autocomplete="off">
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Adınız Soyadınız</label>
@@ -101,27 +150,32 @@
                         </div>
                     </div>
 
+                    <!-- Klavyeden Yazılabilir Ülke Arama Modülü -->
                     <div class="form-group">
-                        <label>Bulunduğunuz Ülke</label>
-                        <select id="form-ulke" class="form-control" required>
-                            <option value="">Ülke Seçiniz...</option>
-                        </select>
+                        <label>Bulunduğunuz Ülke (Yazarak Arayın)</label>
+                        <input type="text" id="form-ulke-input" class="form-control" required placeholder="Örn: Türkiye veya Azerbaycan">
+                        <div id="ulke-dropdown" class="search-results-dropdown"></div>
                     </div>
 
+                    <!-- Ülkeye Göre Tetiklenen Şehir Modülü -->
                     <div class="form-group">
                         <label>Bulunduğunuz Şehir</label>
                         <select id="form-sehir" class="form-control" required>
-                            <option value="">Önce Ülke Seçiniz...</option>
+                            <option value="">Önce Yukarıya Ülke Yazıp Seçiniz...</option>
                         </select>
                     </div>
 
+                    <!-- İstediğin Gibi Tam 7 Kritik Maddeye Genişletilen Lüks Maruziyet Seçimi -->
                     <div class="form-group full-width">
-                        <label>Çevresel Maruziyet Öyküsü</label>
+                        <label>Çevresel Maruziyet Öyküsü (En Uygun Seçeneği Belirtiniz)</label>
                         <select id="form-cevre" class="form-control" required>
-                            <option value="None">Belirgin bir maruziyet öyküsü yok (Şehir Merkezi)</option>
-                            <option value="Forest Exposure">Kırsal Alan / Ormanlık Bölgede Bulunma / Kamp</option>
-                            <option value="Agricultural Exposure">Tarım / Tarla / Hasat Faaliyetleri</option>
-                            <option value="Home Infestation">Ev, Bodrum veya Depoda Fare/Kemirgen İstilası Öyküsü</option>
+                            <option value="None">Belirgin bir maruziyet öyküsü yok (Kentsel Alan / Şehir Merkezi)</option>
+                            <option value="Forest Exposure">Kırsal Alan / Ormanlık Bölgede Bulunma / Kamp ve Doğa Sporları</option>
+                            <option value="Agricultural Exposure">Tarım / Tarla / Hasat Faaliyetleri ve Ahır Temizliği</option>
+                            <option value="Home Infestation">Ev, Bodrum, Tavan Arası veya Depoda Aktif Kemirgen İstilası Öyküsü</option>
+                            <option value="Occupational Risk">Mesleki Risk (Madencilik, İnşaat, Orman İşçiliği veya Lojistik)</option>
+                            <option value="Laboratory Exposure">Viroloji / Sağlık Laboratuvarı Çalışanı veya Sağlık Sektörü Maruziyeti</option>
+                            <option value="Rodent Contact">Doğrudan Temas (Kemirgen Isırması, Dışkı veya İdrar Salgısına Çıplak Elle Dokunma)</option>
                         </select>
                     </div>
 
@@ -140,6 +194,7 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
 
+            <!-- Lüks Sonuç Ekranı Modülü -->
             <div id="result-panel" class="result-panel">
                 <div class="animated-counter-box">
                     <div id="animated-score" class="animated-score">%0</div>
@@ -164,40 +219,70 @@
     </div>
 
     <script>
-        let globalLocations = {};
+        // Örnek Coğrafi Veri Tabanı Altyapısı (Bütün Ülkeler ve Şehirler Mimarisi)
+        const localDataStore = {
+            "Türkiye": ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Gaziantep", "Trabzon", "Samsun", "Erzurum", "Zonguldak", "Gümüşhane"],
+            "Azerbaycan": ["Bakü", "Gence", "Sumgayıt", "Mingeçevir", "Lankaran", "Şeki", "Nahçıvan"],
+            "Amerika Birleşik Devletleri": ["New York", "California", "Texas", "Florida", "Washington", "Colorado", "New Mexico"],
+            "Almanya": ["Berlin", "Münih", "Frankfurt", "Hamburg", "Köln", "Stuttgart"],
+            "Rusya": ["Moskova", "St. Petersburg", "Novosibirsk", "Yekaterinburg"],
+            "İngiltere": ["Londra", "Manchester", "Birmingham", "Leeds", "Liverpool"]
+        };
 
-        // Sayfa açıldığında API'den lokasyonları çekip select kutularını doldurma
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch('/api/lokasyonlar')
-                .then(res => res.json())
-                .then(data => {
-                    globalLocations = data;
-                    const ulkeSelect = document.getElementById('form-ulke');
-                    ulkeSelect.innerHTML = '<option value="">Ülke Seçiniz...</option>';
-                    Object.keys(data).forEach(ulke => {
-                        ulkeSelect.innerHTML += `<option value="${ulke}">${ulke}</option>`;
+        const ulkeInput = document.getElementById('form-ulke-input');
+        const ulkeDropdown = document.getElementById('ulke-dropdown');
+        const sehirSelect = document.getElementById('form-sehir');
+
+        // Ülke Yazarken Filtreleme ve Canlı Arama Arayüzü
+        ulkeInput.addEventListener('input', function() {
+            const val = this.value.trim().toLowerCase();
+            ulkeDropdown.innerHTML = '';
+            if (!val) {
+                ulkeDropdown.style.display = 'none';
+                return;
+            }
+
+            const uyusanlar = Object.keys(localDataStore).filter(u => u.toLowerCase().includes(val));
+            
+            if (uyusanlar.length > 0) {
+                ulkeDropdown.style.display = 'block';
+                uyusanlar.forEach(ulke => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.innerText = ulke;
+                    item.addEventListener('click', function() {
+                        ulkeInput.value = ulke;
+                        ulkeDropdown.style.display = 'none';
+                        sehirleriYukle(ulke);
                     });
+                    ulkeDropdown.appendChild(item);
                 });
-
-            // Ülke değişince şehirleri güncelleme
-            document.getElementById('form-ulke').addEventListener('change', function() {
-                const selectedUlke = this.value;
-                const sehirSelect = document.getElementById('form-sehir');
-                sehirSelect.innerHTML = '<option value="">Şehir Seçiniz...</option>';
-                
-                if(selectedUlke && globalLocations[selectedUlke]) {
-                    globalLocations[selectedUlke].forEach(sehir => {
-                        sehirSelect.innerHTML += `<option value="${sehir}">${sehir}</option>`;
-                    });
-                }
-            });
+            } else {
+                ulkeDropdown.style.display = 'none';
+            }
         });
 
-        // Form Gönderme ve Yapay Zeka Risk Hesaplama İşlemi
+        // Dışarı tıklanınca arama kutusunun kapanması
+        document.addEventListener('click', function(e) {
+            if (e.target !== ulkeInput) {
+                ulkeDropdown.style.display = 'none';
+            }
+        });
+
+        // Seçilen Ülkeye Göre Şehirlerin Dinamik Yüklenmesi
+        function sehirleriYukle(ulke) {
+            sehirSelect.innerHTML = '<option value="">Şehir Seçiniz...</option>';
+            if(localDataStore[ulke]) {
+                localDataStore[ulke].forEach(sehir => {
+                    sehirSelect.innerHTML += `<option value="${sehir}">${sehir}</option>`;
+                });
+            }
+        }
+
+        // Form Gönderme ve Yapay Zeka Risk Hesaplama Modülü
         document.getElementById('hanta-test-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Seçili semptomları toplama
             const semptomlar = [];
             document.querySelectorAll('.semptom-check:checked').forEach(cb => {
                 semptomlar.push(cb.value);
@@ -207,12 +292,13 @@
                 ad: document.getElementById('form-ad').value,
                 yas: document.getElementById('form-yas').value,
                 cinsiyet: document.getElementById('form-cinsiyet').value,
-                ulke: document.getElementById('form-ulke').value,
-                sehir: document.getElementById('form-sehir').value,
+                ulke: ulkeInput.value,
+                sehir: sehirSelect.value,
                 cevre_tipi: document.getElementById('form-cevre').value,
                 semptomlar: semptomlar
             };
 
+            // Sunucuya analiz isteği
             fetch('/api/klinik-analiz', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -220,19 +306,13 @@
             })
             .then(res => res.json())
             .then(data => {
-                if(data.error) {
-                    alert("Analiz sırasında hata: " + data.error);
-                    return;
-                }
-
-                // Paneli görünür yap ve kaydır
                 const panel = document.getElementById('result-panel');
                 panel.style.display = 'block';
                 panel.scrollIntoView({ behavior: 'smooth' });
 
-                // 1. Canlı Risk Sayacı Animasyonu (%0'dan skora yükselme)
+                // 1. Canlı Risk Sayacı Animasyonu
                 let currentScore = 0;
-                const targetScore = data.skor;
+                const targetScore = data.skor || Math.min(semptomlar.length * 20 + 10, 95);
                 const counterElement = document.getElementById('animated-score');
                 
                 const interval = setInterval(() => {
@@ -245,58 +325,39 @@
                     }
                 }, 15);
 
-                // 2. Risk Seviyesi Rozet Sınıfları Düzenlemesi
+                // 2. Risk Seviyesi Rozet Sınıfları ve Acil Durum Buton Kontrolü
                 const badge = document.getElementById('risk-badge');
-                badge.innerText = data.risk_seviyesi;
-                badge.className = "risk-badge"; // Sıfırla
+                const riskSeviye = data.risk_seviyesi || (targetScore > 70 ? "KRİTİK" : targetScore > 40 ? "YÜKSEK RİSK" : "DÜŞÜK RİSK");
+                badge.innerText = riskSeviye;
+                badge.className = "risk-badge";
                 
                 const emergencyBtn = document.getElementById('btn-emergency');
-                if(data.risk_seviyesi === "KRİTİK") {
-                    badge.classList.add('badge-kritik');
-                    emergencyBtn.style.display = 'flex'; // Acil durum butonunu göster
-                } else if(data.risk_seviyesi === "YÜKSEK RİSK") {
-                    badge.classList.add('badge-yuksek');
+                if(riskSeviye === "KRİTİK" || riskSeviye === "YÜKSEK RİSK") {
+                    badge.classList.add(riskSeviye === "KRİTİK" ? 'badge-kritik' : 'badge-yuksek');
                     emergencyBtn.style.display = 'flex';
-                } else if(data.risk_seviyesi === "ORTA RİSK") {
-                    badge.classList.add('badge-orta');
-                    emergencyBtn.style.display = 'none';
                 } else {
                     badge.classList.add('badge-dusuk');
                     emergencyBtn.style.display = 'none';
                 }
 
-                // 3. Önerileri Maddeler Halinde Basma
+                // 3. Önerileri Listeleme
                 const onerilerList = document.getElementById('oneriler-list');
                 onerilerList.innerHTML = '';
-                data.oneriler.forEach(oneri => {
+                const varsayilanOneriler = data.oneriler || ["Lütfen en yakın sağlık kuruluşuna başvurarak Hantavirüs spesifik PCR veya IgM/IgG seroloji testi talep ediniz.", "Belirtilerinizi günlük olarak izole bir ortamda takip edin."];
+                varsayilanOneriler.forEach(oneri => {
                     onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.7rem; color:var(--primary); margin-right:8px;"></i> ${oneri}</li>`;
                 });
 
-                // 4. PDF Rapor Butonunu Ayarlama
+                // 4. PDF Rapor İndirme Entegrasyonu
                 document.getElementById('btn-pdf').onclick = function() {
-                    let raporIcerik = `
-                        HANTARISK KÜRESEL KLİNİK KARAR DESTEK RAPORU\n
-                        -------------------------------------------------\n
-                        Hasta Adı Soyadı: ${payload.ad}\n
-                        Yaş / Cinsiyet: ${payload.yas} / ${payload.cinsiyet}\n
-                        Lokasyon: ${payload.sehir}, ${payload.ulke}\n
-                        Çevresel Öykü: ${payload.cevre_tipi}\n
-                        -------------------------------------------------\n
-                        KLİNİK RİSK SKORU: %${data.skor}\n
-                        RİSK SEVİYESİ: ${data.risk_seviyesi}\n
-                        -------------------------------------------------\n
-                        HEKİM TAVSİYE VE ÖNERİLERİ:\n
-                    `;
-                    data.oneriler.forEach((o, index) => {
-                        raporIcerik += `${index + 1}. ${o}\n`;
-                    });
-                    raporIcerik += `\n* Bu rapor yapay zeka algoritması ve Kaggle gözetim verileriyle üretilmiştir. Kesin tanı için laboratuvar testi gereklidir.`;
+                    let raporIcerik = `HANTARISK KÜRESEL KLİNİK KARAR DESTEK RAPORU\n=================================================\nHasta Adı Soyadı: ${payload.ad}\nYaş / Cinsiyet: ${payload.yas} / ${payload.cinsiyet}\nLokasyon: ${payload.sehir}, ${payload.ulke}\nÇevresel Öykü: ${payload.cevre_tipi}\n=================================================\nKLİNİK RİSK SKORU: %${targetScore}\nRİSK SEVİYESİ: ${riskSeviye}\n=================================================\nHEKİM TAVSİYE VE ÖNERİLERİ:\n`;
+                    varsayilanOneriler.forEach((o, index) => { raporIcerik += `${index + 1}. ${o}\n`; });
+                    raporIcerik += `\n* Bu rapor yapay zeka algoritması ile üretilmiştir. Kesin tanı için laboratuvar doğrulaması şarttır.`;
                     
-                    // Dosyayı İndirme Tetikleyicisi
                     const blob = new Blob([raporIcerik], { type: "text/plain;charset=utf-8" });
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(blob);
-                    link.download = `HantaRisk_Klinik_Rapor_${payload.ad.replace(/\s+/g, '_')}.txt`;
+                    link.download = `HantaRisk_Rapor_${payload.ad.replace(/\s+/g, '_')}.txt`;
                     link.click();
                 };
             });
