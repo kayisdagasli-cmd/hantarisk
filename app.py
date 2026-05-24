@@ -54,27 +54,33 @@ init_db()
 
 def hesapla_risk_skoru(semptom_siddeti, temas_tipi, yas):
     skor = 0
-    if semptom_siddeti == 'Şiddetli':
+    s = (semptom_siddeti or '').lower()
+    if 'iddetli' in s or 'severe' in s:
         skor += 50
-    elif semptom_siddeti == 'Orta':
+    elif 'orta' in s or 'medium' in s:
         skor += 30
     else:
         skor += 10
 
-    if temas_tipi == 'Kırsal Alan':
+    t = (temas_tipi or '').lower()
+    if 'k' in t and 'rsal' in t:
         skor += 30
-    elif temas_tipi == 'Tarım':
+    elif 'tar' in t:
         skor += 25
-    elif temas_tipi == 'Mesken':
+    elif 'mesken' in t:
         skor += 15
     else:
         skor += 5
 
-    if yas and yas > 60:
-        skor += 20
-    elif yas and yas < 12:
-        skor += 15
-    else:
+    try:
+        yas = int(yas) if yas else 30
+        if yas > 60:
+            skor += 20
+        elif yas < 12:
+            skor += 15
+        else:
+            skor += 5
+    except:
         skor += 5
 
     return min(skor, 100)
@@ -125,15 +131,19 @@ def vaka_ekle():
 
         risk_skoru = hesapla_risk_skoru(semptom_siddeti, temas_tipi, yas_int)
 
-        db = get_db()
-        db.execute(
-            '''INSERT INTO vakalar
-               (il, ilce, tani_tarihi, semptom_siddeti, temas_tipi, yas, cinsiyet, risk_skoru, durum, notlar)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (il, ilce, tani_tarihi, semptom_siddeti, temas_tipi, yas_int, cinsiyet, risk_skoru, 'Yeni', notlar)
-        )
-        db.commit()
-        db.close()
+        try:
+            db = get_db()
+            db.execute(
+                '''INSERT INTO vakalar
+                   (il, ilce, tani_tarihi, semptom_siddeti, temas_tipi, yas, cinsiyet, risk_skoru, durum, notlar)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                (il, ilce, tani_tarihi, semptom_siddeti, temas_tipi, yas_int, cinsiyet, risk_skoru, 'Yeni', notlar)
+            )
+            db.commit()
+            db.close()
+        except Exception as e:
+            app.logger.error(f"DB error: {e}")
+            return f"Veritabani hatasi: {e}", 500
         return redirect(url_for('index'))
 
     return render_template('vaka_ekle.html')
