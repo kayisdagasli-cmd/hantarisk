@@ -1,154 +1,282 @@
 import os
 import sqlite3
 import csv
+import requests  # Canlı haberleri çekmek için ekledik
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(
     __name__,
-    template_folder='templates',  # Klasör ismini 'templates' olarak güncelledik
-    static_folder='static'        # Klasör ismini 'static' olarak güncelledik
+    template_folder='templates',
+    static_folder='static'
 )
 
-DATABASE = 'veritabani.db'
+DATABASE = 'hantavirus_surveillance.db'
 CSV_FILE = 'global_hantavirus_surveillance_dataset_2026.csv'
+
+# --- NEWS API GÜVENLİ ENTEGRASYONU ---
+NEWS_API_KEY = "ddd61a230ac34540b8d44e6f6cdf82a2" 
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
-def init_db_from_kaggle_csv():
-    """Kaggle veri setindeki gerçek sütun isimlerine göre veritabanını modelleyen fonksiyon"""
+def init_db():
+    """Veritabanı tablolarını premium ve esnek mimariye uygun şekilde sıfırdan kurar."""
     conn = get_db()
     cursor = conn.cursor()
     
+    cursor.execute('DROP TABLE IF EXISTS vaka_verileri')
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS iller (
+        CREATE TABLE vaka_verileri (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            il_adi TEXT UNIQUE,
-            vaka_sayisi INTEGER DEFAULT 0,
-            risk_seviyesi TEXT DEFAULT 'Düşük'
+            country TEXT,
+            region TEXT,
+            report_date TEXT,
+            virus_strain TEXT,
+            transmission_type TEXT,
+            exposure_source TEXT,
+            patient_age INTEGER,
+            gender TEXT,
+            symptoms TEXT,
+            hospitalization TEXT,
+            fatality TEXT
         )
     ''')
     
-    # Türkiye'nin 81 ili (Harita ve veri tutarlılığı için baz liste)
-    turkiye_iller = [
-        "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir",
-        "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli",
-        "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari",
-        "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir",
-        "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir",
-        "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat",
-        "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman",
-        "Kırıkkale", "Batman", "Şırnak", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
-    ]
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS test_gecmisi (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ad_soyad TEXT,
+            yas INTEGER,
+            cinsiyet TEXT,
+            ulke TEXT,
+            sehir TEXT,
+            cevre_tipi TEXT,
+            risk_skoru REAL,
+            risk_seviyesi TEXT,
+            tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
     
-    # Önce tüm illeri 0 vaka ile başlat
-    for il in turkiye_iller:
-        cursor.execute('INSERT OR IGNORE INTO iller (il_adi, vaka_sayisi, risk_seviyesi) VALUES (?, 0, "Düşük")', (il,))
-    
-    # Kaggle CSV dosyasını orijinal İngilizce başlıklarına göre güvenle tara
     if os.path.exists(CSV_FILE):
-        with open(CSV_FILE, mode='r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                # Veri setindeki 'region' veya 'country' alanından şehir isimlerini eşleştiriyoruz
-                bölge = row.get('region', '').strip()
+        try:
+            with open(CSV_FILE, mode='r', encoding='utf-8', errors='ignore') as f:
+                reader = csv.DictReader(f)
+                vakalar = []
+                for row in reader:
+                    vakalar.append((
+                        row.get('country', '').strip(),
+                        row.get('region', '').strip(),
+                        row.get('report_date', '').strip(),
+                        row.get('virus_strain', '').strip(),
+                        row.get('transmission_type', '').strip(),
+                        row.get('exposure_source', '').strip(),
+                        int(row.get('patient_age', 0)) if row.get('patient_age') else 0,
+                        row.get('gender', '').strip(),
+                        row.get('symptoms', '').strip(),
+                        row.get('hospitalization', '').strip(),
+                        row.get('fatality', '').strip()
+                    ))
                 
-                # Eğer veri setindeki satır bizim 81 ilimizden biriyle eşleşiyorsa vaka sayısını artır
-                for il in turkiye_iller:
-                    if il.lower() in bölge.lower():
-                        # Her eşleşen kayıt için vaka sayısını 1 artır ve risk durumunu hesapla
-                        cursor.execute('SELECT vaka_sayisi FROM iller WHERE il_adi = ?', (il,))
-                        current_vaka = cursor.fetchone()['vaka_sayisi'] + 1
-                        
-                        # Vaka yoğunluğuna göre dinamik risk seviyesi belirleme
-                        if current_vaka > 15: risk = 'Kritik'
-                        elif current_vaka > 8: risk = 'Yüksek'
-                        elif current_vaka > 3: risk = 'Orta'
-                        else: risk = 'Düşük'
-                        
-                        cursor.execute('''
-                            UPDATE iller 
-                            SET vaka_sayisi = ?, risk_seviyesi = ? 
-                            WHERE il_adi = ?
-                        ''', (current_vaka, risk, il))
-                        break
-                        
+                if vakalar:
+                    cursor.executemany('''
+                        INSERT INTO vaka_verileri 
+                        (country, region, report_date, virus_strain, transmission_type, exposure_source, patient_age, gender, symptoms, hospitalization, fatality)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', vakalar)
+        except Exception as e:
+            print("Veri seti yüklenirken hata oluştu:", e)
+            
     conn.commit()
     conn.close()
 
-# Başlangıçta veri setini hatasız yükle
-init_db_from_kaggle_csv()
+init_db()
+
+# ================= PAGES (SAYFALAR) =================
 
 @app.route('/')
-def index():
+def ana_sayfa():
     return render_template('index.html')
 
-@app.route('/api/istatistikler')
-def istatistikler():
+@app.route('/dashboard')
+def pano_sayfasi():
+    return render_template('dashboard.html')
+
+@app.route('/surveillance')
+def harita_sayfasi():
+    return render_template('harita.html')
+
+@app.route('/klinik-test')
+def klinik_test_sayfasi():
+    return render_template('klinik_test.html')
+
+@app.route('/profil')
+def profil_sayfasi():
+    return render_template('profil.html')
+
+# ================= API ENDPOINTS =================
+
+@app.route('/api/guncel-haberler')
+def get_guncel_haberler():
+    """News API üzerinden dünya genelindeki Hantavirüs ve salgın haberlerini canlı çeker."""
+    if not NEWS_API_KEY or NEWS_API_KEY == "BURAYA_NEWS_API_ANAHTARINI_YAZ":
+        return jsonify({
+            "articles": [
+                {
+                    "title": "Küresel Hantavirüs Sürveyans Raporu Yayınlandı",
+                    "description": "2026 yılı küresel verilerine göre kemirgen kaynaklı maruziyetlerde tarım alanları başı çekiyor.",
+                    "source": {"name": "CDC Gözetim"},
+                    "url": "#"
+                }
+            ]
+        })
+    
+    url = f"https://newsapi.org/v2/everything?q=hantavirus+OR+hanta+OR+virus&sortBy=publishedAt&language=en&apiKey={NEWS_API_KEY}"
+    try:
+        response = requests.get(url, timeout=5)
+        return jsonify(response.json())
+    except Exception as e:
+        return jsonify({"articles": [], "error": str(e)})
+
+@app.route('/api/lokasyonlar')
+def get_lokasyonlar():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT il_adi, vaka_sayisi, risk_seviyesi FROM iller ORDER BY vaka_sayisi DESC')
-    iller_data = [dict(row) for row in cursor.fetchall()]
-    
-    toplam_degerlendirme = sum(item['vaka_sayisi'] for item in iller_data)
-    kritik_vaka = sum(item['vaka_sayisi'] for item in iller_data if item['risk_seviyesi'] == 'Kritik')
-    
-    # Eğer veri setinde henüz TR ili yoksa arayüzün çökmemesi için varsayılan ata
-    en_cok_etkilenen = "İzmir"
-    if iller_data and iller_data[0]['vaka_sayisi'] > 0:
-        en_cok_etkilenen = iller_data[0]['il_adi']
-        
+    cursor.execute('SELECT DISTINCT country, region FROM vaka_verileri WHERE country != "" ORDER BY country, region')
+    rows = cursor.fetchall()
     conn.close()
+    
+    data = {}
+    for row in rows:
+        ulke = row['country']
+        sehir = row['region']
+        if ulke not in data:
+            data[ulke] = []
+        if sehir and sehir not in data[ulke]:
+            data[ulke].append(sehir)
+            
+    return jsonify(data)
+
+@app.route('/api/klinik-analiz', methods=['POST'])
+def klinik_analiz_yap():
+    data = request.json or {}
+    ad = data.get('ad', 'Anonim')
+    yas = int(data.get('yas', 30))
+    cinsiyet = data.get('cinsiyet', 'Belirtilmedi')
+    ulke = data.get('ulke', '')
+    sehir = data.get('sehir', '')
+    cevre_tipi = data.get('cevre_tipi', '')
+    secilen_semptomlar = data.get('semptomlar', [])
+    
+    semptom_skoru = 0
+    for s in secilen_semptomlar:
+        s_low = s.lower()
+        if 'fever' in s_low or 'ateş' in s_low: semptom_skoru += 30
+        elif 'breathing' in s_low or 'nefes' in s_low or 'cough' in s_low: semptom_skoru += 35
+        elif 'muscle' in s_low or 'kas' in s_low: semptom_skoru += 15
+        elif 'headache' in s_low or 'baş' in s_low: semptom_skoru += 10
+        elif 'nausea' in s_low or 'vomiting' in s_low or 'bulantı' in s_low: semptom_skoru += 10
+        
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) as vaka_sayisi FROM vaka_verileri WHERE country = ?', (ulke,))
+    ulke_vaka_sayisi = cursor.fetchone()['vaka_sayisi']
+    
+    cursor.execute('SELECT COUNT(*) as bolge_vaka FROM vaka_verileri WHERE country = ? AND region = ?', (ulke, sehir))
+    sehir_vaka_sayisi = cursor.fetchone()['bolge_vaka']
+    
+    cursor.execute('SELECT COUNT(*) as cevre_vaka FROM vaka_verileri WHERE country = ? AND exposure_source = ?', (ulke, cevre_tipi))
+    cevre_vaka_sayisi = cursor.fetchone()['cevre_vaka']
+    
+    bolge_efekti = min(sehir_vaka_sayisi * 5, 20) if sehir_vaka_sayisi > 0 else (min(ulke_vaka_sayisi * 0.5, 10))
+    cevre_efekti = min(cevre_vaka_sayisi * 4, 15)
+    
+    toplam_skor = min((semptom_skoru * 0.65) + bolge_efekti + cevre_efekti, 100)
+    
+    if toplam_skor >= 75: 
+        seviye = "KRİTİK"
+        oneriler = [
+            "En yakın tam teşekküllü sağlık kuruluşuna acilen başvurun.",
+            "Solunum sıkıntısı ihtimaline karşı yoğun bakım desteği olan bir hastane tercih edilmelidir.",
+            "Bulunduğunuz ortamı derhal havalandırın ve maskesiz girmeyin."
+        ]
+    elif toplam_skor >= 50: 
+        seviye = "YÜKSEK RİSK"
+        oneriler = [
+            "Klinik semptomlarınız ciddileşebilir, bir enfeksiyon hastalıkları uzmanına görünün.",
+            "Ateş ve kas ağrılarınızı yakından takip edin.",
+            "Kemirgen dışkısı barındırabilecek kapalı alanlardan uzak durun."
+        ]
+    elif toplam_skor >= 25: 
+        seviye = "ORTA RİSK"
+        oneriler = [
+            "Belirtileriniz genel enfeksiyon bulguları içermektedir, dinlenin ve bol sıvı tüketin.",
+            "Son 2-4 hafta içinde açık alan veya ambar maruziyetiniz olduysa aile hekiminizi bilgilendirin."
+        ]
+    else: 
+        seviye = "DÜŞÜK RİSK"
+        oneriler = [
+            "Hantavirüs uyumlu spesifik bir bulguya rastlanmadı.",
+            "Genel hijyen kurallarına dikkat etmeniz ve açık alanlarda eldiven/maske kullanmanız önerilir."
+        ]
+        
+    cursor.execute('''
+        INSERT INTO test_gecmisi (ad_soyad, yas, cinsiyet, ulke, sehir, cevre_tipi, risk_skoru, risk_seviyesi)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (ad, yas, cinsiyet, ulke, sehir, cevre_tipi, round(toplam_skor, 1), seviye))
+    
+    conn.commit()
+    conn.close()
+    
     return jsonify({
-        "iller": iller_data,
-        "toplam_degerlendirme": toplam_degerlendirme if toplam_degerlendirme > 0 else 12, # Arayüzün boş kalmaması için alt limit
-        "kritik_vaka": kritik_vaka if kritik_vaka > 0 else 4,
-        "en_cok_etkilenen_bolge": en_cok_etkilenen
+        "skor": round(toplam_skor, 1),
+        "risk_seviyesi": seviye,
+        "oneriler": oneriler
     })
 
-@app.route('/api/risk-analizi', methods=['POST'])
-def risk_analizi():
-    data = request.json
-    skor = 0
-    
-    maruziyet = data.get('maruziyet', [])
-    if 'kemirgen' in maruziyet: skor += 30
-    if 'acik_alan' in maruziyet: skor += 15
-    if 'toz' in maruziyet: skor += 20
-        
-    belirtiler = data.get('belirtiler', [])
-    if 'ateş' in belirtiler: skor += 25
-    if 'bas_agrisi' in belirtiler: skor += 15
-    if 'nefes' in belirtiler: skor += 35
+@app.route('/api/kullanici-gecmis')
+def get_kullanici_gecmis():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT ad_soyad, yas, cinsiyet, ulke, sehir, risk_skoru, risk_seviyesi, tarih FROM test_gecmisi ORDER BY id DESC LIMIT 3')
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in rows])
 
-    skor = min(skor, 100)
+@app.route('/api/pano-istatistikler')
+def get_pano_istatistikler():
+    conn = get_db()
+    cursor = conn.cursor()
     
-    if skor >= 75: seviye = "KRİTİK"
-    elif skor >= 50: seviye = "YÜKSEK"
-    elif skor >= 25: seviye = "ORTA"
-    else: seviye = "DÜŞÜK"
-        
-    il = data.get('il')
-    if il:
-        conn = get_db()
-        cursor = conn.cursor()
-        db_risk = "Düşük"
-        if seviye in ["KRİTİK", "YÜKSEK"]: db_risk = "Kritik" if seviye == "KRİTİK" else "Yüksek"
-        elif seviye == "ORTA": db_risk = "Orta"
-        
-        cursor.execute('''
-            UPDATE iller 
-            SET vaka_sayisi = vaka_sayisi + 1, risk_seviyesi = ? 
-            WHERE il_adi = ?
-        ''', (db_risk, il))
-        conn.commit()
-        conn.close()
-
+    cursor.execute('SELECT country, COUNT(*) as vaka_sayisi FROM vaka_verileri GROUP BY country ORDER BY vaka_sayisi DESC LIMIT 1')
+    top_country_row = cursor.fetchone()
+    top_country = top_country_row['country'] if top_country_row else "-"
+    
+    cursor.execute('SELECT exposure_source, COUNT(*) as vaka FROM vaka_verileri GROUP BY exposure_source ORDER BY vaka DESC LIMIT 1')
+    top_source_row = cursor.fetchone()
+    top_source = top_source_row['exposure_source'] if top_source_row else "-"
+    
+    aylar_isimler = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+    trend_data = {isim: 0 for isim in aylar_isimler}
+    
+    cursor.execute('SELECT report_date FROM vaka_verileri')
+    dates = cursor.fetchall()
+    for d in dates:
+        date_str = d['report_date']
+        if len(date_str) >= 10:
+            try:
+                ay_index = int(date_str.split('-')[1]) - 1
+                if 0 <= ay_index < 12:
+                    trend_data[aylar_isimler[ay_index]] += 1
+            except:
+                pass
+                
+    conn.close()
     return jsonify({
-        "skor": skor,
-        "risk_seviyesi": seviye
+        "en_cok_vaka_ulke": top_country,
+        "en_yaygin_maruziyet": top_source,
+        "aylik_trend": trend_data
     })
 
 if __name__ == '__main__':
