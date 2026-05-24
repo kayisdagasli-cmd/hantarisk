@@ -11,7 +11,7 @@ CSV_FILE = 'global_hantavirus_surveillance_dataset_2026.csv'
 NEWS_API_KEY = 'bc24ec87c1264c3986a45480749bd00c'
 
 def veritabanı_hazırla():
-    # Veritabanı ve tabloyu oluştur
+    # Veritabanı ve tabloları oluştur
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     cursor.execute('''
@@ -47,10 +47,10 @@ def veritabanı_hazırla():
         try:
             df = pd.read_csv(CSV_FILE)
             
-            # CSV sütun isimlerini küçük/büyük harf duyarlılığına karşı temizle
+            # CSV sütun isimlerini temizle ve küçük harfe çevir
             df.columns = [c.strip().lower() for c in df.columns]
             
-            # Sütun eşleştirme haritası (Olası isim varyasyonları için koruma)
+            # Sütun eşleştirme haritası (Olası varyasyonlar için koruma)
             ulke_col = 'country' if 'country' in df.columns else df.columns[0]
             sehir_col = 'city' if 'city' in df.columns else df.columns[1]
             enlem_col = 'latitude' if 'latitude' in df.columns else (df.columns[2] if 'lat' in ''.join(df.columns) else df.columns[2])
@@ -73,13 +73,13 @@ def veritabanı_hazırla():
             conn.commit()
             print("Kaggle veri seti başarıyla veritabanına aktarıldı.")
         except Exception as e:
-            print(print(f"CSV yükleme hatası: {e}"))
+            print(f"CSV yükleme hatası: {e}")
     conn.close()
 
 # Uygulama başlarken veritabanını doldur
 veritabanı_hazırla()
 
-# --- SAYFA YÖNLENDİRMELERİ (SAYFALAR) ---
+# --- SAYFA YÖNLENDİRMELERİ ---
 @app.route('/')
 def ana_sayfa():
     return render_template('index.html')
@@ -100,7 +100,7 @@ def dashboard_sayfasi():
 def surveillance_sayfasi():
     return render_template('surveillance.html')
 
-# --- API UÇ NOKTALARI (API ENDPOINTS) ---
+# --- API UÇ NOKTALARI ---
 
 @app.route('/api/guncel-haberler')
 def guncel_haberler():
@@ -135,7 +135,6 @@ def harita_noktalari():
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        # Şehir bazlı vaka yoğunluğunu ve ortalama koordinatları hesapla
         cursor.execute("""
             SELECT ulke, sehir, AVG(enlem), AVG(boylam), COUNT(*) 
             FROM vakalar 
@@ -164,13 +163,11 @@ def grafik_verileri():
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         
-        # Yıllara göre trend
         cursor.execute("SELECT yil, COUNT(*) FROM vakalar GROUP BY yil ORDER BY yil")
         yil_rows = cursor.fetchall()
         yillar = [r[0] for r in yil_rows]
         vaka_sayilari = [r[1] for r in yil_rows]
 
-        # Klinik sonuçlar
         cursor.execute("SELECT sonuc, COUNT(*) FROM vakalar GROUP BY sonuc")
         sonuc_rows = cursor.fetchall()
         
@@ -192,9 +189,7 @@ def grafik_verileri():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/klinik-analiz', {
-    'methods': ['POST']
-})
+@app.route('/api/klinik-analiz', methods=['POST'])
 def klinik_analiz():
     try:
         verisi = request.json
@@ -206,23 +201,22 @@ def klinik_analiz():
         cevre_tipi = verisi.get('cevre_tipi', '')
         semptomlar = verisi.get('semptomlar', [])
 
-        # 1. Biyoistatistiksel Risk Puanlaması Tabanı
-        skor = 10  # Temel maruziyet tabanı
+        skor = 10  # Temel başlangıç puanı
         
-        # Semptom ağırlıkları
+        # Semptom ağırlık hesaplaması
         if "Fever" in semptomlar: skor += 25
         if "Breathing Shortness" in semptomlar: skor += 30
         if "Muscle Aches" in semptomlar: skor += 15
         if "Headache" in semptomlar: skor += 10
         if "Nausea/Vomiting" in semptomlar: skor += 10
 
-        # Çevresel çarpanlar
+        # Çevresel maruziyet ek puanı
         if cevre_tipi in ["Forest Exposure", "Agricultural Exposure"]:
             skor += 10
         elif cevre_tipi == "Home Infestation":
             skor += 15
 
-        # Tarihsel yoğunluk kontrolü (Veri setindeki o şehre ait vaka sayısı çarpanı)
+        # Veri setindeki o şehre ait tarihsel vaka kontrolü
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM vakalar WHERE ulke=? AND sehir=?", (ulke, sehir))
@@ -232,28 +226,25 @@ def klinik_analiz():
         if bolgesel_vaka > 20: skor += 10
         elif bolgesel_vaka > 5: skor += 5
 
-        # Skoru %100 ile sınırla
         if skor > 100: skor = 100
 
-        # Risk Seviyesi Belirleme
         if skor >= 75: risk_seviyesi = "KRİTİK"
         elif skor >= 50: risk_seviyesi = "YÜKSEK RİSK"
         elif skor >= 25: risk_seviyesi = "ORTA RİSK"
         else: risk_seviyesi = "DÜŞÜK RİSK"
 
-        # Tıbbi Öneriler Algoritması
         oneriler = ["Kemirgenlerin bulunduğu ortamlardan ve atıklardan uzak durun."]
         if risk_seviyesi in ["KRİTİK", "YÜKSEK RİSK"]:
             oneriler.append("ACİL DURUM: En yakın tam teşekküllü sağlık kuruluşuna başvurun.")
             oneriler.append("Hekiminize hantavirüs olası maruziyet senaryonuzu ve semptomlarınızı aktarın.")
-            oneriler.append("Solunum destek üniteleri gerekebileceğinden istirahat edin ve efor sarf etmeyin.")
+            oneriler.append("Solunum destek üniteleri gerekebileceğinden istirahat edin.")
         elif risk_seviyesi == "ORTA RİSK":
             oneriler.append("Semptomların seyrini (özellikle ateş ve nefes darlığı) sonraki 48 saat yakından izleyin.")
             oneriler.append("Bulunduğunuz kapalı mekanları maske takarak havalandırın.")
         else:
-            oneriler.append("Genel hijyen kurallarına uymanız ve açık havada gıda güvenliğine dikkat etmeniz yeterlidir.")
+            oneriler.append("Genel hijyen kurallarına uymanız yeterlidir.")
 
-        # Sonucu veritabanındaki son 3 test kaydına kaydet
+        # Testi veritabanına kaydet
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
