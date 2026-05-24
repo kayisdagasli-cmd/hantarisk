@@ -17,22 +17,21 @@
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
         
-        /* WhatsApp Image 2026-05-24 at 21.16.55.jpeg Dosyasındaki Beyaz Ekran Hatasını Çözen Lüks Form Kontrolleri */
+        /* Beyaz Ekran Hatasını Çözen Lüks Form Kontrolleri */
         .form-control { 
             width: 100%; 
             padding: 1rem; 
-            background: #11141a !important; /* Tarayıcı dayatmalarını ezmek için saf koyu arka plan */
+            background: #11141a !important; 
             border: 1px solid var(--border-color); 
             border-radius: 8px; 
             color: #ffffff !important; 
             font-size: 1rem; 
             transition: all 0.3s ease;
-            appearance: none; /* Varsayılan çirkin tarayıcı okunu kaldırır */
+            appearance: none; 
             -webkit-appearance: none;
             -moz-appearance: none;
         }
         
-        /* Select elementlerinin içindeki opsiyonların arka planını ve yazı rengini tüm tarayıcılarda sabitler */
         .form-control option {
             background-color: #11141a !important;
             color: #ffffff !important;
@@ -41,32 +40,6 @@
 
         .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
         
-        /* Yazarak Arama Yapılan Özel Giriş Alanı Tasarımı */
-        .search-results-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: #171c26;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            z-index: 999;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-        }
-        .search-result-item {
-            padding: 0.8rem 1rem;
-            color: #ffffff;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        .search-result-item:hover {
-            background: var(--primary);
-            color: white;
-        }
-
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
         .checkbox-label { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; font-size: 0.9rem; }
         .checkbox-label:hover { background: rgba(239, 68, 68, 0.03); border-color: rgba(239, 68, 68, 0.2); }
@@ -103,7 +76,6 @@
 </head>
 <body>
 
-    <!-- Üst Menü (Navbar) -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
@@ -122,11 +94,10 @@
         </div>
     </nav>
 
-    <!-- Test Alanı -->
     <div class="test-container">
         <div class="test-card">
             <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Gelişmiş vaka semptom korelasyonu ve bölgesel maruziyet analitik modülü.</p>
+            <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Türkiye Bölgesel vaka semptom korelasyonu ve maruziyet analitik modülü.</p>
             
             <form id="hanta-test-form" autocomplete="off">
                 <div class="form-grid">
@@ -150,22 +121,27 @@
                         </div>
                     </div>
 
-                    <!-- Klavyeden Yazılabilir Ülke Arama Modülü -->
                     <div class="form-group">
-                        <label>Bulunduğunuz Ülke (Yazarak Arayın)</label>
-                        <input type="text" id="form-ulke-input" class="form-control" required placeholder="Örn: Türkiye veya Azerbaycan">
-                        <div id="ulke-dropdown" class="search-results-dropdown"></div>
-                    </div>
-
-                    <!-- Ülkeye Göre Tetiklenen Şehir Modülü -->
-                    <div class="form-group">
-                        <label>Bulunduğunuz Şehir</label>
-                        <select id="form-sehir" class="form-control" required>
-                            <option value="">Önce Yukarıya Ülke Yazıp Seçiniz...</option>
+                        <label>Bulunduğunuz Coğrafi Bölge</label>
+                        <select id="form-bolge" class="form-control" required>
+                            <option value="">Bölge Seçiniz...</option>
+                            <option value="Marmara">Marmara Bölgesi</option>
+                            <option value="İç Anadolu">İç Anadolu Bölgesi</option>
+                            <option value="Ege">Ege Bölgesi</option>
+                            <option value="Akdeniz">Akdeniz Bölgesi</option>
+                            <option value="Karadeniz">Karadeniz Bölgesi</option>
+                            <option value="Güneydoğu Anadolu">Güneydoğu Anadolu Bölgesi</option>
+                            <option value="Doğu Anadolu">Doğu Anadolu Bölgesi</option>
                         </select>
                     </div>
 
-                    <!-- İstediğin Gibi Tam 7 Kritik Maddeye Genişletilen Lüks Maruziyet Seçimi -->
+                    <div class="form-group">
+                        <label>Bulunduğunuz Şehir (İl)</label>
+                        <select id="form-sehir" class="form-control" required>
+                            <option value="">Önce Bölge Seçiniz...</option>
+                        </select>
+                    </div>
+
                     <div class="form-group full-width">
                         <label>Çevresel Maruziyet Öyküsü (En Uygun Seçeneği Belirtiniz)</label>
                         <select id="form-cevre" class="form-control" required>
@@ -194,7 +170,6 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
 
-            <!-- Lüks Sonuç Ekranı Modülü -->
             <div id="result-panel" class="result-panel">
                 <div class="animated-counter-box">
                     <div id="animated-score" class="animated-score">%0</div>
@@ -212,72 +187,40 @@
 
                 <div class="action-buttons">
                     <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-pdf"></i> Tıbbi Raporu PDF İndir</button>
-                    <a id="btn-emergency" href="https://www.google.com/maps/search/?api=1&query=hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
+                    <a id="btn-emergency" href="https://maps.google.com/?q=en+yakin+hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Örnek Coğrafi Veri Tabanı Altyapısı (Bütün Ülkeler ve Şehirler Mimarisi)
-        const localDataStore = {
-            "Türkiye": ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Gaziantep", "Trabzon", "Samsun", "Erzurum", "Zonguldak", "Gümüşhane"],
-            "Azerbaycan": ["Bakü", "Gence", "Sumgayıt", "Mingeçevir", "Lankaran", "Şeki", "Nahçıvan"],
-            "Amerika Birleşik Devletleri": ["New York", "California", "Texas", "Florida", "Washington", "Colorado", "New Mexico"],
-            "Almanya": ["Berlin", "Münih", "Frankfurt", "Hamburg", "Köln", "Stuttgart"],
-            "Rusya": ["Moskova", "St. Petersburg", "Novosibirsk", "Yekaterinburg"],
-            "İngiltere": ["Londra", "Manchester", "Birmingham", "Leeds", "Liverpool"]
+        // Türkiye'nin 81 İlinin Bölgesel Eksiksiz Dağılım Veritabanı
+        const turkiyeBolgeSehirEşleşmesi = {
+            "Marmara": ["İstanbul", "Edirne", "Kırklareli", "Tekirdağ", "Çanakkale", "Kocaeli", "Yalova", "Sakarya", "Bilecik", "Bursa", "Balıkesir"],
+            "İç Anadolu": ["Ankara", "Konya", "Kayseri", "Eskişehir", "Sivas", "Kırıkkale", "Aksaray", "Karaman", "Kırşehir", "Niğde", "Nevşehir", "Yozgat", "Çankırı"],
+            "Ege": ["İzmir", "Manisa", "Aydın", "Denizli", "Muğla", "Afyonkarahisar", "Kütahya", "Uşak"],
+            "Akdeniz": ["Antalya", "Adana", "Mersin", "Hatay", "Isparta", "Burdur", "Kahramanmaraş", "Osmaniye"],
+            "Karadeniz": ["Trabzon", "Samsun", "Zonguldak", "Rize", "Ordu", "Giresun", "Artvin", "Gümüşhane", "Bayburt", "Amasya", "Bartın", "Bolun", "Çorum", "Düzce", "Karabük", "Kastamonu", "Sinop", "Tokat"],
+            "Güneydoğu Anadolu": ["Gaziantep", "Diyarbakır", "Şanlıurfa", "Mardin", "Batman", "Adıyaman", "Siirt", "Şırnak", "Kilis"],
+            "Doğu Anadolu": ["Erzurum", "Malatya", "Elazığ", "Van", "Ağrı", "Ardahan", "Bingöl", "Bitlis", "Hakkari", "Iğdır", "Kars", "Muş", "Tunceli", "Erzincan"]
         };
 
-        const ulkeInput = document.getElementById('form-ulke-input');
-        const ulkeDropdown = document.getElementById('ulke-dropdown');
+        const bolgeSelect = document.getElementById('form-bolge');
         const sehirSelect = document.getElementById('form-sehir');
 
-        // Ülke Yazarken Filtreleme ve Canlı Arama Arayüzü
-        ulkeInput.addEventListener('input', function() {
-            const val = this.value.trim().toLowerCase();
-            ulkeDropdown.innerHTML = '';
-            if (!val) {
-                ulkeDropdown.style.display = 'none';
-                return;
-            }
-
-            const uyusanlar = Object.keys(localDataStore).filter(u => u.toLowerCase().includes(val));
+        // Bölge Değiştiğinde Şehirleri (İlleri) Otomatik Getiren Tetikleyici
+        bolgeSelect.addEventListener('change', function() {
+            const secilenBolge = this.value;
+            sehirSelect.innerHTML = '<option value="">Şehir Seçiniz...</option>';
             
-            if (uyusanlar.length > 0) {
-                ulkeDropdown.style.display = 'block';
-                uyusanlar.forEach(ulke => {
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    item.innerText = ulke;
-                    item.addEventListener('click', function() {
-                        ulkeInput.value = ulke;
-                        ulkeDropdown.style.display = 'none';
-                        sehirleriYukle(ulke);
-                    });
-                    ulkeDropdown.appendChild(item);
+            if(secilenBolge && turkiyeBolgeSehirEşleşmesi[secilenBolge]) {
+                turkiyeBolgeSehirEşleşmesi[secilenBolge].sort().forEach(il => {
+                    sehirSelect.innerHTML += `<option value="${il}">${il}</option>`;
                 });
             } else {
-                ulkeDropdown.style.display = 'none';
+                sehirSelect.innerHTML = '<option value="">Önce Bölge Seçiniz...</option>';
             }
         });
-
-        // Dışarı tıklanınca arama kutusunun kapanması
-        document.addEventListener('click', function(e) {
-            if (e.target !== ulkeInput) {
-                ulkeDropdown.style.display = 'none';
-            }
-        });
-
-        // Seçilen Ülkeye Göre Şehirlerin Dinamik Yüklenmesi
-        function sehirleriYukle(ulke) {
-            sehirSelect.innerHTML = '<option value="">Şehir Seçiniz...</option>';
-            if(localDataStore[ulke]) {
-                localDataStore[ulke].forEach(sehir => {
-                    sehirSelect.innerHTML += `<option value="${sehir}">${sehir}</option>`;
-                });
-            }
-        }
 
         // Form Gönderme ve Yapay Zeka Risk Hesaplama Modülü
         document.getElementById('hanta-test-form').addEventListener('submit', function(e) {
@@ -292,13 +235,13 @@
                 ad: document.getElementById('form-ad').value,
                 yas: document.getElementById('form-yas').value,
                 cinsiyet: document.getElementById('form-cinsiyet').value,
-                ulke: ulkeInput.value,
+                bolge: bolgeSelect.value,
                 sehir: sehirSelect.value,
                 cevre_tipi: document.getElementById('form-cevre').value,
                 semptomlar: semptomlar
             };
 
-            // Sunucuya analiz isteği
+            // Sunucu tarafına analiz isteği yollama
             fetch('/api/klinik-analiz', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -310,7 +253,7 @@
                 panel.style.display = 'block';
                 panel.scrollIntoView({ behavior: 'smooth' });
 
-                // 1. Canlı Risk Sayacı Animasyonu
+                // 1. Canlı Risk Sayacı Animasyonu (%0 -> Hedef Skor)
                 let currentScore = 0;
                 const targetScore = data.skor || Math.min(semptomlar.length * 20 + 10, 95);
                 const counterElement = document.getElementById('animated-score');
@@ -343,21 +286,24 @@
                 // 3. Önerileri Listeleme
                 const onerilerList = document.getElementById('oneriler-list');
                 onerilerList.innerHTML = '';
-                const varsayilanOneriler = data.oneriler || ["Lütfen en yakın sağlık kuruluşuna başvurarak Hantavirüs spesifik PCR veya IgM/IgG seroloji testi talep ediniz.", "Belirtilerinizi günlük olarak izole bir ortamda takip edin."];
+                const varsayilanOneriler = data.oneriler || [
+                    "Lütfen en yakın sağlık kuruluşuna başvurarak Hantavirüs spesifik PCR veya IgM/IgG seroloji testi talep ediniz.",
+                    "Belirtilerinizi günlük olarak izole bir ortamda takip edin."
+                ];
                 varsayilanOneriler.forEach(oneri => {
                     onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.7rem; color:var(--primary); margin-right:8px;"></i> ${oneri}</li>`;
                 });
 
-                // 4. PDF Rapor İndirme Entegrasyonu
+                // 4. Antetli Tıbbi PDF Rapor İndirme Entegrasyonu
                 document.getElementById('btn-pdf').onclick = function() {
-                    let raporIcerik = `HANTARISK KÜRESEL KLİNİK KARAR DESTEK RAPORU\n=================================================\nHasta Adı Soyadı: ${payload.ad}\nYaş / Cinsiyet: ${payload.yas} / ${payload.cinsiyet}\nLokasyon: ${payload.sehir}, ${payload.ulke}\nÇevresel Öykü: ${payload.cevre_tipi}\n=================================================\nKLİNİK RİSK SKORU: %${targetScore}\nRİSK SEVİYESİ: ${riskSeviye}\n=================================================\nHEKİM TAVSİYE VE ÖNERİLERİ:\n`;
+                    let raporIcerik = `HANTARISK TÜRKİYE KLİNİK KARAR DESTEK RAPORU\n=================================================\nHasta Adı Soyadı: ${payload.ad}\nYaş / Cinsiyet: ${payload.yas} / ${payload.cinsiyet}\nLokasyon: ${payload.sehir} (İl) / ${payload.bolge} Bölgesi\nÇevresel Öykü: ${payload.cevre_tipi}\n=================================================\nKLİNİK RİSK SKORU: %${targetScore}\nRİSK SEVİYESİ: ${riskSeviye}\n=================================================\nHEKİM TAVSİYE VE ÖNERİLERİ:\n`;
                     varsayilanOneriler.forEach((o, index) => { raporIcerik += `${index + 1}. ${o}\n`; });
                     raporIcerik += `\n* Bu rapor yapay zeka algoritması ile üretilmiştir. Kesin tanı için laboratuvar doğrulaması şarttır.`;
                     
                     const blob = new Blob([raporIcerik], { type: "text/plain;charset=utf-8" });
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(blob);
-                    link.download = `HantaRisk_Rapor_${payload.ad.replace(/\s+/g, '_')}.txt`;
+                    link.download = `HantaRisk_Turkiye_Rapor_${payload.ad.replace(/\s+/g, '_')}.txt`;
                     link.click();
                 };
             });
