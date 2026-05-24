@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Üst Menünün Kaymasını Engelleyen Taş Gibi Sabit CSS */
+        /* Üst Menünün Kaymasını Engelleyen Sabit CSS */
         .navbar {
             position: fixed;
             top: 0;
@@ -106,7 +106,6 @@
 </head>
 <body>
 
-    <!-- Üst Menü -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
@@ -122,7 +121,6 @@
         </div>
     </nav>
 
-    <!-- Test Alanı -->
     <div class="test-container">
         <div class="test-card">
             <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
@@ -150,7 +148,6 @@
                         </div>
                     </div>
 
-                    <!-- Bölge Seçimi -->
                     <div class="form-group">
                         <label>Bulunduğunuz Coğrafi Bölge</label>
                         <select id="form-bolge" class="form-control" required>
@@ -165,7 +162,6 @@
                         </select>
                     </div>
 
-                    <!-- Yazarak Arama Alanı -->
                     <div class="form-group">
                         <label>Bulunduğunuz Şehir (Yazarak Arayın)</label>
                         <input type="text" id="form-sehir-input" class="form-control" required placeholder="Örn: İstanbul, Ankara, Gaziantep...">
@@ -173,7 +169,7 @@
                     </div>
 
                     <div class="form-group full-width">
-                        <label>Çevresel Maruziyet Öyküsü (En Uygun Seçeneği Belirtiniz)</label>
+                        <label>Çevresel Maruziyet Öyküsü</label>
                         <select id="form-cevre" class="form-control" required>
                             <option value="None">Belirgin bir maruziyet öyküsü yok (Kentsel Alan / Şehir Merkezi)</option>
                             <option value="Forest Exposure">Kırsal Alan / Ormanlık Bölgede Bulunma / Kamp ve Doğa Sporları</option>
@@ -200,7 +196,6 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
 
-            <!-- Canlı Sonuç Ekranı -->
             <div id="result-panel" class="result-panel">
                 <div class="animated-counter-box">
                     <div id="animated-score" class="animated-score">%0</div>
@@ -217,7 +212,7 @@
                 <ul id="oneriler-list" class="oneriler-list"></ul>
 
                 <div class="action-buttons">
-                    <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Düzenli Sayfada Aç</button>
+                    <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Aç</button>
                     <a id="btn-emergency" href="https://maps.google.com/?q=en+yakin+hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
                 </div>
             </div>
@@ -233,6 +228,15 @@
             "Karadeniz": ["Amasya", "Artvin", "Bartın", "Bayburt", "Bolu", "Çorum", "Düzce", "Giresun", "Gümüşhane", "Karabük", "Kastamonu", "Ordu", "Rize", "Samsun", "Sinop", "Tokat", "Trabzon", "Zonguldak"],
             "Güneydoğu Anadolu": ["Adıyaman", "Batman", "Diyarbakır", "Gaziantep", "Kilis", "Mardin", "Şanlıurfa", "Siirt", "Şırnak"],
             "Doğu Anadolu": ["Ağrı", "Ardahan", "Bingöl", "Bitlis", "Elazığ", "Erzincan", "Erzurum", "Hakkari", "Iğdır", "Kars", "Malatya", "Muş", "Tunceli", "Van"]
+        };
+
+        // İngilizce Gelen Semptom Değerlerini Lüks Türkçeye Çeviren Sözlük Veritabanı
+        const semptomTurkceKarsiliklari = {
+            "Fever": "Ani Yüksek Ateş",
+            "Breathing Shortness": "Nefes Darlığı / Akciğer Sıkışması",
+            "Muscle Aches": "Şiddetli Kas / Sırt Ağrıları",
+            "Headache": "Akut Baş Ağrısı",
+            "Nausea/Vomiting": "Bulantı / Kusma"
         };
 
         const bolgeSelect = document.getElementById('form-bolge');
@@ -255,7 +259,6 @@
             }
 
             aranacakHavuz = [...new Set(aranacakHavuz)].sort();
-
             const eslesenler = aranacakHavuz.filter(s => s.toLowerCase().indexOf(arananKelime) > -1);
 
             if(eslesenler.length > 0) {
@@ -268,7 +271,6 @@
                         sehirInput.value = sehir;
                         sehirDropdown.style.display = 'none';
                         
-                        // Görseldeki "Yozgat / Ege Bölgesi" gibi yanlış eşleşmeleri çözen otomatik atama mantığı
                         for(let b in tumSehirlerDizisi) {
                             if(tumSehirlerDizisi[b].includes(sehir)) {
                                 bolgeSelect.value = b;
@@ -354,18 +356,20 @@
                     onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.7rem; color:var(--primary); margin-right:8px;"></i> ${oneri}</li>`;
                 });
 
-                // --- SENİN İSTEDİĞİN GÖZE HİTAP EDEN SÜPER DÜZENLİ RAPOR SAYFASI MODÜLÜ ---
+                // Rapor Butonunun Tıklanma Aksiyonu
                 document.getElementById('btn-pdf').onclick = function() {
                     const cevreMetni = document.getElementById('form-cevre').options[document.getElementById('form-cevre').selectedIndex].text;
-                    const semptomMetni = semptomlar.join(', ') || 'Belirtilmedi';
                     const tarihMetni = new Date().toLocaleString('tr-TR');
+                    
+                    // Semptomları Sözlükten Geçirerek %100 Türkçe Hale Getirme Mantığı
+                    const turkceSemptomDizisi = semptomlar.map(s => semptomTurkceKarsiliklari[s] || s);
+                    const semptomMetni = turkceSemptomDizisi.join(', ') || 'Belirtilmedi';
                     
                     let oneriLiElementleri = '';
                     varsayilanOneriler.forEach(o => {
                         oneriLiElementleri += `<li style="margin-bottom:12px; font-size:15px; color:#444;">${o}</li>`;
                     });
 
-                    // Tarayıcıda tertemiz, geniş aralıklı, goze hitap eden yepyeni bir sayfa açar!
                     const yeniPencere = window.open('', '_blank');
                     yeniPencere.document.write(`
                         <html>
@@ -440,7 +444,7 @@
                                 </ul>
 
                                 <div class="not-alani">
-                                    * Bu doküman HantaRisk yazılım algoritmaları tarafından klinik veri korelasyonu kullanılarak üretilmiştir. Kesin tıbbi tanı ve teşhis yerine geçmez. Doğrulama için spesifik laboratuvar testleri yapılmalıdır.
+                                    * Bu doküman HantaRisk yazılım algoritmaları tarafından klinik veri korelasyonu kullanılarak üretilmiştir. Kesin tıbbi tanı yerine geçmez. Laboratuvar doğrulaması önerilir.
                                 </div>
                             </div>
                         </body>
