@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hekim / Kullanıcı Profili - HantaRisk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Arka Plan Hücre Animasyonu -->
+    <canvas id="animation-canvas"></canvas>
+
+    <!-- Üst Menü / Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
+            </a>
+            <div class="nav-menu">
+                <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
+                <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
+                <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
+                <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
+                <a href="/profil" class="nav-link active"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+            </div>
+            <div class="system-status">
+                <span class="status-pulse"></span> SISTEM: <strong style="color:var(--success)">ONLINE</strong>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profil İçerik Alanı -->
+    <main class="hero-section">
+        <div class="hero-container-center">
+            
+            <!-- Kullanıcı Kartı -->
+            <div class="premium-card" style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: var(--primary);">
+                    <i class="fa-solid fa-user-md"></i>
+                </div>
+                <div>
+                    <h2 style="margin-bottom: 0.3rem;">Sürveyans Sorumlusu</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;"><i class="fa-solid fa-id-card"></i> Yetki Seviyesi: Geliştirici / Araştırmacı Hekim</p>
+                </div>
+            </div>
+
+            <!-- Geçmiş Test Kayıtları Bölümü -->
+            <div class="premium-card">
+                <div class="card-header-block">
+                    <div class="card-header-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div>
+                        <h2>Son Klinik Analiz Geçmişi</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Sistem tarafından gerçekleştirilen son 3 taramanın veri tabanı kayıtları</p>
+                    </div>
+                </div>
+
+                <!-- Test Kartlarının Listeleneceği Alan -->
+                <div id="gecmis-listesi">
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Kayıtlar veritabanından çekiliyor...
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Sayfa Alt Bilgisi -->
+    <footer class="main-footer">
+        <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
+    </footer>
+
+    <!-- Animasyonun ve Geçmiş Verilerin Yüklenmesi İçin Betik -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Veritabanından test geçmişini çek ve dinamik olarak listele
+            fetch('/api/kullanici-gecmis')
+                .then(res => res.json())
+                .then(data => {
+                    const liste = document.getElementById("gecmis-listesi");
+                    if (data.length === 0) {
+                        liste.innerHTML = `
+                            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--primary);"></i>
+                                Henüz yapılmış bir klinik test kaydı bulunamadı.
+                            </div>`;
+                        return;
+                    }
+
+                    liste.innerHTML = data.map(test => {
+                        // Risk seviyesine göre renk belirleme
+                        let renk = "#10b981"; // Düşük
+                        if(test.risk_seviyesi === "KRİTİK") renk = "#ef4444";
+                        else if(test.risk_seviyesi === "YÜKSEK RİSK") renk = "#f97316";
+                        else if(test.risk_seviyesi === "ORTA RİSK") renk = "#eab308";
+
+                        return `
+                            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                                    <h4 style="color: #fff;"><i class="fa-solid fa-user"></i> ${test.ad_soyad} (${test.yas} Yaş, ${test.cinsiyet})</h4>
+                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">${test.risk_seviyesi} (%${test.risk_skoru})</span>
+                                </div>
+                                <div style="font-size: 0.88rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                                    <span><i class="fa-solid fa-location-dot"></i> ${test.ulke} / ${test.sehir}</span>
+                                    <span><i class="fa-solid fa-calendar-day"></i> ${test.tarih}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join("");
+                })
+                .catch(() => {
+                    document.getElementById("gecmis-listesi").innerHTML = `
+                        <div style="text-align: center; color: var(--primary); padding: 2rem;">
+                            Veri tabanına bağlanırken hata oluştu.
+                        </div>`;
+                });
+        });
+    </script>
+    
+    <!-- O çok sevdiğin fare takip eden virüs animasyonunun script dosyası -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
