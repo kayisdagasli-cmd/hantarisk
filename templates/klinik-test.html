@@ -17,7 +17,7 @@
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
         
-        /* Beyaz Ekran Hatasını Çözen Lüks Form Kontrolleri */
+        /* WhatsApp Image 2026-05-24 at 21.16.55.jpeg Beyaz Ekran Hatasını Çözen Lüks Form Kontrolleri */
         .form-control { 
             width: 100%; 
             padding: 1rem; 
@@ -76,6 +76,7 @@
 </head>
 <body>
 
+    <!-- Üst Menü (Navbar) -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
@@ -94,6 +95,7 @@
         </div>
     </nav>
 
+    <!-- Test Alanı -->
     <div class="test-container">
         <div class="test-card">
             <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
@@ -121,6 +123,7 @@
                         </div>
                     </div>
 
+                    <!-- Doğrudan Bölge Seçimi -->
                     <div class="form-group">
                         <label>Bulunduğunuz Coğrafi Bölge</label>
                         <select id="form-bolge" class="form-control" required>
@@ -135,6 +138,7 @@
                         </select>
                     </div>
 
+                    <!-- Bölgeye Göre Filtrelenen Eksiksiz 81 İl -->
                     <div class="form-group">
                         <label>Bulunduğunuz Şehir (İl)</label>
                         <select id="form-sehir" class="form-control" required>
@@ -170,6 +174,7 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
 
+            <!-- Lüks Sonuç Ekranı Modülü -->
             <div id="result-panel" class="result-panel">
                 <div class="animated-counter-box">
                     <div id="animated-score" class="animated-score">%0</div>
@@ -194,27 +199,27 @@
     </div>
 
     <script>
-        // Türkiye'nin 81 İlinin Bölgesel Eksiksiz Dağılım Veritabanı
+        // Türkiye'nin 81 İlinin Eksiksiz ve Tam Listesi
         const turkiyeBolgeSehirEşleşmesi = {
-            "Marmara": ["İstanbul", "Edirne", "Kırklareli", "Tekirdağ", "Çanakkale", "Kocaeli", "Yalova", "Sakarya", "Bilecik", "Bursa", "Balıkesir"],
-            "İç Anadolu": ["Ankara", "Konya", "Kayseri", "Eskişehir", "Sivas", "Kırıkkale", "Aksaray", "Karaman", "Kırşehir", "Niğde", "Nevşehir", "Yozgat", "Çankırı"],
-            "Ege": ["İzmir", "Manisa", "Aydın", "Denizli", "Muğla", "Afyonkarahisar", "Kütahya", "Uşak"],
-            "Akdeniz": ["Antalya", "Adana", "Mersin", "Hatay", "Isparta", "Burdur", "Kahramanmaraş", "Osmaniye"],
-            "Karadeniz": ["Trabzon", "Samsun", "Zonguldak", "Rize", "Ordu", "Giresun", "Artvin", "Gümüşhane", "Bayburt", "Amasya", "Bartın", "Bolun", "Çorum", "Düzce", "Karabük", "Kastamonu", "Sinop", "Tokat"],
-            "Güneydoğu Anadolu": ["Gaziantep", "Diyarbakır", "Şanlıurfa", "Mardin", "Batman", "Adıyaman", "Siirt", "Şırnak", "Kilis"],
-            "Doğu Anadolu": ["Erzurum", "Malatya", "Elazığ", "Van", "Ağrı", "Ardahan", "Bingöl", "Bitlis", "Hakkari", "Iğdır", "Kars", "Muş", "Tunceli", "Erzincan"]
+            "Marmara": ["Balıkesir", "Bilecik", "Bursa", "Çanakkale", "Edirne", "İstanbul", "Kırklareli", "Kocaeli", "Sakarya", "Tekirdağ", "Yalova"],
+            "İç Anadolu": ["Aksaray", "Ankara", "Çankırı", "Eskişehir", "Karaman", "Kayseri", "Kırıkkale", "Kırşehir", "Konya", "Nevşehir", "Niğde", "Sivas", "Yozgat"],
+            "Ege": ["Afyonkarahisar", "Aydın", "Denizli", "İzmir", "Kütahya", "Manisa", "Muğla", "Uşak"],
+            "Akdeniz": ["Adana", "Antalya", "Burdur", "Hatay", "Isparta", "Kahramanmaraş", "Mersin", "Osmaniye"],
+            "Karadeniz": ["Amasya", "Artvin", "Bartın", "Bayburt", "Bolu", "Çorum", "Düzce", "Giresun", "Gümüşhane", "Karabük", "Kastamonu", "Ordu", "Rize", "Samsun", "Sinop", "Tokat", "Trabzon", "Zonguldak"],
+            "Güneydoğu Anadolu": ["Adıyaman", "Batman", "Diyarbakır", "Gaziantep", "Kilis", "Mardin", "Şanlıurfa", "Siirt", "Şırnak"],
+            "Doğu Anadolu": ["Ağrı", "Ardahan", "Bingöl", "Bitlis", "Elazığ", "Erzincan", "Erzurum", "Hakkari", "Iğdır", "Kars", "Malatya", "Muş", "Tunceli", "Van"]
         };
 
         const bolgeSelect = document.getElementById('form-bolge');
         const sehirSelect = document.getElementById('form-sehir');
 
-        // Bölge Değiştiğinde Şehirleri (İlleri) Otomatik Getiren Tetikleyici
+        // Bölge Seçildiğinde İlgili İlleri Sıralayan Fonksiyon
         bolgeSelect.addEventListener('change', function() {
             const secilenBolge = this.value;
             sehirSelect.innerHTML = '<option value="">Şehir Seçiniz...</option>';
             
             if(secilenBolge && turkiyeBolgeSehirEşleşmesi[secilenBolge]) {
-                turkiyeBolgeSehirEşleşmesi[secilenBolge].sort().forEach(il => {
+                turkiyeBolgeSehirEşleşmesi[secilenBolge].forEach(il => {
                     sehirSelect.innerHTML += `<option value="${il}">${il}</option>`;
                 });
             } else {
@@ -241,7 +246,6 @@
                 semptomlar: semptomlar
             };
 
-            // Sunucu tarafına analiz isteği yollama
             fetch('/api/klinik-analiz', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -253,7 +257,6 @@
                 panel.style.display = 'block';
                 panel.scrollIntoView({ behavior: 'smooth' });
 
-                // 1. Canlı Risk Sayacı Animasyonu (%0 -> Hedef Skor)
                 let currentScore = 0;
                 const targetScore = data.skor || Math.min(semptomlar.length * 20 + 10, 95);
                 const counterElement = document.getElementById('animated-score');
@@ -268,7 +271,6 @@
                     }
                 }, 15);
 
-                // 2. Risk Seviyesi Rozet Sınıfları ve Acil Durum Buton Kontrolü
                 const badge = document.getElementById('risk-badge');
                 const riskSeviye = data.risk_seviyesi || (targetScore > 70 ? "KRİTİK" : targetScore > 40 ? "YÜKSEK RİSK" : "DÜŞÜK RİSK");
                 badge.innerText = riskSeviye;
@@ -283,7 +285,6 @@
                     emergencyBtn.style.display = 'none';
                 }
 
-                // 3. Önerileri Listeleme
                 const onerilerList = document.getElementById('oneriler-list');
                 onerilerList.innerHTML = '';
                 const varsayilanOneriler = data.oneriler || [
@@ -294,9 +295,8 @@
                     onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.7rem; color:var(--primary); margin-right:8px;"></i> ${oneri}</li>`;
                 });
 
-                // 4. Antetli Tıbbi PDF Rapor İndirme Entegrasyonu
                 document.getElementById('btn-pdf').onclick = function() {
-                    let raporIcerik = `HANTARISK TÜRKİYE KLİNİK KARAR DESTEK RAPORU\n=================================================\nHasta Adı Soyadı: ${payload.ad}\nYaş / Cinsiyet: ${payload.yas} / ${payload.cinsiyet}\nLokasyon: ${payload.sehir} (İl) / ${payload.bolge} Bölgesi\nÇevresel Öykü: ${payload.cevre_tipi}\n=================================================\nKLİNİK RİSK SKORU: %${targetScore}\nRİSK SEVİYESİ: ${riskSeviye}\n=================================================\nHEKİM TAVSİYE VE ÖNERİLERİ:\n`;
+                    let raporIcerik = `HANTARISK TÜRKİYE KLİNİK KARAR DESTEK RAPORU\n=================================================\nHasta Adı Soyadı: ${payload.ad}\nYaş / Cinsiyet: ${payload.yas} / ${payload.cinsiyet}\nLokasyon: ${payload.sehir} / ${payload.bolge} Bölgesi\nÇevresel Öykü: ${payload.cevre_tipi}\n=================================================\nKLİNİK RİSK SKORU: %${targetScore}\nRİSK SEVİYESİ: ${riskSeviye}\n=================================================\nHEKİM TAVSİYE VE ÖNERİLERİ:\n`;
                     varsayilanOneriler.forEach((o, index) => { raporIcerik += `${index + 1}. ${o}\n`; });
                     raporIcerik += `\n* Bu rapor yapay zeka algoritması ile üretilmiştir. Kesin tanı için laboratuvar doğrulaması şarttır.`;
                     
