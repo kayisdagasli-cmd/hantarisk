@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hekim / Kullanıcı Profili - HantaRisk</title>
+    <title>Kullanıcı Profili - HantaRisk</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -21,120 +21,97 @@
         .mobile-nav-menu .nav-link { display: flex; align-items: center; gap: 10px; padding: 0.7rem 1rem; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .mobile-nav-menu .nav-link.active { background: rgba(239, 68, 68, 0.1); color: var(--primary); }
 
-        /* Rol Seçim Alanı Stilleri */
-        .profile-card-flex { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; width: 100%; }
-        .role-switcher { display: flex; gap: 0.5rem; background: #11141a; padding: 0.4rem; border-radius: 8px; border: 1px solid var(--border-color); }
-        .role-btn { padding: 0.5rem 1rem; border: none; background: none; color: var(--text-muted); border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; }
-        .role-btn.active.vatandas-active { background: var(--primary); color: white; }
-        .role-btn.active.doktor-active { background: #3b82f6; color: white; }
+        /* Profil Kartı Esneklik Düzeni */
+        .profile-card-flex { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; width: 100%; }
+        
+        /* Durum Kartı Detay Bilgileri */
+        .user-details-row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.9rem; }
+        .user-details-row span { display: flex; align-items: center; gap: 5px; }
 
-        /* Hekim Kısayol Panel Grid Düzeni */
-        .doctor-tools-area { display: none; margin-bottom: 2rem; }
-        .doctor-tools-area.view-active { display: block; }
-        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
-        .tool-box { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 10px; text-align: center; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s ease; }
-        .tool-box:hover { background: rgba(239, 68, 68, 0.02); border-color: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
-
-        /* Mobil Optimizasyonlar */
         @media (max-width: 768px) { 
             .nav-menu, .system-status { display: none; } 
             .hamburger-btn { display: block; } 
             .mobile-nav-menu.show { display: flex; }
-            .profile-card-flex { flex-direction: column; text-align: center; }
-            .role-switcher { width: 100%; justify-content: center; }
-            .tools-grid { grid-template-columns: 1fr; }
+            .profile-card-flex { flex-direction: column; text-align: center; justify-content: center; }
+            .user-details-row { justify-content: center; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Arka Plan Hücre Animasyonu -->
     <canvas id="animation-canvas"></canvas>
 
+    <!-- Üst Menü / Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
                 <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
             </a>
             
+            <!-- Masaüstü Menü Yapısı -->
             <div class="nav-menu">
                 <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
                 <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
                 <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
                 <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
-                <a href="/profil" class="nav-link active"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+                <a href="/profil" class="nav-link active"><i class="fa-solid fa-user"></i> Profilim</a>
             </div>
 
             <div class="system-status">
                 <span class="status-pulse"></span> SISTEM: <strong style="color:var(--success)">ONLINE</strong>
             </div>
 
+            <!-- Mobil Hamburger Butonu -->
             <button id="hamburger-btn" class="hamburger-btn">
                 <i class="fa-solid fa-bars" id="hamburger-icon"></i>
             </button>
         </div>
 
+        <!-- Açılır Mobil Menü Modülü -->
         <div id="mobile-nav-menu" class="mobile-nav-menu">
             <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
             <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
             <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
             <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
-            <a href="/profil" class="nav-link active"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+            <a href="/profil" class="nav-link active"><i class="fa-solid fa-user"></i> Profilim</a>
         </div>
     </nav>
 
+    <!-- Profil İçerik Alanı -->
     <main class="hero-section">
         <div class="hero-container-center">
             
+            <!-- Dinamik Kullanıcı Başlık Kartı -->
             <div class="premium-card" style="margin-bottom: 2rem;">
                 <div class="profile-card-flex">
-                    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                        <div id="profile-avatar-icon" style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: var(--primary); transition: all 0.3s;">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div>
-                            <h2 id="profile-user-title" style="margin-bottom: 0.3rem;">Ahmet Yılmaz</h2>
-                            <p id="profile-user-subtitle" style="color: var(--text-muted); font-size: 0.9rem;"><i class="fa-solid fa-id-card"></i> Yetki Seviyesi: Standart Vatandaş / Hasta</p>
-                        </div>
+                    <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: var(--primary); flex-shrink:0;">
+                        <i class="fa-solid fa-user"></i>
                     </div>
-                    
-                    <div class="role-switcher">
-                        <button id="btn-role-vatandas" class="role-btn active vatandas-active" onclick="switchUserRole('vatandas')">Vatandaş</button>
-                        <button id="btn-role-doktor" class="role-btn" onclick="switchUserRole('doktor')">Hekim / Doktor</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="doctor-tools" class="doctor-tools-area">
-                <div class="premium-card">
-                    <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-kit-medical text-gradient"></i> Hekim Klinik Karar Destek Paneli</h2>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Sürveyans otomasyon sistemleri ve hızlı saha teşhis modülleri.</p>
-                    <div class="tools-grid">
-                        <a href="/klinik-test" class="tool-box">
-                            <i class="fa-solid fa-notes-medical" style="font-size: 2rem; color: #3b82f6; margin-bottom: 0.8rem;"></i>
-                            <strong style="color:#fff;">Hızlı Poliklinik Teşhisi</strong>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Yapay zeka ile yeni hasta olasılık hesabı</span>
-                        </a>
-                        <div class="tool-box" onclick="alert('Yeni Sürveyans Vaka Raporlama Formu Çok Yakında Aktif Olacak!')">
-                            <i class="fa-solid fa-bullhorn" style="font-size: 2rem; color: #10b981; margin-bottom: 0.8rem;"></i>
-                            <strong style="color:#fff;">Yeni Vaka Bildirimi</strong>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Sürveyans haritasına anonim veri gönder</span>
+                    <div id="profile-user-box" style="flex-grow: 1;">
+                        <!-- JS ile doldurulacak dinamik alan -->
+                        <h2 id="profile-name">Analiz Ediliyor...</h2>
+                        <div class="user-details-row" id="profile-details">
+                            <!-- Detaylar buraya gelecek -->
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Geçmiş Test Kayıtları Bölümü -->
             <div class="premium-card">
                 <div class="card-header-block">
                     <div class="card-header-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div>
-                        <h2 id="list-header-title">Son Klinik Analiz Geçmişim</h2>
-                        <p id="list-header-subtitle" style="font-size: 0.85rem; color: var(--text-muted);">Sistem üzerinde gerçekleştirdiğiniz son taramaların güvenli veritabanı kayıtları</p>
+                        <h2>Son 3 Klinik Analiz Geçmişiniz</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Girdiğiniz verilere dayanarak sistem havuzunda eşleşen son 3 tahmin skoru</p>
                     </div>
                 </div>
 
+                <!-- Test Kartlarının Listeleneceği Alan -->
                 <div id="gecmis-listesi">
                     <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        <i class="fa-solid fa-circle-notch fa-spin"></i> Kayıtlar veritabanından çekiliyor...
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Kayıtlar sorgulanıyor...
                     </div>
                 </div>
 
@@ -142,12 +119,14 @@
         </div>
     </main>
 
+    <!-- Sayfa Alt Bilgisi -->
     <footer class="main-footer">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
     </footer>
 
+    <!-- Hamburger ve Dinamik İsim Algılama Scriptleri -->
     <script>
-        // Hamburger Menü Açılma/Kapanma Mantığı
+        // --- 1. HAMBURGER MENÜ MEKANİZMASI ---
         const hamburgerBtn = document.getElementById('hamburger-btn');
         const mobileNavMenu = document.getElementById('mobile-nav-menu');
         const hamburgerIcon = document.getElementById('hamburger-icon');
@@ -165,66 +144,60 @@
             }
         });
 
-        // Dinamik Rol Değiştirme Motoru
-        function switchUserRole(role) {
-            const btnVatandas = document.getElementById('btn-role-vatandas');
-            const btnDoktor = document.getElementById('btn-role-doktor');
-            const avatarIcon = document.getElementById('profile-avatar-icon');
-            const userTitle = document.getElementById('profile-user-title');
-            const userSubtitle = document.getElementById('profile-user-subtitle');
-            const doctorTools = document.getElementById('doctor-tools');
-            const listTitle = document.getElementById('list-header-title');
-            const listSubtitle = document.getElementById('list-header-subtitle');
-
-            if(role === 'doktor') {
-                btnVatandas.classList.remove('active', 'vatandas-active');
-                btnDoktor.classList.add('active', 'doktor-active');
-                
-                avatarIcon.innerHTML = '<i class="fa-solid fa-user-user-doctor fa-user-md"></i>';
-                avatarIcon.style.color = '#3b82f6';
-                avatarIcon.style.borderColor = '#3b82f6';
-                avatarIcon.style.background = 'rgba(59, 130, 246, 0.1)';
-                
-                userTitle.innerText = "Prof. Dr. Ahmet Yılmaz";
-                userSubtitle.innerHTML = '<i class="fa-solid fa-user-shield"></i> Yetki Seviyesi: Geliştirici / Araştırmacı Hekim';
-                
-                doctorTools.classList.add('view-active');
-                listTitle.innerText = "Genel Sürveyans Vaka Kayıtları";
-                listSubtitle.innerText = "Sistem havuzuna düşen ve doktor onayından geçen son 3 anonim vaka verisi";
-            } else {
-                btnDoktor.classList.remove('active', 'doktor-active');
-                btnVatandas.classList.add('active', 'vatandas-active');
-                
-                avatarIcon.innerHTML = '<i class="fa-solid fa-user"></i>';
-                avatarIcon.style.color = 'var(--primary)';
-                avatarIcon.style.borderColor = 'var(--primary)';
-                avatarIcon.style.background = 'rgba(239, 68, 68, 0.1)';
-                
-                userTitle.innerText = "Ahmet Yılmaz";
-                userSubtitle.innerHTML = '<i class="fa-solid fa-id-card"></i> Yetki Seviyesi: Standart Vatandaş / Hasta';
-                
-                doctorTools.classList.remove('view-active');
-                listTitle.innerText = "Son Klinik Analiz Geçmişim";
-                listSubtitle.innerText = "Sistem üzerinde gerçekleştirdiğiniz son taramaların güvenli veritabanı kayıtları";
-            }
-        }
-
-        // Orijinal Fetch Mantığı
+        // --- 2. LOCALSTORAGE'DAN BİLGİ ALMA VE FİLTRELEME MOTORU ---
         document.addEventListener("DOMContentLoaded", function() {
+            // Test formunda girilip kaydedilen verileri localstorage üzerinden yakalıyoruz
+            const savedName = localStorage.getItem('hanta_ad_soyad');
+            const savedAge = localStorage.getItem('hanta_yas');
+            const savedGender = localStorage.getItem('hanta_cinsiyet');
+            const savedCity = localStorage.getItem('hanta_sehir');
+
+            const profileName = document.getElementById('profile-name');
+            const profileDetails = document.getElementById('profile-details');
+            const liste = document.getElementById("gecmis-listesi");
+
+            // Eğer kullanıcı daha önce hiç test yapmadıysa (isim yoksa)
+            if (!savedName) {
+                profileName.innerText = "Kullanıcı Kaydı Bulunamadı";
+                profileDetails.innerHTML = `<span><i class="fa-solid fa-triangle-exclamation" style="color:var(--primary)"></i> Lütfen önce Klinik Karar Testi sayfasından bir analiz gerçekleştirin.</span>`;
+                liste.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--primary);"></i>
+                        Eşleşen profil verisi olmadığı için geçmiş tahminler listelenemiyor.
+                    </div>`;
+                return; // Fetch işlemine geçmeden durduruyoruz.
+            }
+
+            // Test yapılmışsa verileri karta yazıyoruz
+            profileName.innerText = savedName;
+            profileDetails.innerHTML = `
+                <span><i class="fa-solid fa-calendar-day"></i> Yaş: ${savedAge || '-'}</span>
+                <span><i class="fa-solid fa-venus-mars"></i> Cinsiyet: ${savedGender || '-'}</span>
+                <span><i class="fa-solid fa-location-dot"></i> Şehir: ${savedCity || '-'}</span>
+            `;
+
+            // Veritabanından tüm geçmişi çekip sadece BU kişiye ait olan son 3 tahmini filtreleme aşaması
             fetch('/api/kullanici-gecmis')
                 .then(res => res.json())
                 .then(data => {
-                    const liste = document.getElementById("gecmis-listesi");
-                    if (data.length === 0) {
+                    // Sadece testi çözen aynı kişinin adına ait olan verileri süzüyoruz
+                    const filtrelenmişVeri = data.filter(test => 
+                        test.ad_soyad.trim().toLowerCase() === savedName.trim().toLowerCase()
+                    );
+
+                    if (filtrelenmişVeri.length === 0) {
                         liste.innerHTML = `
                             <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
                                 <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--primary);"></i>
-                                Henüz yapılmış bir klinik test kaydı bulunamadı.
+                                Adınıza ait geçmiş bir klinik test kaydı bulunamadı.
                             </div>`;
                         return;
                     }
 
-                    liste.innerHTML = data.map(test => {
+                    // Sadece son 3 tahmini almak için diziyi kesiyoruz (.slice)
+                    const sonUcTahmin = filtrelenmişVeri.slice(-3).reverse(); 
+
+                    liste.innerHTML = sonUcTahmin.map(test => {
                         let renk = "#10b981"; 
                         if(test.risk_seviyesi === "KRİTİK") renk = "#ef4444";
                         else if(test.risk_seviyesi === "YÜKSEK RİSK") renk = "#f97316";
@@ -233,26 +206,27 @@
                         return `
                             <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.2rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-                                    <h4 style="color: #fff;"><i class="fa-solid fa-user"></i> ${test.ad_soyad} (${test.yas} Yaş, ${test.cinsiyet})</h4>
-                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">${test.risk_seviyesi} (%${test.risk_skoru})</span>
+                                    <h4 style="color: #fff;"><i class="fa-solid fa-file-medical"></i> Analiz Sonucu (Skor: %${test.risk_skoru})</h4>
+                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">${test.risk_seviyesi}</span>
                                 </div>
                                 <div style="font-size: 0.88rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap;">
-                                    <span><i class="fa-solid fa-location-dot"></i> ${test.ulke} / ${test.sehir}</span>
-                                    <span><i class="fa-solid fa-calendar-day"></i> ${test.tarih}</span>
+                                    <span><i class="fa-solid fa-location-dot"></i> Konum: ${test.ulke} / ${test.sehir}</span>
+                                    <span><i class="fa-solid fa-calendar-day"></i> İşlem Tarihi: ${test.tarih}</span>
                                 </div>
                             </div>
                         `;
                     }).join("");
                 })
                 .catch(() => {
-                    document.getElementById("gecmis-listesi").innerHTML = `
+                    liste.innerHTML = `
                         <div style="text-align: center; color: var(--primary); padding: 2rem;">
-                            Veri tabanına bağlanırken hata oluştu.
+                            Veri tabanından veri çekilirken bir hata oluştu.
                         </div>`;
                 });
         });
     </script>
     
+    <!-- Fare takip eden virüs animasyonunun script dosyası -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
