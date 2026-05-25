@@ -158,4 +158,21 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    // 5. KLİNİK TEST VERİLERİNİ TAMPON HAFIZAYA ALMA (LOCALSTORAGE)
+    // Bu kısım form gönderildiğinde girdileri hafızaya alır, profil sayfası buradan okur.
+    const klinikForm = document.querySelector("form"); // Klinik test sayfasındaki form elementi
+    if (klinikForm && document.getElementById("ad_soyad")) {
+        klinikForm.addEventListener("submit", function() {
+            const adSoyad = document.getElementById("ad_soyad").value;
+            const yas = document.getElementById("yas").value;
+            const cinsiyet = document.getElementById("cinsiyet").value;
+            const sehir = document.getElementById("sehir").value;
+
+            localStorage.setItem('hanta_ad_soyad', adSoyad);
+            localStorage.setItem('hanta_yas', yas);
+            localStorage.setItem('hanta_cinsiyet', cinsiyet);
+            localStorage.setItem('hanta_sehir', sehir);
+        });
+    }
 });
