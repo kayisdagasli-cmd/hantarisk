@@ -3,321 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analitik Pano - HantaRisk</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>HantaRisk - Analitik Pano</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    
     <style>
-        .navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: #0b0d12; border-bottom: 1px solid var(--border-color); }
-        .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; height: 70px; box-sizing: border-box; }
-        .nav-menu { display: flex; align-items: center; gap: 1.5rem; flex-shrink: 0; }
-        
-        .dashboard-container { max-width: 1200px; margin: 7rem auto 4rem auto; padding: 0 1.5rem; box-sizing: border-box; }
-        
-        /* Premium KPI Kartları (Türkiye Odaklı) */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .kpi-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 1.2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: transform 0.3s ease; }
-        .kpi-card:hover { transform: translateY(-5px); border-color: rgba(239, 68, 68, 0.2); }
-        .kpi-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); }
-        .kpi-icon.danger { color: #ef4444; background: rgba(239, 68, 68, 0.05); }
-        .kpi-icon.warning { color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
-        .kpi-icon.success { color: #10b981; background: rgba(16, 185, 129, 0.05); }
-        .kpi-icon.info { color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
-        .kpi-value { font-size: 1.8rem; font-weight: 800; color: white; line-height: 1.2; margin-top: 2px; }
-        .kpi-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* Ana Düzen Ana Grid */
-        .main-dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
-        
-        .chart-block-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 15px 30px rgba(0,0,0,0.4); margin-bottom: 2rem; }
-        .charts-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
-        .chart-box { background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 10px; height: 320px; box-sizing: border-box; }
-        
-        /* Yapay Zeka Öngörü Kutusu */
-        .ai-insight-box { background: linear-gradient(135deg, rgba(239,68,68,0.03) 0%, rgba(168,85,247,0.03) 100%); border: 1px dashed rgba(168,85,247,0.3); border-radius: 10px; padding: 1.5rem; margin-top: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
-        .ai-pulse-icon { width: 35px; height: 35px; background: rgba(168,85,247,0.1); border: 1px solid #a855f7; border-radius: 50px; display: flex; align-items: center; justify-content: center; color: #c084fc; flex-shrink: 0; position: relative; }
-        .ai-pulse-icon::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 1px solid #a855f7; animation: aiPulse 2s infinite; opacity: 0.5; }
-        
-        /* Sağ Panel: Medikal Uyarılar */
-        .sidebar-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.8rem; box-shadow: 0 15px 30px rgba(0,0,0,0.4); height: fit-content; }
-        .alert-item { padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; gap: 10px; align-items: flex-start; }
-        .alert-item:last-child { border-bottom: none; }
-        .alert-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-top: 5px; flex-shrink: 0; box-shadow: 0 0 8px #ef4444; }
-        .alert-dot.warning { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-        
-        @keyframes aiPulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.5); opacity: 0; } }
-        
-        /* Hamburger Menü Stilleri */
-        .hamburger-menu { display: none; font-size: 1.5rem; color: white; cursor: pointer; transition: color 0.3s ease; z-index: 1001; }
-        .hamburger-menu:hover { color: var(--primary); }
-
-        /* Mobil Ekran Kırılma Düzenlemeleri */
-        @media (max-width: 992px) { 
-            .main-dashboard-grid { grid-template-columns: 1fr !important; } 
-            .charts-sub-grid { grid-template-columns: 1fr !important; } 
+        body {
+            background-color: #0b0f19;
+            color: #e2e8f0;
         }
-        
-        @media (max-width: 768px) {
-            .hamburger-menu { display: block; }
-            .system-status { display: none; }
-            .nav-menu { position: fixed; top: 70px; right: -100%; width: 250px; height: calc(100vh - 70px); background: #0b0d12; border-left: 1px solid var(--border-color); flex-direction: column; align-items: flex-start !important; padding: 2rem 1.5rem; gap: 2rem !important; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -10px 10px 30px rgba(0,0,0,0.5); z-index: 999; }
-            .nav-menu.active { right: 0; }
-            .nav-link { width: 100%; font-size: 1.1rem; }
+        /* Mobil Menü Geçiş Animasyonu */
+        #mobile-menu {
+            transition: all 0.3s ease-in-out;
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #mobile-menu.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-logo"><i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span></a>
-            
-            <div class="hamburger-menu" id="hamburger-toggle">
-                <i class="fa-solid fa-bars"></i>
-            </div>
+    <nav class="bg-[#111827] border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center gap-2 text-xl font-bold tracking-wider text-white">
+                        <i class="fa-solid virus text-red-500 animate-pulse"></i>
+                        HANTA<span class="text-red-500">RISK</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="/" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-house mr-1"></i> Ana Sayfa</a>
+                    <a href="/dashboard" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
+                    <a href="/surveillance" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
+                    <a href="/klinik-test" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
+                    <a href="/profil" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-user mr-1"></i> Profilim</a>
+                </div>
 
-            <div class="nav-menu" id="nav-menu-links">
-                <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
-                <a href="/dashboard" class="nav-link active"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
-                <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
-                <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
-                <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+                <div class="hidden md:flex items-center gap-2 bg-[#1f2937] px-3 py-1.5 rounded-full border border-green-900/50">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                    <span class="text-xs text-green-400 font-mono tracking-wide">TR VERİ ANALİZİ: GÜNCEL</span>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button id="menu-btn" class="text-gray-400 hover:text-white focus:outline-none p-2 rounded-md hover:bg-gray-800">
+                        <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <div id="mobile-menu" class="absolute top-16 left-0 w-full bg-[#111827] border-b border-gray-800 md:hidden z-40 flex flex-col px-4 pt-2 pb-4 space-y-2 shadow-2xl">
+            <a href="/" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-house w-6 text-red-500"></i>Ana Sayfa</a>
+            <a href="/dashboard" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
+            <a href="/surveillance" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
+            <a href="/klinik-test" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
+            <a href="/profil" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-user w-6 text-red-500"></i>Profilim</a>
             
-            <div class="system-status" style="font-size:0.85rem;">
-                <span class="status-pulse"></span> TR VERİ ANALİZİ: <strong style="color:var(--success)">GÜNCEL</strong>
+            <div class="border-t border-gray-800 pt-3 mt-1 flex items-center gap-2 pl-3">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                <span class="text-xs text-green-400 font-mono">TR VERİ ANALİZİ: GÜNCEL</span>
             </div>
         </div>
     </nav>
 
-    <div class="dashboard-container">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-icon danger"><i class="fa-solid fa-flag"></i></div>
-                <div>
-                    <div class="kpi-label">Türkiye Toplam Vaka</div>
-                    <div id="kpi-vaka" class="kpi-value">0</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon warning"><i class="fa-solid fa-skull-crossbones"></i></div>
-                <div>
-                    <div class="kpi-label">TR Ölüm Oranı</div>
-                    <div id="kpi-olum" class="kpi-value">%0</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon info"><i class="fa-solid fa-location-dot"></i></div>
-                <div>
-                    <div class="kpi-label">Aktif İzlenen İl Odak</div>
-                    <div id="kpi-odak" class="kpi-value">0</div>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon success"><i class="fa-solid fa-microchip"></i></div>
-                <div>
-                    <div class="kpi-label">AI Klinik Analiz</div>
-                    <div id="kpi-ai" class="kpi-value">2,480</div>
-                </div>
-            </div>
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                <i class="fa-solid fa-chart-pie text-red-500 text-xl sm:text-2xl"></i>
+                Türkiye Epidemi İzlem ve Analiz Panosu
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Veritabanındaki Türkiye kayıtlarına dayalı gerçek zamanlı artış ve düşüş trendleri.</p>
         </div>
 
-        <div class="main-dashboard-grid">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div>
-                <div class="chart-block-card">
-                    <div class="card-header-block" style="margin-bottom: 0px;">
-                        <div class="card-header-icon" style="background: rgba(239, 68, 68, 0.05); color:#ef4444;"><i class="fa-solid fa-chart-bar"></i></div>
-                        <div>
-                            <h2 style="font-size: 1.4rem;">Türkiye Epidemi İzlem ve Analiz Panosu</h2>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">Veritabanındaki Türkiye kayıtlarına dayalı gerçek zamanlı artış ve düşüş trendleri.</p>
-                        </div>
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-md">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-md font-semibold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-red-500"></i>
+                            Türkiye Yıllık Vaka Değişimi
+                        </h2>
                     </div>
-
-                    <div class="charts-sub-grid">
-                        <div class="chart-box">
-                            <h4 style="margin: 0 0 1rem 0; font-size: 0.95rem; color: white;"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Türkiye Yıllık Vaka Değişimi</h4>
-                            <div style="position: relative; height:calc(100% - 35px);">
-                                <canvas id="turkiyeYilGrafik"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="chart-box">
-                            <h4 style="margin: 0 0 1rem 0; font-size: 0.95rem; color: white;"><i class="fa-solid fa-chart-bar" style="color:#3b82f6;"></i> Türkiye Aylık Vaka Dağılımı</h4>
-                            <div style="position: relative; height:calc(100% - 35px);">
-                                <canvas id="turkiyeAyGrafik"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ai-insight-box">
-                        <div class="ai-pulse-icon"><i class="fa-solid fa-brain"></i></div>
-                        <div>
-                            <div style="font-size: 0.85rem; font-weight: 700; color: #c084fc; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">HantaRisk Yapay Zeka Türkiye Öngörüsü</div>
-                            <p style="font-size: 0.9rem; color: #94a3b8; margin: 0; line-height: 1.5;">
-                                <strong style="color:#ffffff;">Yerel Analiz:</strong> Türkiye genelinde yapılan filtrelemede, vakaların mevsimsel olarak hasat ve tarım geçiş dönemlerinde (Mayıs-Eylül ayları arasında) yoğunlaştığı tespit edilmiştir. Yıllık veri değişim algoritması Karadeniz ve Marmara kırsal hatlarındaki nem oranlarıyla paralellik göstermektedir.
-                            </p>
-                        </div>
+                    <div class="relative w-full h-64 sm:h-80">
+                        <canvas id="yillikVakaGrafik"></canvas>
                     </div>
                 </div>
+
+                <div class="bg-gradient-to-r from-slate-900 to-[#111827] p-5 rounded-xl border border-gray-800 flex flex-col sm:flex-row gap-4 items-start shadow-inner">
+                    <div class="bg-[#1f2937] p-3 rounded-xl border border-gray-700 text-red-400 self-start sm:self-center">
+                        <i class="fa-solid fa-brain-circuit text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold tracking-wide text-white uppercase mb-1">HANTARİSK YAPAY ZEKA TÜRKİYE ÖNGÖRÜSÜ</h3>
+                        <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                            <strong class="text-red-400">Yerel Analiz:</strong> Türkiye genelinde yapılan filtrelemede, vakaların mevsimsel olarak hasat ve tarım geçiş dönemlerinde (Mayıs-Eylül ayları arasında) yoğunlaştığı tespit edilmiştir. Yıllık veri değişim algoritması Karadeniz ve Marmara kırsal hatlarındaki nem oranlarıyla paralellik göstermektedir.
+                        </p>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="sidebar-card">
-                <h3 style="margin: 0 0 1.5rem 0; font-size: 1.1rem; color: white; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-bell text-gradient"></i> Türkiye Sürveyans Bildirimleri
-                </h3>
-                
-                <div class="alert-item">
-                    <div class="alert-dot"></div>
-                    <div>
-                        <div style="font-size: 0.85rem; font-weight: 700; color: #f87171;">SAĞLIK BAKANLIĞI PROTOKOLÜ</div>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; line-height: 1.4;">Hantavirüs şüpheli vaka yönetim rehberine göre ilk tahlil kriterleri güncellendi.</p>
+            <div class="hidden lg:block space-y-6">
+                <div class="bg-[#111827] p-5 rounded-xl border border-gray-800 shadow-md">
+                    <h2 class="text-md font-semibold text-white flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-bell text-red-500"></i>
+                        Türkiye Sürveyans Bildirimleri
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="border-l-2 border-red-500 pl-3 py-1">
+                            <h3 class="text-xs font-bold text-red-400 uppercase tracking-wide">SAĞLIK BAKANLIĞI PROTOKOLÜ</h3>
+                            <p class="text-xs text-gray-400 mt-1">Hantavirüs şüpheli vaka yönetim rehberine göre ilk tahlil kriterleri güncellendi.</p>
+                        </div>
+                        <div class="border-l-2 border-amber-500 pl-3 py-1">
+                            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide">MEVSİMSEL MARUZİYET UYARISI</h3>
+                            <p class="text-xs text-gray-400 mt-1">Özellikle tarımsal depolama alanlarında koruyucu maske ve eldiven kullanımı önerilmektedir.</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="alert-item">
-                    <div class="alert-dot warning"></div>
-                    <div>
-                        <div style="font-size: 0.85rem; font-weight: 700; color: #fbbf24;">MEVSİMSEL MARUZİYET UYARISI</div>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; line-height: 1.4;">Özellikle tarımsal depolama alanlarında koruyucu maske ve eldiven kullanımı önerilmektedir.</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-xs text-gray-500">
+                        <span>BÖLGESEL VERİTABANI MODÜLÜ</span>
+                        <span class="font-mono text-red-500 flex items-center gap-1">
+                            <i class="fa-solid fa-database"></i> TR-Isolated v2.1
+                        </span>
                     </div>
-                </div>
-
-                <div style="margin-top: 2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Bölgesel Veritabanı Modülü</div>
-                    <div style="font-size: 1rem; font-weight: 700; color: white; margin-top: 3px;"><i class="fa-solid fa-database" style="color:var(--primary); font-size:0.85rem;"></i> TR-Isolated v2.1</div>
                 </div>
             </div>
 
         </div>
-    </div>
-
-    <footer class="main-footer">
-        <p>&copy; 2026 HantaRisk Türkiye İzlem Platformu. Tüm Hakları Saklıdır.</p>
-    </footer>
+    </main>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // --- 1. PREMIUM HAMBURGER MENÜ MOTORU ---
-            const hamburger = document.getElementById('hamburger-toggle');
-            const navMenu = document.getElementById('nav-menu-links');
+        // --- 1. MOBİL HAMBURGER MENÜ TETİKLEYİCİSİ ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
 
-            if (hamburger && navMenu) {
-                hamburger.addEventListener('click', () => {
-                    navMenu.classList.toggle('active');
-                    const icon = hamburger.querySelector('i');
-                    icon.classList.toggle('fa-bars');
-                    icon.classList.toggle('fa-xmark');
-                });
+        menuBtn.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.toggle('open');
+            // İkonu dinamik değiştir (Üç çizgi / Çarpı)
+            if (isOpen) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.add('fa-xmark');
+            } else {
+                menuIcon.classList.remove('fa-xmark');
+                menuIcon.add('fa-bars');
             }
+        });
 
-            // --- 2. GERÇEK VERİ TRANSFERİ VE GRAFİKLER ---
+        // Sayfa dışına veya linklere tıklandığında menüyü kapat (Mobil konfor için)
+        document.addEventListener('click', (e) => {
+            if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('open');
+                menuIcon.classList.remove('fa-xmark');
+                menuIcon.classList.add('fa-bars');
+            }
+        });
+
+        // --- 2. API VERİLERİNİ ÇEKME VE CHART.JS ENTEGRASYONU ---
+        document.addEventListener("DOMContentLoaded", function() {
             fetch('/api/grafik-verileri')
-                .then(res => res.json())
+                .then(response => response.json())
                 .then(data => {
-                    
-                    // Python'dan gelen Türkiye verilerini alıyoruz, yoksa genel verilerden güvenli okuma yapıyoruz
-                    const yillar = data.turkiye_yillar || data.yillar || [];
-                    const yillikVakalar = data.turkiye_vaka_sayilari || data.vaka_sayilari || [];
-                    
-                    const aylar = data.turkiye_aylar || ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-                    const aylikVakalar = data.turkiye_aylik_vaka_sayilari || [2, 4, 7, 12, 18, 25, 22, 14, 9, 5, 3, 1]; // Örnek fallback yapısı
-
-                    // Sayaçlar (KPI)
-                    const toplamVaka = data.turkiye_toplam_vaka || yillikVakalar.reduce((a, b) => a + b, 0) || 0;
-                    const vefatSayisi = data.turkiye_vefat || data.vefat || 0;
-                    const olumOrani = toplamVaka > 0 ? ((vefatSayisi / toplamVaka) * 100).toFixed(1) : 0;
-                    
-                    animateCounter('kpi-vaka', toplamVaka, '');
-                    animateCounter('kpi-olum', parseFloat(olumOrani), '%');
-                    
-                    fetch('/api/harita-noktalari')
-                        .then(r => r.json())
-                        .then(noktalar => {
-                            // Sadece Türkiye olan noktaları filtreleyip sayıyoruz
-                            const trNoktalar = noktalar.filter(n => n.ulke && (n.ulke.toLowerCase() === 'turkey' || n.ulke.toLowerCase() === 'türkiye'));
-                            animateCounter('kpi-odak', trNoktalar.length || 7, '');
-                        }).catch(() => {
-                            animateCounter('kpi-odak', 5, '');
-                        });
-
-                    function animateCounter(elementId, targetValue, suffix) {
-                        const el = document.getElementById(elementId);
-                        if (!el) return;
-                        let current = 0;
-                        const step = targetValue / 40 || 1;
-                        const interval = setInterval(() => {
-                            current += step;
-                            if (current >= targetValue) {
-                                clearInterval(interval);
-                                el.innerText = suffix === '%' ? `%${targetValue}` : `${Math.floor(targetValue).toLocaleString()}`;
-                            } else {
-                                el.innerText = suffix === '%' ? `%${current.toFixed(1)}` : `${Math.floor(current).toLocaleString()}`;
-                            }
-                        }, 20);
+                    if(data.error) {
+                        console.error("API Hatası:", data.error);
+                        return;
                     }
 
-                    // --- TÜRKİYE YILLIK GRAFİĞİ ---
-                    const ctxYil = document.getElementById('turkiyeYilGrafik').getContext('2d');
-                    new Chart(ctxYil, {
+                    // Grafik Ayarları ve Stil Özelleştirmeleri
+                    const ctxYillik = document.getElementById('yillikVakaGrafik').getContext('2d');
+                    
+                    // Çizgi Grafiğinin Altındaki Yumuşak Kırmızı Degrade (Glow) Efekti
+                    const gradientTr = ctxYillik.createLinearGradient(0, 0, 0, 300);
+                    gradientTr.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+                    gradientTr.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+
+                    new Chart(ctxYillik, {
                         type: 'line',
                         data: {
-                            labels: yillar,
+                            labels: data.turkiye_yillar,
                             datasets: [{
-                                label: 'Yıllık Artış/Düşüş',
-                                data: yillikVakalar,
+                                label: 'Yıllık Doğrulanmış Vaka',
+                                data: data.turkiye_vaka_sayilari,
                                 borderColor: '#ef4444',
-                                backgroundColor: 'rgba(239, 68, 68, 0.05)',
                                 borderWidth: 3,
-                                tension: 0.35,
+                                backgroundColor: gradientTr,
                                 fill: true,
-                                pointBackgroundColor: '#ef4444'
+                                tension: 0.4, // Kıvrımlı yumuşak hatlar
+                                pointBackgroundColor: '#ef4444',
+                                pointHoverRadius: 7
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: { color: '#94a3b8', font: { size: 12 } }
+                                }
+                            },
                             scales: {
-                                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#9ca3af' } },
-                                x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                                y: {
+                                    grid: { color: '#1f2937' },
+                                    ticks: { color: '#94a3b8', stepSize: 2 }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { color: '#94a3b8' }
+                                }
                             }
                         }
                     });
-
-                    // --- TÜRKİYE AYLIK GRAFİĞİ ---
-                    const ctxAy = document.getElementById('turkiyeAyGrafik').getContext('2d');
-                    new Chart(ctxAy, {
-                        type: 'bar',
-                        data: {
-                            labels: aylar,
-                            datasets: [{
-                                label: 'Aylık Dağılım',
-                                data: aylikVakalar,
-                                backgroundColor: 'rgba(59, 130, 246, 0.75)',
-                                borderColor: '#3b82f6',
-                                borderWidth: 1,
-                                borderRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#9ca3af' } },
-                                x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10 } } }
-                            }
-                        }
-                    });
-
-                });
+                })
+                .catch(err => console.error("Veri yüklenirken hata oluştu:", err));
         });
     </script>
-
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
