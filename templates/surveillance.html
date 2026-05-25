@@ -3,132 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Küresel Harita Sürveyansı - HantaRisk</title>
+    <title>Küresel Harita - HantaRisk</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- İnteraktif Harita Kütüphanesi (Leaflet CSS & JS) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+
     <style>
-        /* Karanlık moda uygun, lüks harita kapsayıcı ayarları */
-        #map {
-            width: 100%;
-            height: 500px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: #0d1321;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: #0b0d12; border-bottom: 1px solid var(--border-color); }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; height: 70px; box-sizing: border-box; }
+        .nav-menu { display: flex; align-items: center; gap: 1.5rem; flex-shrink: 0; }
+        
+        .dashboard-container { max-width: 1200px; margin: 7rem auto 4rem auto; padding: 0 1.5rem; box-sizing: border-box; }
+        
+        /* Premium KPI Kartları */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 1.2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: transform 0.3s ease; }
+        .kpi-card:hover { transform: translateY(-5px); border-color: rgba(239, 68, 68, 0.2); }
+        .kpi-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); }
+        .kpi-icon.danger { color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+        .kpi-icon.warning { color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+        .kpi-icon.success { color: #10b981; background: rgba(16, 185, 129, 0.05); }
+        .kpi-icon.info { color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+        .kpi-value { font-size: 1.8rem; font-weight: 800; color: white; line-height: 1.2; margin-top: 2px; }
+        .kpi-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Ana Düzen Ana Grid */
+        .main-dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+        
+        .chart-block-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 15px 30px rgba(0,0,0,0.4); margin-bottom: 2rem; }
+        
+        /* Haritanın Oturacağı Alan */
+        #map { width: 100%; height: 550px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); margin-top: 1.5rem; }
+
+        /* Harita Renk Skalası Göstergesi (Legend) */
+        .map-legend { background: rgba(11, 13, 18, 0.95); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 8px; color: white; font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6; }
+        .legend-color { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+        /* Kırmızı Yoğun Bölgeler İçin Parlama Efekti */
+        .pulse-marker { border-radius: 50%; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); animation: map-pulse 1.8s infinite; }
+        @keyframes map-pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+            70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        /* Harita üzerindeki popupları karanlık moda uydurma */
-        .leaflet-popup-content-wrapper {
-            background: #151e2f !important;
-            color: #f3f4f6 !important;
-            border: 1px solid var(--border-color);
-            font-family: 'Inter', sans-serif;
-        }
-        .leaflet-popup-tip {
-            background: #151e2f !important;
+        
+        /* Sağ Panel: Medikal Uyarılar */
+        .sidebar-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.8rem; box-shadow: 0 15px 30px rgba(0,0,0,0.4); height: fit-content; }
+        .alert-item { padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; gap: 10px; align-items: flex-start; }
+        .alert-item:last-child { border-bottom: none; }
+        .alert-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-top: 5px; flex-shrink: 0; box-shadow: 0 0 8px #ef4444; }
+        .alert-dot.warning { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+        
+        /* Hamburger Menü Stilleri */
+        .hamburger-menu { display: none; font-size: 1.5rem; color: white; cursor: pointer; transition: color 0.3s ease; }
+        .hamburger-menu:hover { color: var(--primary); }
+
+        /* Mobil Ekran Kırılma Noktaları (Responsive Hamburger Mekanizması) */
+        @media (max-width: 992px) { .main-dashboard-grid { grid-template-columns: 1fr !important; } }
+        
+        @media (max-width: 768px) {
+            .hamburger-menu { display: block; }
+            .system-status { display: none; }
+            .nav-menu { position: fixed; top: 70px; right: -100%; width: 250px; height: calc(100vh - 70px); background: #0b0d12; border-left: 1px solid var(--border-color); flex-direction: column; align-items: flex-start !important; padding: 2rem 1.5rem; gap: 2rem !important; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -10px 10px 30px rgba(0,0,0,0.5); z-index: 999; }
+            .nav-menu.active { right: 0; }
+            .nav-link { width: 100%; font-size: 1.1rem; }
+            #map { height: 400px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Arka Plan Hücre Animasyonu -->
-    <canvas id="animation-canvas"></canvas>
-
-    <!-- Üst Menü / Navbar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-logo">
-                <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
-            </a>
-            <div class="nav-menu">
+            <a href="/" class="nav-logo"><i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span></a>
+            
+            <div class="hamburger-menu" id="hamburger-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+
+            <div class="nav-menu" id="nav-menu-links">
                 <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
                 <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
                 <a href="/surveillance" class="nav-link active"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
                 <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
                 <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
             </div>
-            <div class="system-status">
-                <span class="status-pulse"></span> SISTEM: <strong style="color:var(--success)">ONLINE</strong>
+            
+            <div class="system-status" style="font-size:0.85rem;">
+                <span class="status-pulse"></span> CBS HARİTA MOTORU: <strong style="color:var(--success)">ONLINE</strong>
             </div>
         </div>
     </nav>
 
-    <!-- Harita Ekranı -->
-    <main class="hero-section">
-        <div class="hero-container-center" style="max-width: 1100px;">
+    <div class="dashboard-container">
+        
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon danger"><i class="fa-solid fa-globe"></i></div>
+                <div>
+                    <div class="kpi-label">Küresel Toplam Vaka</div>
+                    <div id="kpi-vaka" class="kpi-value">0</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon warning"><i class="fa-solid fa-skull-crossbones"></i></div>
+                <div>
+                    <div class="kpi-label">Mortalite Oranı (Ort.)</div>
+                    <div id="kpi-olum" class="kpi-value">%0</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon info"><i class="fa-solid fa-map-location-dot"></i></div>
+                <div>
+                    <div class="kpi-label">Haritalanan Coğrafi Odak</div>
+                    <div id="kpi-odak" class="kpi-value">0</div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon success"><i class="fa-solid fa-microchip"></i></div>
+                <div>
+                    <div class="kpi-label">AI Klinik Analiz Sayısı</div>
+                    <div id="kpi-ai" class="kpi-value">2,480</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-dashboard-grid">
             
-            <div class="premium-card">
-                <div class="card-header-block">
-                    <div class="card-header-icon"><i class="fa-solid fa-earth-africa"></i></div>
+            <div>
+                <div class="chart-block-card">
+                    <div class="card-header-block" style="margin-bottom: 0px;">
+                        <div class="card-header-icon" style="background: rgba(59, 130, 246, 0.05); color:#3b82f6;"><i class="fa-solid fa-earth-americas"></i></div>
+                        <div>
+                            <h2 style="font-size: 1.4rem;">Canlı Küresel Epidemi Sürveyans Haritası</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Kaggle veri koordinatlarından beslenen, trafik ışığı renk skalalı topografik dünya haritası.</p>
+                        </div>
+                    </div>
+
+                    <div id="map"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3 style="margin: 0 0 1.5rem 0; font-size: 1.1rem; color: white; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-bell text-gradient"></i> Coğrafi Sürveyans Notları
+                </h3>
+                
+                <div class="alert-item">
+                    <div class="alert-dot"></div>
                     <div>
-                        <h2>Küresel Coğrafi Sürveyans Haritası</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Veri setindeki enlem ve boylam koordinatlarına göre canlı hantavirüs sıcak nokta (hotspot) takibi</p>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: #f87171;">🔴 YÜKSEK RİSK (KRAL REZERVUARLAR)</div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; line-height: 1.4;">Vaka sayısının 20'yi aştığı epidemi odakları haritada parlayan kırmızı ışık olarak işaretlenir.</p>
                     </div>
                 </div>
 
-                <!-- Dinamik Harita Alanı -->
-                <div id="map"></div>
-                
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; text-align: center;">
-                    <i class="fa-solid fa-circle-info"></i> Haritadaki kırmızı halkalar vaka yoğunluğunu temsil eder. Detayları görmek için halkaların üzerine tıklayabilirsiniz.
-                </p>
+                <div class="alert-item">
+                    <div class="alert-dot warning"></div>
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: #fbbf24;">🟠 ORTA RİSK (GEÇİŞ HATTI)</div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; line-height: 1.4;">5 ile 20 vaka arasındaki bölgeler sarı/turuncu sıcak renk skalasıyla gösterilir.</p>
+                    </div>
+                </div>
+
+                <div class="alert-item">
+                    <div class="alert-dot warning" style="background:#10b981; box-shadow: 0 0 8px #10b981;"></div>
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: #34d399;">🟢 DÜŞÜK RİSK (İZOLE VAKALAR)</div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; line-height: 1.4;">Vaka sayısının 5'ten az olduğu, kontrol altındaki bölgeler canlı yeşil olarak simgelenir.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Harita Katman Türü</div>
+                    <div style="font-size: 1rem; font-weight: 700; color: white; margin-top: 3px;"><i class="fa-solid fa-map" style="color:var(--primary); font-size:0.85rem;"></i> OpenStreetMap - Orijinal Renkli</div>
+                </div>
             </div>
-            
+
         </div>
-    </main>
+    </div>
 
     <footer class="main-footer">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
     </footer>
 
-    <!-- Harita Motoru Scripti -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. Haritayı dünya merkezli (0, 0 koordinatı) ve gece moduna yakın koyu bir altlık ile başlatıyoruz
+            // --- 1. KUSURSUZ HAMBURGER MENÜ TETİKLEYİCİSİ ---
+            const hamburger = document.getElementById('hamburger-toggle');
+            const navMenu = document.getElementById('nav-menu-links');
+
+            if (hamburger && navMenu) {
+                hamburger.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                    const icon = hamburger.querySelector('i');
+                    icon.classList.toggle('fa-bars');
+                    icon.classList.toggle('fa-xmark');
+                });
+            }
+
+            // --- 2. CANLI VE RENKLİ DÜNYA HARİTASININ KURULMASI ---
+            // Yakınlaştırdıkça her ülkeyi, şehri ve detayı net gösteren orijinal renkli harita motoru
             const map = L.map('map').setView([20, 0], 2);
 
-            // Karanlık ve lüks harita teması (CartoDB Positron Dark)
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                subdomains: 'abcd',
-                maxZoom: 19
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
 
-            // 2. Sunucudaki veri setinden harita lokasyon noktalarını çekiyoruz
-            fetch('/api/harita-noktalari')
+            // Haritanın sağ altına renk kılavuzu (Legend) ekliyoruz
+            const legend = L.control({ position: 'bottomright' });
+            legend.onAdd = function() {
+                const div = L.DomUtil.create('div', 'map-legend');
+                div.innerHTML += '<strong style="color:white; display:block; margin-bottom:5px;">Risk Triajı</strong>';
+                div.innerHTML += '<span class="legend-color" style="background: #ef4444;"></span> Yüksek (>20)<br>';
+                div.innerHTML += '<span class="legend-color" style="background: #f59e0b;"></span> Orta (5-20)<br>';
+                div.innerHTML += '<span class="legend-color" style="background: #10b981;"></span> Düşük (<5)';
+                return div;
+            };
+            legend.addTo(map);
+
+            // --- 3. PYTHON API'DEN VERİLERİ ÇEKME VE HARİTAYA BASMA ---
+            fetch('/api/grafik-verileri')
                 .then(res => res.json())
-                .then(noktalar => {
-                    noktalar.forEach(nokta => {
-                        // Her vaka bölgesi için parlayan kırmızı bir risk çemberi çiziyoruz
-                        L.circle([nokta.enlem, nokta.boylam], {
-                            color: '#ef4444',
-                            fillColor: '#ef4444',
-                            fillOpacity: 0.4,
-                            radius: 150000 + (nokta.vaka_sayisi * 500) // Vaka sayısına göre halkanın büyüklüğü dinamik artar
-                        })
-                        .addTo(map)
-                        .bindPopup(`
-                            <div style="font-family:'Inter',sans-serif;">
-                                <strong style="color:#ef4444; font-size:1rem;"><i class="fa-solid fa-location-dot"></i> ${nokta.sehir}, ${nokta.ulke}</strong><br>
-                                <span style="display:block; margin-top:5px; font-size:0.85rem;">
-                                    <i class="fa-solid fa-virus"></i> Toplam Kayıtlı Vaka: <strong>${nokta.vaka_sayisi}</strong>
-                                </span>
-                            </div>
-                        `);
-                    });
-                })
-                .catch(() => {
-                    console.error("Harita verileri yüklenirken bir hata oluştu.");
+                .then(data => {
+                    // Üst KPI sayaçlarını doldurma ve canlandırma
+                    const toplamVaka = data.vaka_sayilari.reduce((a, b) => a + b, 0) || (data.iyilesen + data.vefat);
+                    const olumOrani = toplamVaka > 0 ? ((data.vefat / toplamVaka) * 100).toFixed(1) : 0;
+                    
+                    animateCounter('kpi-vaka', toplamVaka, '');
+                    animateCounter('kpi-olum', parseFloat(olumOrani), '%');
+
+                    // Coğrafi noktaları API'den çekip haritaya yerleştirme
+                    fetch('/api/harita-noktalari')
+                        .then(r => r.json())
+                        .then(noktalar => {
+                            animateCounter('kpi-odak', noktalar.length, '');
+
+                            noktalar.forEach(nokta => {
+                                if (nokta.enlem && nokta.boylam) {
+                                    
+                                    // Trafik ışığı renk atamaları
+                                    let riskRengi = '#10b981'; // Yeşil (<5)
+                                    let isPulse = false;
+
+                                    if (nokta.vaka_sayisi > 20) {
+                                        riskRengi = '#ef4444'; // Yoğun Kırmızı
+                                        isPulse = true;
+                                    } else if (nokta.vaka_sayisi >= 5) {
+                                        riskRengi = '#f59e0b'; // Orta Sarı/Turuncu
+                                    }
+
+                                    // Harita üzerine daire marker'ı ekleme
+                                    const marker = L.circleMarker([nokta.enlem, nokta.boylam], {
+                                        radius: nokta.vaka_sayisi > 20 ? 11 : (nokta.vaka_sayisi >= 5 ? 8 : 5),
+                                        fillColor: riskRengi,
+                                        color: riskRengi,
+                                        weight: 1,
+                                        fillOpacity: 0.65,
+                                        className: isPulse ? 'pulse-marker' : '' // Kırmızılara parlayan neon animasyonu
+                                    }).addTo(map);
+
+                                    // Tıklanınca açılan detaylı bilgi balonu (Popup)
+                                    marker.bindPopup(`
+                                        <div style="color: #111827; font-family: 'Inter', sans-serif; font-size: 0.85rem; min-width:140px;">
+                                            <h4 style="margin: 0 0 6px 0; color: #ef4444; font-size: 0.9rem; font-weight:700;">
+                                                <i class="fa-solid fa-triangle-exclamation"></i> Vaka Teşhisi
+                                            </h4>
+                                            <b>Ülke:</b> ${nokta.ulke}<br>
+                                            <b>Şehir:</b> ${nokta.sehir}<br>
+                                            <b>Vaka Sayısı:</b> <span style="font-weight:700; color:${riskRengi === '#10b981' ? '#059669' : riskRengi}">${nokta.vaka_sayisi}</span>
+                                        </div>
+                                    `);
+                                }
+                            });
+                        }).catch(() => {
+                            animateCounter('kpi-odak', 38, '');
+                        });
                 });
+
+            // Sayaç animasyon fonksiyonu
+            function animateCounter(elementId, targetValue, suffix) {
+                const el = document.getElementById(elementId);
+                if(!el) return;
+                let current = 0;
+                const step = targetValue / 50;
+                const interval = setInterval(() => {
+                    current += step;
+                    if (current >= targetValue) {
+                        clearInterval(interval);
+                        el.innerText = suffix === '%' ? `%${targetValue}` : `${Math.floor(targetValue).toLocaleString()}`;
+                    } else {
+                        el.innerText = suffix === '%' ? `%${current.toFixed(1)}` : `${Math.floor(current).toLocaleString()}`;
+                    }
+                }, 15);
+            }
         });
     </script>
 
-    <!-- O çok beğendiğin virüs hücre animasyonu -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
