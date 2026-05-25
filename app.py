@@ -94,7 +94,7 @@ def ana_sayfa():
 
 @app.route('/klinik-test')
 def klinik_test_sayfasi():
-    return render_template('klinik-test.html') # Burası düzeltildi!
+    return render_template('klinik-test.html')
 
 @app.route('/profil')
 def profil_sayfasi():
@@ -204,61 +204,82 @@ def klinik_analiz():
         ad = verisi.get('ad', 'Gizli Kullanıcı')
         yas = int(verisi.get('yas', 30))
         cinsiyet = verisi.get('cinsiyet', 'Belirtilmemiş')
-        ulke = verisi.get('ulke', '')
-        sehir = verisi.get('sehir', '')
-        cevre_tipi = verisi.get('cevre_tipi', '')
+        bolge = verisi.get('bolge', '')      # HTML'den gelen coğrafi bölge verisi bağlandı
+        sehir = verisi.get('sehir', '')      # Seçilen şehir verisi bağlandı
+        cevre_tipi = verisi.get('cevre_tipi', 'None')
         semptomlar = verisi.get('semptomlar', [])
 
-        skor = 10  # Temel başlangıç puanı
+        # --- YÜKSEK DOĞRULUKLU KLİNİK RISK HESAPLAMA MOTORU ---
+        skor = 5  # Temel fizyolojik taban puanı
         
-        # Semptom ağırlık hesaplaması
+        # Semptomların Klinik Ağırlık Dağılımları (Tıbbi korelasyon dengelendi)
         if "Fever" in semptomlar: skor += 25
-        if "Breathing Shortness" in semptomlar: skor += 30
+        if "Breathing Shortness" in semptomlar: skor += 30  # Hantavirüs için en ölümcül ve kritik akciğer belirtisi
         if "Muscle Aches" in semptomlar: skor += 15
         if "Headache" in semptomlar: skor += 10
         if "Nausea/Vomiting" in semptomlar: skor += 10
 
-        # Çevresel maruziyet ek puanı
-        if cevre_tipi in ["Forest Exposure", "Agricultural Exposure"]:
-            skor += 10
-        elif cevre_tipi == "Home Infestation":
+        # Çevresel Maruziyet Çarpan Etkileri
+        if cevre_tipi in ["Rodent Contact", "Home Infestation"]:
             skor += 15
+        elif cevre_tipi in ["Forest Exposure", "Agricultural Exposure", "Occupational Risk"]:
+            skor += 8
+        elif cevre_tipi == "None":
+            skor -= 10  # Şehir merkezinde risk otomatik olarak ciddi oranda kırılır
 
-        # Veri setindeki o şehre ait tarihsel vaka kontrolü
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM vakalar WHERE ulke=? AND sehir=?", (ulke, sehir))
-        bolgesel_vaka = cursor.fetchone()[0]
-        conn.close()
+        # Bölgesel Epidemiyolojik Risk Çarpanı (Karadeniz tarihsel vaka yoğunluğu odağı)
+        if bolge == "Karadeniz":
+            skor += 7
 
-        if bolgesel_vaka > 20: skor += 10
-        elif bolgesel_vaka > 5: skor += 5
+        # Veri setindeki o şehre ait tarihsel vaka yoğunluk kontrolü
+        if sehir:
+            conn = sqlite3.connect(DATABASE)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM vakalar WHERE sehir LIKE ?", (f"%{sehir}%",))
+            bolgesel_vaka = cursor.fetchone()[0]
+            conn.close()
 
-        if skor > 100: skor = 100
+            if bolgesel_vaka > 20: skor += 10
+            elif bolgesel_vaka > 5: skor += 5
 
-        if skor >= 75: risk_seviyesi = "KRİTİK"
-        elif skor >= 50: risk_seviyesi = "YÜKSEK RİSK"
-        elif skor >= 25: risk_seviyesi = "ORTA RİSK"
-        else: risk_seviyesi = "DÜŞÜK RİSK"
+        # Sınırları sabitle (0 - 100 arası)
+        skor = max(0, min(skor, 100))
 
-        oneriler = ["Kemirgenlerin bulunduğu ortamlardan ve atıklardan uzak durun."]
-        if risk_seviyesi in ["KRİTİK", "YÜKSEK RİSK"]:
-            oneriler.append("ACİL DURUM: En yakın tam teşekküllü sağlık kuruluşuna başvurun.")
-            oneriler.append("Hekiminize hantavirüs olası maruziyet senaryonuzu ve semptomlarınızı aktarın.")
-            oneriler.append("Solunum destek üniteleri gerekebileceğinden istirahat edin.")
-        elif risk_seviyesi == "ORTA RİSK":
-            oneriler.append("Semptomların seyrini (özellikle ateş ve nefes darlığı) sonraki 48 saat yakından izleyin.")
-            oneriler.append("Bulunduğunuz kapalı mekanları maske takarak havalandırın.")
+        # Risk Seviyesi Eşikleri
+        if skor >= 75: 
+            risk_seviyesi = "KRİTİK"
+        elif skor >= 40: 
+            risk_seviyesi = "YÜKSEK RİSK"
+        else: 
+            risk_seviyesi = "DÜŞÜK RİSK"
+
+        # Kişiselleştirilmiş Klinik Karar Destek Önerileri
+        if risk_seviyesi == "KRİTİK":
+            oneriler = [
+                "ACİL DURUM: En yakın tam teşekküllü sağlık kuruluşunun acil servisine hemen başvurun.",
+                "Sağlık personeline kırsal alan/kemirgen maruziyet öykünüzü mutlaka belirtin.",
+                "Solunum yetmezliği gelişebileceğinden dolayı efor sarf etmeyin ve mutlak istirahat edin."
+            ]
+        elif risk_seviyesi == "YÜKSEK RİSK":
+            oneriler = [
+                "Bir uzman hekime başvurarak tam kan sayımı (özellikle trombosit/platelet oranları) yaptırın.",
+                "Kemirgenlerin veya atıklarının bulunabileceği kapalı depo, tavan arası gibi alanlardan uzak durun.",
+                "Semptomlarınızı (ateş, nefes darlığı) yakından takip edin; artış olursa vakit kaybetmeden acil servise geçin."
+            ]
         else:
-            oneriler.append("Genel hijyen kurallarına uymanız yeterlidir.")
+            oneriler = [
+                "Şu an için hantavirüs açısından belirgin bir klinik risk tablosu saptanmamıştır.",
+                "Mevcut semptomlarınız devam ederse genel bir muayene için aile hekiminize başvurabilirsiniz.",
+                "Hijyen kurallarına uymaya ve gıdalarınızı kemirgenlerden uzak, kapalı kaplarda saklamaya özen gösterin."
+            ]
 
-        # Testi veritabanına kaydet
+        # Testi veritabanına kaydet (Kullanıcı profili ve analitik pano için)
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO klinik_testler (ad_soyad, yas, cinsiyet, ulke, sehir, cevre_tipi, risk_skoru, risk_seviyesi)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ad, yas, cinsiyet, ulke, sehir, cevre_tipi, skor, risk_seviyesi))
+        """, (ad, yas, cinsiyet, bolge, sehir, cevre_tipi, skor, risk_seviyesi))
         conn.commit()
         conn.close()
 
