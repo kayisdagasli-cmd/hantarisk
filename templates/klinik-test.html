@@ -35,7 +35,6 @@
         .sehir-arama-kalemi:hover { background: var(--primary); color: white; }
         
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
-        /* Yeni eklenen alt alta listeleme düzeni */
         .checkbox-list-vertical { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem; }
         
         .checkbox-label { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; font-size: 0.9rem; color: var(--text-main); width: 100%; box-sizing: border-box; }
@@ -74,7 +73,6 @@
 </head>
 <body>
 
-    <!-- NAVIGASYON BAR -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo"><i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span></a>
@@ -101,7 +99,6 @@
         </div>
     </nav>
 
-    <!-- TEST ALANI -->
     <div class="test-container">
         <div class="test-card">
             <h2><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
@@ -160,7 +157,6 @@
                         </select>
                     </div>
 
-                    <!-- KURUÇKA VE LABORATUVAR PARAMETRELERİ (ALT ALTA 3 SEÇENEK) -->
                     <div class="form-group full-width">
                         <label>Klinik Zamanlama ve Varsa Laboratuvar Doğrulamaları</label>
                         <div class="oneri-soru-kutusu">
@@ -197,7 +193,6 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
 
-            <!-- SONUÇ PANELİ -->
             <div id="result-panel" class="result-panel">
                 <div class="animated-counter-box">
                     <div id="animated-score" class="animated-score">%0</div>
@@ -213,16 +208,14 @@
                 </div>
                 <ul id="oneriler-list" class="oneriler-list"></ul>
 
-                <!-- EN YAKIN SAĞLIK KURULUŞU BUTONU GERİ EKLENDİ -->
                 <div class="action-buttons">
                     <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Aç</button>
-                    <a id="btn-emergency" href="https://www.google.com/maps/search/acil+servis+hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> En Yakın Sağlık Kuruluşunu Bul</a>
+                    <a id="btn-emergency" href="#" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> En Yakın Sağlık Kuruluşunu Bul</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT PARÇASI -->
     <script>
         // Hamburger Menü Kapanma Mantığı
         const hamburgerBtn = document.getElementById('hamburger-btn');
@@ -265,15 +258,27 @@
         sehirInput.addEventListener('input', tetikleFiltreleme);
         sehirInput.addEventListener('focus', tetikleFiltreleme);
 
+        // Bölge değiştiğinde altındaki şehir alanını temizler ki eşleşme bozulmasın
+        bolgeSelect.addEventListener('change', function() {
+            sehirInput.value = '';
+            sehirDropdown.innerHTML = '';
+            sehirDropdown.style.display = 'none';
+        });
+
         function tetikleFiltreleme() {
             const secilenBolge = bolgeSelect.value;
             const arananKelime = sehirInput.value.trim().toLowerCase();
             sehirDropdown.innerHTML = '';
-            let aranacakHavuz = [];
-            if(secilenBolge && tumSehirlerDizisi[secilenBolge]) { aranacakHavuz = tumSehirlerDizisi[secilenBolge]; } 
-            else { Object.values(tumSehirlerDizisi).forEach(b => { aranacakHavuz = aranacakHavuz.concat(b); }); }
-            aranacakHavuz = [...new Set(aranacakHavuz)].sort();
+            
+            // DÜZELTME: Bölge seçilmediyse asla rastgele şehir önerme
+            if (!secilenBolge) {
+                sehirDropdown.style.display = 'none';
+                return;
+            }
+
+            let aranacakHavuz = tumSehirlerDizisi[secilenBolge] || [];
             const eslesenler = aranacakHavuz.filter(s => s.toLowerCase().indexOf(arananKelime) > -1);
+            
             if(eslesenler.length > 0) {
                 sehirDropdown.style.display = 'block';
                 eslesenler.forEach(sehir => {
@@ -283,7 +288,7 @@
                     oge.addEventListener('click', function() {
                         sehirInput.value = sehir;
                         sehirDropdown.style.display = 'none';
-                        for(let b in tumSehirlerDizisi) { if(tumSehirlerDizisi[b].includes(sehir)) { bolgeSelect.value = b; break; } }
+                        // DÜZELTME: Kullanıcı zaten bölgeyi seçtiği için bölgeyi otomatik değiştiren eski yapı kaldırıldı, bölge sabit kalıyor.
                     });
                     sehirDropdown.appendChild(oge);
                 });
@@ -295,6 +300,18 @@
         // Karar Destek Algoritması
         document.getElementById('hanta-test-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            const adVerisi = document.getElementById('form-ad').value;
+            const yasVerisi = document.getElementById('form-yas').value;
+            const cinsiyetVerisi = document.getElementById('form-cinsiyet').value;
+            const sehirVerisi = sehirInput.value;
+
+            // DÜZELTME: Profil sayfasının okuyabilmesi için verileri LocalStorage'a kaydetme alanı
+            localStorage.setItem('hanta_ad_soyad', adVerisi);
+            localStorage.setItem('hanta_yas', yasVerisi);
+            localStorage.setItem('hanta_cinsiyet', cinsiyetVerisi);
+            localStorage.setItem('hanta_sehir', sehirVerisi);
+
             const semptomlar = [];
             document.querySelectorAll('.semptom-check:checked').forEach(cb => { semptomlar.push(cb.value); });
 
@@ -303,11 +320,11 @@
             document.querySelectorAll('.ek-klinik-check:checked').forEach(cb => { ekKlinikBulgular.push(cb.value); });
 
             const payload = {
-                ad: document.getElementById('form-ad').value,
-                yas: document.getElementById('form-yas').value,
-                cinsiyet: document.getElementById('form-cinsiyet').value,
+                ad: adVerisi,
+                yas: yasVerisi,
+                cinsiyet: cinsiyetVerisi,
                 bolge: bolgeSelect.value,
-                sehir: sehirInput.value,
+                sehir: sehirVerisi,
                 cevre_tipi: document.getElementById('form-cevre').value,
                 semptomlar: semptomlar
             };
@@ -381,8 +398,10 @@
                 badge.className = "risk-badge";
                 
                 const emergencyBtn = document.getElementById('btn-emergency');
-                // Kritik ve Yüksek risk durumunda acil servis arama butonu görünür yapılır
+                
+                // DÜZELTME: Buton linki şehir bazlı Sağlık Ocağı (ASM) ve Acil Servisleri gösterecek eski detaylı haline getirildi
                 if(riskSeviye === "KRİTİK" || riskSeviye === "YÜKSEK RİSK") {
+                    emergencyBtn.href = `https://www.google.com/maps/search/${encodeURIComponent(payload.sehir)}+En+Yakin+Aile+Sagligi+Merkezi+ve+Acil+Servis`;
                     emergencyBtn.style.display = 'flex';
                     badge.classList.add(riskSeviye === "KRİTİK" ? 'badge-kritik' : 'badge-yuksek');
                 } else {
@@ -430,7 +449,7 @@
                         </head>
                         <body>
                             <div class="rapor-kart">
-                                <div class="baslik-alani><h1 class="ana-baslik">HANTARISK TIBBİ ANALİZ RAPORU</h1></div>
+                                <div class="baslik-alani"><h1 class="ana-baslik">HANTARISK TIBBİ ANALİZ RAPORU</h1></div>
                                 <div class="bolum-basligi">Hasta Bilgileri</div>
                                 <table class="bilgi-tablosu">
                                     <tr><td><b>Adı Soyadı:</b></td><td>${payload.ad}</td></tr>
@@ -460,3 +479,4 @@
     </script>
 </body>
 </html>
+     
