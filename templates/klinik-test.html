@@ -9,9 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Responsive ve Sabit Navbar Tasarımı */
         .navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: #0b0d12; border-bottom: 1px solid var(--border-color); }
         .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; height: 70px; box-sizing: border-box; }
         .nav-menu { display: flex; align-items: center; gap: 1.5rem; flex-shrink: 0; }
+        
+        /* MOBİL HAMBURGER BUTONU VE MENÜSÜ */
+        .hamburger-btn { display: none; background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; padding: 0.5rem; transition: color 0.2s; }
+        .hamburger-btn:hover { color: #ffffff; }
+        .mobile-nav-menu { display: none; position: absolute; top: 70px; left: 0; width: 100%; background: #0b0d12; border-bottom: 1px solid var(--border-color); padding: 1rem 1.5rem; box-sizing: border-box; flex-direction: column; gap: 1rem; box-shadow: 0 15px 30px rgba(0,0,0,0.5); z-index: 999; }
+        .mobile-nav-menu .nav-link { display: flex; align-items: center; gap: 10px; padding: 0.7rem 1rem; border-radius: 8px; width: 100%; box-sizing: border-box; }
+        .mobile-nav-menu .nav-link.active { background: rgba(239, 68, 68, 0.1); color: var(--primary); }
+
         .test-container { max-width: 850px; margin: 8rem auto 4rem auto; padding: 0 1.5rem; }
         .test-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
@@ -20,25 +29,43 @@
         .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
         .form-control { width: 100%; padding: 1rem; background: #11141a !important; border: 1px solid var(--border-color); border-radius: 8px; color: #ffffff !important; font-size: 1rem; transition: all 0.3s ease; box-sizing: border-box; }
         .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
-        .sehir-arama-listesi { position: absolute; top: 100%; left: 0; width: 100%; background: #171c26; border: 1px solid var(--border-color); border-radius: 8px; z-index: 999; max-height: 220px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
+        
+        .sehir-arama-listesi { position: absolute; top: 100%; left: 0; width: 100%; background: #171c26; border: 1px solid var(--border-color); border-radius: 8px; z-index: 1010; max-height: 220px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
         .sehir-arama-kalemi { padding: 0.8rem 1rem; color: #ffffff; cursor: pointer; transition: background 0.2s ease; }
         .sehir-arama-kalemi:hover { background: var(--primary); color: white; }
+        
         .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
-        .checkbox-label { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; font-size: 0.9rem; }
+        .checkbox-label { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; font-size: 0.9rem; color: var(--text-main); }
         .checkbox-label:hover { background: rgba(239, 68, 68, 0.03); border-color: rgba(239, 68, 68, 0.2); }
+        
+        /* Yeni Tıbbi Soru Havuzu Alanları */
+        .oneri-soru-kutusu { background: rgba(239, 68, 68, 0.02); border: 1px dashed rgba(239, 68, 68, 0.3); padding: 1.2rem; border-radius: 10px; margin-bottom: 1.5rem; }
+        .oneri-soru-kutusu p { margin: 0 0 0.8rem 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+
         .result-panel { margin-top: 3rem; padding: 2.5rem; border-radius: 12px; display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); }
         .animated-counter-box { text-align: center; margin-bottom: 1.5rem; }
         .animated-score { font-size: 4rem; font-weight: 800; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); line-height: 1; }
         .score-label { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
         .risk-badge { display: inline-block; padding: 0.5rem 1.5rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; }
+        
         .badge-kritik { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; }
         .badge-yuksek { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; }
         .badge-dusuk { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
         .oneriler-title { font-weight: 700; color: white; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        .oneriler-list { padding-left: 1.2rem; margin-bottom: 2rem; }
-        .oneriler-list li { color: var(--text-muted); margin-bottom: 0.6rem; font-size: 0.95rem; line-height: 1.5; }
+        .oneriler-list { padding-left: 1.2rem; margin-bottom: 2rem; list-style: none; }
+        .oneriler-list li { color: var(--text-muted); margin-bottom: 0.6rem; font-size: 0.95rem; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
         .action-buttons { display: flex; gap: 1rem; }
-        @media (max-width: 768px) { .test-card { padding: 1.5rem !important; } .form-grid { grid-template-columns: 1fr !important; gap: 0rem; } .action-buttons { flex-direction: column; } .test-container { margin-top: 6rem; } }
+        
+        /* Mobil Ekran Optimizasyonları */
+        @media (max-width: 768px) { 
+            .nav-menu { display: none; } 
+            .hamburger-btn { display: block; } 
+            .mobile-nav-menu.show { display: flex; }
+            .test-card { padding: 1.5rem !important; } 
+            .form-grid { grid-template-columns: 1fr !important; gap: 0rem; } 
+            .action-buttons { flex-direction: column; } 
+            .test-container { margin-top: 6rem; } 
+        }
     </style>
 </head>
 <body>
@@ -46,6 +73,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo"><i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span></a>
+            
             <div class="nav-menu">
                 <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
                 <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
@@ -53,6 +81,18 @@
                 <a href="/klinik-test" class="nav-link active"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
                 <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
             </div>
+
+            <button id="hamburger-btn" class="hamburger-btn">
+                <i class="fa-solid fa-bars" id="hamburger-icon"></i>
+            </button>
+        </div>
+
+        <div id="mobile-nav-menu" class="mobile-nav-menu">
+            <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
+            <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
+            <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
+            <a href="/klinik-test" class="nav-link active"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
+            <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
         </div>
     </nav>
 
@@ -115,6 +155,27 @@
                     </div>
 
                     <div class="form-group full-width">
+                        <label>Klinik Zamanlama ve Varsa Laboratuvar Doğrulamaları (Öneri Modülü)</label>
+                        <div class="oneri-soru-kutusu">
+                            <p><i class="fa-solid fa-circle-info text-gradient"></i> Algoritma duyarlılığını artırmak için aşağıdaki durumlardan size uyanları işaretleyin:</p>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="form-zamanlama" value="Incubation OK">
+                                    <span><i class="fa-solid fa-calendar-check" style="color:#22c55e;"></i> Temas/Kırsal Aktivite Son 1-6 Hafta İçindeydi</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="ek-klinik-check" value="Thrombocytopenia">
+                                    <span><i class="fa-solid fa-droplet" style="color:#ef4444;"></i> Kan Testinde Trombosit Düşüklüğü var</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="ek-klinik-check" value="Renal Failure">
+                                    <span><i class="fa-solid fa-kidneys" style="color:#3b82f6;"></i> İdrar Miktarında Azalma / Böbrek Tutulumu</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
                         <label>Mevcut Semptomlar (Eşleşen Tüm Belirtileri Seçiniz)</label>
                         <div class="checkbox-grid">
                             <label class="checkbox-label"><input type="checkbox" class="semptom-check" value="Fever"> <i class="fa-solid fa-temperature-high" style="color:#ef4444;"></i> Ani Yüksek Ateş</label>
@@ -146,13 +207,37 @@
 
                 <div class="action-buttons">
                     <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Aç</button>
-                    <a id="btn-emergency" href="https://maps.google.com/?q=en+yakin+hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
+                    <a id="btn-emergency" href="https://www.google.com/maps/search/acil+servis+hastane" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- 1. MOBİL HAMBURGER MENÜ MUKAVEMETİ ---
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileNavMenu = document.getElementById('mobile-nav-menu');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+
+        hamburgerBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isOpen = mobileNavMenu.classList.toggle('show');
+            if (isOpen) {
+                hamburgerIcon.className = "fa-solid fa-xmark";
+            } else {
+                hamburgerIcon.className = "fa-solid fa-bars";
+            }
+        });
+
+        // Sayfada veya form alanında boş bir yere tıklandığında menünün kapanması
+        document.addEventListener('click', function(e) {
+            if (!hamburgerBtn.contains(e.target) && !mobileNavMenu.contains(e.target)) {
+                mobileNavMenu.classList.remove('show');
+                hamburgerIcon.className = "fa-solid fa-bars";
+            }
+        });
+
+        // --- 2. ŞEHİR VE BÖLGE AJANDASI (SENİN ESKİ KODUN) ---
         const tumSehirlerDizisi = {
             "Marmara": ["Balıkesir", "Bilecik", "Bursa", "Çanakkale", "Edirne", "İstanbul", "Kırklareli", "Kocaeli", "Sakarya", "Tekirdağ", "Yalova"],
             "İç Anadolu": ["Aksaray", "Ankara", "Çankırı", "Eskişehir", "Karaman", "Kayseri", "Kırıkkale", "Kırşehir", "Konya", "Nevşehir", "Niğde", "Sivas", "Yozgat"],
@@ -207,10 +292,16 @@
 
         document.addEventListener('click', function(e) { if (e.target !== sehirInput) { sehirDropdown.style.display = 'none'; } });
 
+        // --- 3. Gelişmiş FORM ANALİZ MOTORU ---
         document.getElementById('hanta-test-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const semptomlar = [];
             document.querySelectorAll('.semptom-check:checked').forEach(cb => { semptomlar.push(cb.value); });
+
+            // Ek Öneri Seçeneklerini yakala
+            const zamanlamaKuluçka = document.getElementById('form-zamanlama').checked;
+            const ekKlinikBulgular = [];
+            document.querySelectorAll('.ek-klinik-check:checked').forEach(cb => { ekKlinikBulgular.push(cb.value); });
 
             const payload = {
                 ad: document.getElementById('form-ad').value,
@@ -229,32 +320,31 @@
             })
             .then(res => res.json())
             .then(data => {
-                // --- ARTIK SONUÇLAR SUNUCUDAN DİNAMİK GELİYOR, YOKSA DA JAVASCRIPT HAKİKİ HESAPLIYOR ---
                 let targetScore = data.skor;
                 let riskSeviye = data.risk_seviyesi;
                 let sistemOnerileri = data.oneriler;
 
+                // Sunucudan veri dönmezse yedek tıp motoru çalışır (Yeni klinik soruları da dahil ederek hesaplar)
                 if (!targetScore) {
-                    // Arka plan yedek motoru algoritmik tıp mantığına geçirildi (Statik %70 tuzağı bitti!)
                     let hesaplananSkor = 5; 
                     if (semptomlar.includes("Fever")) hesaplananSkor += 25;
                     if (semptomlar.includes("Breathing Shortness")) hesaplananSkor += 30;
-                    if (semptomlar.includes("Muscle Aches")) hesaplananSkor += 15;
+                    if (semptomlar.includes("Muscle Aches")) hesaplananSkor += 10;
                     if (semptomlar.includes("Headache")) hesaplananSkor += 10;
                     if (semptomlar.includes("Nausea/Vomiting")) hesaplananSkor += 10;
 
-                    // Çevresel maruziyet çarpanı
+                    // Çevresel ve yeni klinik çarpanlar
                     if (payload.cevre_tipi === "Rodent Contact" || payload.cevre_tipi === "Home Infestation") hesaplananSkor += 15;
                     else if (payload.cevre_tipi === "Agricultural Exposure" || payload.cevre_tipi === "Forest Exposure") hesaplananSkor += 8;
-                    else if (payload.cevre_tipi === "None") hesaplananSkor -= 10;
 
-                    // Karadeniz bölgesinde tarihsel vakalardan ötürü ağırlık artar
-                    if (payload.bolge === "Karadeniz") hesaplananSkor += 7;
+                    if (zamanlamaKuluçka && semptomlar.length > 0) hesaplananSkor += 10; // Kuluçka dönemi uyumu
+                    if (ekKlinikBulgular.includes("Thrombocytopenia")) hesaplananSkor += 15; // Trombosit kritik gösterge
+                    if (ekKlinikBulgular.includes("Renal Failure")) hesaplananSkor += 15; // Böbrek hasarı
 
-                    targetScore = Math.max(0, Math.min(计算Score = hesaplananSkor, 100));
+                    targetScore = Math.max(0, Math.min(hesaplananSkor, 100));
                     
-                    if (targetScore >= 75) { riskSeviye = "KRİTİK"; } 
-                    else if (targetScore >= 40) { riskSeviye = "YÜKSEK RİSK"; } 
+                    if (targetScore >= 70) { riskSeviye = "KRİTİK"; } 
+                    else if (targetScore >= 35) { riskSeviye = "YÜKSEK RİSK"; } 
                     else { riskSeviye = "DÜŞÜK RİSK"; }
                 }
 
@@ -262,24 +352,25 @@
                     if (riskSeviye === "KRİTİK") {
                         sistemOnerileri = [
                             "ACİL DURUM: En yakın tam teşekküllü sağlık kuruluşunun acil servisine hemen başvurun.",
-                            "Sağlık personeline kırsal alan/kemirgen maruziyet öykünüzü mutlaka belirtin.",
-                            "Solunum yetmezliği gelişebileceğinden dolayı efor sarf etmeyin ve istirahat edin."
+                            "Sağlık personeline kırsal alan/kemirgen maruziyet öykünüzü ve trombosit/böbrek durumunuzu mutlaka belirtin.",
+                            "Solunum sıkıntısı ve kardiyopulmoner sendrom riskine karşı tam istirahat halinde kalın."
                         ];
                     } else if (riskSeviye === "YÜKSEK RİSK") {
                         sistemOnerileri = [
-                            "Bir hekime başvurarak tam kan sayımı (özellikle trombosit/platelet oranları) yaptırın.",
-                            "Kemirgenlerin veya atıklarının bulunabileceği kapalı depo, tavan arası gibi alanlardan uzak durun.",
-                            "Semptomlarınızı (ateş, nefes darlığı) yakından takip edin; artış olursa acil servise geçin."
+                            "En kısa sürede bir sağlık kuruluşuna başvurarak Tam Kan Sayımı (Hemogram) ve Böbrek Fonksiyon Testi yaptırın.",
+                            "Semptomların seyrini (ateş dalgalanması, nefes daralması) saatlik olarak izleyin.",
+                            "Kemirgen dışkısı barındırma ihtimali olan tozlu alanların kuru süpürülmesinden kaçının."
                         ];
                     } else {
                         sistemOnerileri = [
-                            "Şu an için hantavirüs açısından belirgin bir klinik tablo saptanmamıştır.",
-                            "Mevcut semptomlarınız devam ederse genel bir muayene için aile hekiminize başvurabilirsiniz.",
-                            "Hijyen kurallarına uymaya ve gıdalarınızı kapalı kaplarda saklamaya özen gösterin."
+                            "Şu an için hantavirüs açısından baskın ve acil bir klinik tablo düşünülmemektedir.",
+                            "Belirtileriniz devam ederse ayaktan muayene amacıyla hekiminize danışabilirsiniz.",
+                            "Kırsal depolara girerken maske takmayı ve besinleri kapalı muhafaza etmeyi unutmayın."
                         ];
                     }
                 }
 
+                // Sonuç ekranını canlandır
                 const panel = document.getElementById('result-panel');
                 panel.style.display = 'block';
                 panel.scrollIntoView({ behavior: 'smooth' });
@@ -296,20 +387,27 @@
                 badge.className = "risk-badge";
                 
                 const emergencyBtn = document.getElementById('btn-emergency');
-                if(riskSeviye === "KRİTİK") { badge.classList.add('badge-gritik', 'badge-kritik'); emergencyBtn.style.display = 'flex'; } 
+                if(riskSeviye === "KRİTİK") { badge.classList.add('badge-kritik'); emergencyBtn.style.display = 'flex'; } 
                 else if(riskSeviye === "YÜKSEK RİSK") { badge.classList.add('badge-yuksek'); emergencyBtn.style.display = 'flex'; } 
                 else { badge.classList.add('badge-dusuk'); emergencyBtn.style.display = 'none'; }
 
                 const onerilerList = document.getElementById('oneriler-list');
                 onerilerList.innerHTML = '';
                 sistemOnerileri.forEach(oneri => {
-                    onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.7rem; color:var(--primary); margin-right:8px;"></i> ${oneri}</li>`;
+                    onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.6rem; color:var(--primary);"></i> ${oneri}</li>`;
                 });
 
+                // --- 4. TIBBİ HTML RAPOR OLUŞTURUCU (SENİN ESKİ KODUN) ---
                 document.getElementById('btn-pdf').onclick = function() {
                     const cevreMetni = document.getElementById('form-cevre').options[document.getElementById('form-cevre').selectedIndex].text;
                     const tarihMetni = new Date().toLocaleString('tr-TR');
                     const turkceSemptomDizisi = semptomlar.map(s => semptomTurkceKarsiliklari[s] || s);
+                    
+                    // Ek Bulguları da rapora bas
+                    if (zamanlamaKuluçka) turkceSemptomDizisi.push("Son 1-6 Hafta İçinde Aktif Temas Öyküsü");
+                    if (ekKlinikBulgular.includes("Thrombocytopenia")) turkceSemptomDizisi.push("Laboratuvar Bulgusu: Trombositopeni");
+                    if (ekKlinikBulgular.includes("Renal Failure")) turkceSemptomDizisi.push("Klinik Bulgu: Böbrek Disfonksiyonu");
+
                     const semptomMetni = turkceSemptomDizisi.join(', ') || 'Belirtilmedi';
                     
                     let oneriLiElementleri = '';
@@ -351,10 +449,10 @@
                                     <tr><td class="alan-adi">Coğrafi Konum</td><td class="alan-deger">${payload.sehir} / ${payload.bolge} Bölgesi</td></tr>
                                     <tr><td class="alan-adi">Rapor Tarihi</td><td class="alan-deger">${tarihMetni}</td></tr>
                                 </table>
-                                <div class="bolum-basligi">Klinik Bulgular ve Maruziyet</div>
+                                <div class="bolum-basligi">Klinik Bulgular, Zamanlama ve Maruziyet</div>
                                 <table class="bilgi-tablosu">
                                     <tr><td class="alan-adi">Çevresel Öykü</td><td class="alan-deger">${cevreMetni}</td></tr>
-                                    <tr><td class="alan-adi">Mevcut Semptomlar</td><td class="alan-deger">${semptomMetni}</td></tr>
+                                    <tr><td class="alan-adi">Semptomlar & Laboratuvar</td><td class="alan-deger">${semptomMetni}</td></tr>
                                 </table>
                                 <div class="skor-kutusu">
                                     <div style="font-size: 13px; color: #7c2d12; font-weight: 600; text-transform: uppercase;">Yapay Zeka Klinik Hesaplama Skoru</div>
