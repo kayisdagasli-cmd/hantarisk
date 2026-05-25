@@ -1,3 +1,10 @@
+Harika, profil kodunun 2. parçasını da aldım. `localStorage` ve `fetch` mekanizmalarını inceledim. Kodunun içerisindeki o kaba duran eski klasör logolu boş durum şablonlarını tamamen temizledim.
+
+Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde ortaya çıkan o büyük kutuları ve yazıları, ilk başta paylaştığın temiz ve minimal görsel tasarıma (kullanıcı başlığı, kompakt listeleme şablonları vb.) tam uyumlu hale getirdim.
+
+İşte 1. ve 2. parçayı eksiksiz bir şekilde birleştirdiğim, mobilde harika görünen **tek parça `profil.html` kodun:**
+
+```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -33,23 +40,25 @@
             .hamburger-btn { display: block; } 
             .mobile-nav-menu.show { display: flex; }
             .profile-card-flex { flex-direction: column; text-align: center; justify-content: center; }
-            .user-details-row { justify-content: center; }
+            .user-details-row { justify-content: center; gap: 0.8rem; font-size: 0.8rem; }
+            
+            /* Mobilde kutuları ve yazıları kibarlaştırma */
+            .premium-card { padding: 1.2rem !important; border-radius: 10px !important; }
+            .premium-card h2 { font-size: 1.2rem !important; }
+            .premium-card p { font-size: 0.78rem !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Arka Plan Hücre Animasyonu -->
     <canvas id="animation-canvas"></canvas>
 
-    <!-- Üst Menü / Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="/" class="nav-logo">
                 <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
             </a>
             
-            <!-- Masaüstü Menü Yapısı -->
             <div class="nav-menu">
                 <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
                 <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
@@ -62,13 +71,11 @@
                 <span class="status-pulse"></span> SISTEM: <strong style="color:var(--success)">ONLINE</strong>
             </div>
 
-            <!-- Mobil Hamburger Butonu -->
             <button id="hamburger-btn" class="hamburger-btn">
                 <i class="fa-solid fa-bars" id="hamburger-icon"></i>
             </button>
         </div>
 
-        <!-- Açılır Mobil Menü Modülü -->
         <div id="mobile-nav-menu" class="mobile-nav-menu">
             <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
             <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
@@ -78,40 +85,34 @@
         </div>
     </nav>
 
-    <!-- Profil İçerik Alanı -->
-    <main class="hero-section">
-        <div class="hero-container-center">
+    <main class="hero-section" style="padding-top: 100px;">
+        <div class="hero-container-center" style="max-width: 800px; margin: 0 auto; width: 100%; padding: 0 1rem;">
             
-            <!-- Dinamik Kullanıcı Başlık Kartı -->
-            <div class="premium-card" style="margin-bottom: 2rem;">
+            <div class="premium-card" style="margin-bottom: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
                 <div class="profile-card-flex">
-                    <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: var(--primary); flex-shrink:0;">
+                    <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--primary); flex-shrink:0;">
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <div id="profile-user-box" style="flex-grow: 1;">
-                        <!-- JS ile doldurulacak dinamik alan -->
-                        <h2 id="profile-name">Analiz Ediliyor...</h2>
+                        <h2 id="profile-name" style="font-size: 1.4rem; font-weight: 700; color: #fff;">Analiz Ediliyor...</h2>
                         <div class="user-details-row" id="profile-details">
-                            <!-- Detaylar buraya gelecek -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Geçmiş Test Kayıtları Bölümü -->
-            <div class="premium-card">
-                <div class="card-header-block">
-                    <div class="card-header-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="premium-card" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
+                <div class="card-header-block" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                    <div class="card-header-icon" style="font-size: 1.4rem; color: var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div>
-                        <h2>Son 3 Klinik Analiz Geçmişiniz</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Girdiğiniz verilere dayanarak sistem havuzunda eşleşen son 3 tahmin skoru</p>
+                        <h2 style="font-size: 1.3rem; font-weight: 700; color: #fff;">Son 3 Klinik Analiz Geçmişiniz</h2>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Sistem havuzunda eşleşen son 3 tahmin skorunuz</p>
                     </div>
                 </div>
 
-                <!-- Test Kartlarının Listeleneceği Alan -->
                 <div id="gecmis-listesi">
-                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        <i class="fa-solid fa-circle-notch fa-spin"></i> Kayıtlar sorgulanıyor...
+                    <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Kayıtlar sorgulanıyor...
                     </div>
                 </div>
 
@@ -119,12 +120,10 @@
         </div>
     </main>
 
-    <!-- Sayfa Alt Bilgisi -->
-    <footer class="main-footer">
+    <footer class="main-footer" style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem; border-top: 1px solid var(--border-color);">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
     </footer>
 
-    <!-- Hamburger ve Dinamik İsim Algılama Scriptleri -->
     <script>
         // --- 1. HAMBURGER MENÜ MEKANİZMASI ---
         const hamburgerBtn = document.getElementById('hamburger-btn');
@@ -146,7 +145,6 @@
 
         // --- 2. LOCALSTORAGE'DAN BİLGİ ALMA VE FİLTRELEME MOTORU ---
         document.addEventListener("DOMContentLoaded", function() {
-            // Test formunda girilip kaydedilen verileri localstorage üzerinden yakalıyoruz
             const savedName = localStorage.getItem('hanta_ad_soyad');
             const savedAge = localStorage.getItem('hanta_yas');
             const savedGender = localStorage.getItem('hanta_cinsiyet');
@@ -156,16 +154,15 @@
             const profileDetails = document.getElementById('profile-details');
             const liste = document.getElementById("gecmis-listesi");
 
-            // Eğer kullanıcı daha önce hiç test yapmadıysa (isim yoksa)
+            // Eğer kullanıcı daha önce hiç test yapmadıysa (isim yoksa) - SADE VE TEMİZ TASARIM
             if (!savedName) {
                 profileName.innerText = "Kullanıcı Kaydı Bulunamadı";
                 profileDetails.innerHTML = `<span><i class="fa-solid fa-triangle-exclamation" style="color:var(--primary)"></i> Lütfen önce Klinik Karar Testi sayfasından bir analiz gerçekleştirin.</span>`;
                 liste.innerHTML = `
-                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--primary);"></i>
+                    <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem; font-style: italic;">
                         Eşleşen profil verisi olmadığı için geçmiş tahminler listelenemiyor.
                     </div>`;
-                return; // Fetch işlemine geçmeden durduruyoruz.
+                return;
             }
 
             // Test yapılmışsa verileri karta yazıyoruz
@@ -180,21 +177,20 @@
             fetch('/api/kullanici-gecmis')
                 .then(res => res.json())
                 .then(data => {
-                    // Sadece testi çözen aynı kişinin adına ait olan verileri süzüyoruz
                     const filtrelenmişVeri = data.filter(test => 
                         test.ad_soyad.trim().toLowerCase() === savedName.trim().toLowerCase()
                     );
 
+                    // Adına ait geçmiş veri bulunamadıysa - SADE VE TEMİZ TASARIM
                     if (filtrelenmişVeri.length === 0) {
                         liste.innerHTML = `
-                            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                                <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--primary);"></i>
+                            <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem; font-style: italic;">
                                 Adınıza ait geçmiş bir klinik test kaydı bulunamadı.
                             </div>`;
                         return;
                     }
 
-                    // Sadece son 3 tahmini almak için diziyi kesiyoruz (.slice)
+                    // Sadece son 3 tahmini almak için kesip ters çeviriyoruz
                     const sonUcTahmin = filtrelenmişVeri.slice(-3).reverse(); 
 
                     liste.innerHTML = sonUcTahmin.map(test => {
@@ -204,14 +200,14 @@
                         else if(test.risk_seviyesi === "ORTA RİSK") renk = "#eab308";
 
                         return `
-                            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.2rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
-                                    <h4 style="color: #fff;"><i class="fa-solid fa-file-medical"></i> Analiz Sonucu (Skor: %${test.risk_skoru})</h4>
-                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">${test.risk_seviyesi}</span>
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                                    <h4 style="color: #fff; font-size:0.9rem; font-weight:600;"><i class="fa-solid fa-file-medical" style="margin-right:5px; color:${renk};"></i> Analiz Sonucu (Skor: %${test.risk_skoru})</h4>
+                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px;">${test.risk_seviyesi}</span>
                                 </div>
-                                <div style="font-size: 0.88rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                                <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap;">
                                     <span><i class="fa-solid fa-location-dot"></i> Konum: ${test.ulke} / ${test.sehir}</span>
-                                    <span><i class="fa-solid fa-calendar-day"></i> İşlem Tarihi: ${test.tarih}</span>
+                                    <span><i class="fa-solid fa-calendar-day"></i> Tarih: ${test.tarih}</span>
                                 </div>
                             </div>
                         `;
@@ -219,14 +215,16 @@
                 })
                 .catch(() => {
                     liste.innerHTML = `
-                        <div style="text-align: center; color: var(--primary); padding: 2rem;">
+                        <div style="text-align: center; color: var(--primary); padding: 1.5rem; font-size:0.85rem;">
                             Veri tabanından veri çekilirken bir hata oluştu.
                         </div>`;
                 });
         });
     </script>
     
-    <!-- Fare takip eden virüs animasyonunun script dosyası -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
+
+```
+   
