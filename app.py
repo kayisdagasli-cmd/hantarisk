@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 DATABASE = 'hantavirus.db'
 CSV_FILE = 'global_hantavirus_surveillance_dataset_2026.csv'
-NEWS_API_KEY = 'bc24ec87c1264c3986a45480749bd00c'
+NEWS_API_KEY = 'ddd61a230ac34540b8d44e6f6cdf82a2'
 
 def veritabanı_hazırla():
     # Veritabanı ve tabloları oluştur
