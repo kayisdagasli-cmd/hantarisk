@@ -15,30 +15,10 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-    // 2. NEWS API CANLI HABER AKIŞI
-    const newsGrid = document.getElementById("news-grid");
-    if (newsGrid) {
-        fetch("/api/guncel-haberler")
-            .then(res => res.json())
-            .then(data => {
-                if (data.articles && data.articles.length > 0) {
-                    newsGrid.innerHTML = data.articles.slice(0, 6).map(article => `
-                        <div class="news-card">
-                            <div class="news-source"><i class="fa-solid fa-newspaper"></i> ${article.source.name || 'Global Sağlık'}</div>
-                            <h3>${article.title}</h3>
-                            <p>${article.description || 'Haber içeriği yüklenemedi.'}</p>
-                            <a href="${article.url}" target="_blank" class="news-link">Detayları Oku <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                        </div>
-                    `).join("");
-                } else {
-                    newsGrid.innerHTML = `<div class="no-news">Şu anda güncel hantavirüs haberi bulunamadı.</div>`;
-                }
-            })
-            .catch(err => {
-                console.error("Haber çekme hatası:", err);
-                newsGrid.innerHTML = `<div class="no-news">Haber servisine bağlanırken bir hata oluştu.</div>`;
-            });
-    }
+    // 2. NEWS API CANLI HABER AKIŞI ÇAKIŞMA ENGELLEYİCİ
+    // index.html içerisindeki yeni ve güncel haber çekme mimarisiyle çakışmaması,
+    // ekrana gelen haberlerin anında silinmemesi için buradaki eski fetch fonksiyonu devre dışı bırakıldı.
+    // Yönetim tamamen ana sayfadaki jilet gibi çalışan yeni koda devredildi.
 
     // 3. FAREYİ TAKİP EDEN İNTERAKTİF VİRÜS ANİMASYONU (CANVAS)
     const canvas = document.getElementById("animation-canvas");
@@ -160,7 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // 5. KLİNİK TEST VERİLERİNİ TAMPON HAFIZAYA ALMA (LOCALSTORAGE)
-    // Bu kısım form gönderildiğinde girdileri hafızaya alır, profil sayfası buradan okur.
     const klinikForm = document.querySelector("form"); // Klinik test sayfasındaki form elementi
     if (klinikForm && document.getElementById("ad_soyad")) {
         klinikForm.addEventListener("submit", function() {
