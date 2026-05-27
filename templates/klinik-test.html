@@ -3,180 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klinik Karar Testi - HantaRisk</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>HantaRisk - Yapay Zeka Klinik Karar Testi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        /* Üst Menünün Kaymasını Engelleyen Taş Gibi Sabit CSS */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            background: #0b0d12;
-            border-bottom: 1px solid var(--border-color);
+        :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #111827;
+            --primary: #ef4444;
+            --primary-hover: #dc2626;
+            --border-color: #1f2937;
+            --text-muted: #94a3b8;
         }
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* --- TEST ALANI KONTEYNER YAPISI --- */
+        .test-container {
+            max-width: 900px;
+            margin: 4rem auto;
             padding: 0 1.5rem;
-            height: 70px;
+        }
+
+        .test-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- FORM GRID SİSTEMİ --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .test-container {
+                margin: 2rem auto;
+            }
+            .test-card {
+                padding: 1.5rem;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            letter-spacing: 0.3px;
+        }
+
+        .form-control {
+            background: #1f2937;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
             box-sizing: border-box;
         }
-        .nav-menu {
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+            background: #111827;
+        }
+
+        /* --- SEMPTOM SEÇİM KUTULARI (CHECKBOX) --- */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkbox-label {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        /* --- HAMBURGER MENÜ CSS BAŞLANGICI --- */
-        .hamburger-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: #ffffff;
-            font-size: 1.5rem;
+            gap: 12px;
+            background: #1f2937;
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            border-radius: 14px;
             cursor: pointer;
-            z-index: 1001;
+            transition: all 0.2s ease;
+            user-select: none;
+            font-size: 0.95rem;
+            color: #cbd5e1;
         }
-        /* --- HAMBURGER MENÜ CSS BİTİŞİ --- */
 
-        /* Test Sayfası Genel Yapısı */
-        .test-container { max-width: 850px; margin: 8rem auto 4rem auto; padding: 0 1.5rem; }
-        .test-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .form-group { margin-bottom: 1.5rem; position: relative; }
-        .form-group.full-width { grid-column: 1 / -1; }
-        .form-group label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
-        
-        .form-control { 
-            width: 100%; 
-            padding: 1rem; 
-            background: #11141a !important; 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-            color: #ffffff !important; 
-            font-size: 1rem; 
-            transition: all 0.3s ease;
-            box-sizing: border-box;
+        .checkbox-label:hover {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: #111827;
         }
-        .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary-glow); }
-        
-        /* Şehir Arama Sonuç Listesi */
+
+        .checkbox-label input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* --- DİNAMİK ŞEHİR ARAMA LİSTESİ --- */
         .sehir-arama-listesi {
             position: absolute;
             top: 100%;
             left: 0;
             width: 100%;
-            background: #171c26;
+            background: #1f2937;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            z-index: 999;
+            border-radius: 12px;
+            margin-top: 6px;
             max-height: 220px;
             overflow-y: auto;
+            z-index: 100;
             display: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-        .sehir-arama-kalemi { padding: 0.8rem 1rem; color: #ffffff; cursor: pointer; transition: background 0.2s ease; }
-        .sehir-arama-kalemi:hover { background: var(--primary); color: white; }
 
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
-        .checkbox-label { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s ease; font-size: 0.9rem; }
-        .checkbox-label:hover { background: rgba(239, 68, 68, 0.03); border-color: rgba(239, 68, 68, 0.2); }
-        
-        /* Animasyonlu Sonuç Paneli */
-        .result-panel { margin-top: 3rem; padding: 2.5rem; border-radius: 12px; display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); }
-        .animated-counter-box { text-align: center; margin-bottom: 1.5rem; }
-        .animated-score { font-size: 4rem; font-weight: 800; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow); line-height: 1; }
-        .score-label { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
-        
-        .risk-badge { display: inline-block; padding: 0.5rem 1.5rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; }
-        .badge-kritik { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; }
-        .badge-yuksek { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; }
-        .badge-dusuk { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
-        
-        .oneriler-title { font-weight: 700; color: white; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        .oneriler-list { padding-left: 1.2rem; margin-bottom: 2rem; list-style-type: none; }
-        .oneriler-list li { color: var(--text-muted); margin-bottom: 0.8rem; font-size: 0.95rem; line-height: 1.6; word-break: break-word; white-space: normal; }
-        
-        .action-buttons { display: flex; gap: 1rem; }
-        
-        @media (max-width: 768px) {
-            .test-card { padding: 1.5rem !important; }
-            .form-grid { grid-template-columns: 1fr !important; gap: 0rem; }
-            .action-buttons { flex-direction: column; }
-            .test-container { margin-top: 6rem; }
-            
-            /* Sıkışma Ayarları */
-            .result-panel { padding: 1.2rem !important; width: 100% !important; box-sizing: border-box !important; }
-            .animated-score { font-size: 3rem !important; }
-            .oneriler-list { padding-left: 0 !important; }
-            .oneriler-list li { font-size: 0.9rem !important; line-height: 1.5 !important; }
+        .sehir-arama-kalemi {
+            padding: 0.9rem 1.2rem;
+            cursor: pointer;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
 
-            /* --- MOBİLDE HAMBURGERİ AKTİF EDEN VE BUTONLARI DÜZELTEN CSS --- */
-            .hamburger-btn {
-                display: block; /* Hamburger mobilde görünür */
-            }
-            .nav-menu {
-                display: none; /* Varsayılan olarak gizli */
-                flex-direction: column;
-                position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background: #0b0d12;
-                padding: 1.5rem;
-                box-sizing: border-box;
-                border-bottom: 1px solid var(--border-color);
-                gap: 1.5rem;
-                align-items: flex-start;
-            }
-            .nav-menu.active {
-                display: flex; /* Hamburgera basılınca açılır */
-            }
-            /* Mobilde acil sağlık kuruluş butonunun flex ezilmesini önleyen ayar */
-            #btn-emergency {
-                display: none; /* JavaScript tetikleyene kadar kapalı kalır */
-            }
+        .sehir-arama-kalemi:hover {
+            background: #111827;
+            color: #ffffff;
+        }
+
+        /* --- ANALİZ SONUÇ PANELİ --- */
+        .result-panel {
+            margin-top: 3.5rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 3rem;
+            display: none;
+        }
+
+        .animated-counter-box {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .animated-score {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+            font-family: monospace;
+        }
+
+        .score-label {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 0.6rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+        }
+
+        .badge-dusuk { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-yuksek { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-kritik { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); animation: pulse 2s infinite; }
+
+        .oneriler-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .oneriler-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 3rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .oneriler-list li {
+            background: #1f2937;
+            padding: 1.2rem 1.5rem;
+            border-radius: 12px;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* Mobil Menü Geçiş Desteği */
+        #mobile-menu {
+            display: none;
+        }
+        #mobile-menu.open {
+            display: flex;
+        }
+
+        #btn-emergency {
+            display: none; /* İlk yüklemede kapalı, JS ile flex olarak tetiklenecek */
+            transition: all 0.3s ease;
         }
     </style>
 </head>
-<body>
+<body class="bg-[#0b0f19] text-[#e2e8f0]">
 
-    <!-- Üst Menü -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-logo">
-                <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
-            </a>
+    <nav class="bg-[#111827] border-b border-gray-800 sticky top-0 z-50 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center gap-2 text-xl font-bold tracking-wider text-white">
+                        <i class="fa-solid fa-virus text-red-500 animate-pulse"></i>
+                        HANTA<span class="text-red-500">RISK</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="/" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-house mr-1"></i> Ana Sayfa</a>
+                    <a href="/dashboard" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
+                    <a href="/surveillance" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
+                    <a href="/klinik-test" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
+                    <a href="/profil" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-user-doctor mr-1"></i> Profilim</a>
+                </div>
+
+                <div class="hidden md:flex items-center gap-2 bg-[#1f2937] px-3 py-1.5 rounded-full border border-green-900/50">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                    <span class="text-xs text-green-400 font-mono tracking-wide">TR VERİ ANALİZİ: GÜNCEL</span>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button id="menu-btn" class="text-gray-400 hover:text-white focus:outline-none p-2 rounded-md hover:bg-gray-800">
+                        <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="absolute top-16 left-0 w-full bg-[#111827] border-b border-gray-800 md:hidden z-40 flex flex-col px-4 pt-2 pb-4 space-y-2 shadow-2xl">
+            <a href="/" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-house w-6 text-red-500"></i>Ana Sayfa</a>
+            <a href="/dashboard" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
+            <a href="/surveillance" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
+            <a href="/klinik-test" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
+            <a href="/profil" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-user-doctor w-6 text-red-500"></i>Profilim</a>
             
-            <!-- Hamburger Tetikleyici Buton -->
-            <button class="hamburger-btn" id="hamburger-trigger">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-
-            <div class="nav-menu" id="mobile-nav-menu">
-                <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
-                <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
-                <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
-                <a href="/klinik-test" class="nav-link active"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
-                <a href="/profil" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Profilim</a>
+            <div class="border-t border-gray-800 pt-3 mt-1 flex items-center gap-2 pl-3">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                <span class="text-xs text-green-400 font-mono">TR VERİ ANALİZİ: GÜNCEL</span>
             </div>
         </div>
     </nav>
 
-    <!-- Test Alanı -->
     <div class="test-container">
         <div class="test-card">
-            <h2 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-microscope text-gradient"></i> Yapay Zeka Klinik Karar Testi</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Türkiye Bölgesel vaka semptom korelasyonu ve maruziyet analitik modülü.</p>
+            <h2 style="margin-bottom: 0.5rem;" class="text-2xl font-bold text-white"><i class="fa-solid fa-microscope text-red-500"></i> Yapay Zeka Klinik Karar Testi</h2>
+            <p style="color: #94a3b8; margin-bottom: 2.5rem;">Türkiye Bölgesel vaka semptom korelasyonu ve maruziyet analitik modülü.</p>
             
             <form id="hanta-test-form" autocomplete="off">
                 <div class="form-grid">
@@ -200,7 +333,6 @@
                         </div>
                     </div>
 
-                    <!-- Bölge Seçimi -->
                     <div class="form-group">
                         <label>Bulunduğunuz Coğrafi Bölge</label>
                         <select id="form-bolge" class="form-control" required>
@@ -215,10 +347,9 @@
                         </select>
                     </div>
 
-                    <!-- Yazarak Arama Alanı -->
                     <div class="form-group">
-                        <label>Bulunduğunuz Şehir (Yazarak Arayın)</label>
-                        <input type="text" id="form-sehir-input" class="form-control" required placeholder="Örn: İstanbul, Ankara, Gaziantep...">
+                        <label>Bulunduğunuz Şehir / İlçe (Yazarak Arayın)</label>
+                        <input type="text" id="form-sehir-input" class="form-control" required placeholder="Örn: Kadıköy, Ayvacık, Nizip, Şahinbey...">
                         <div id="sehir-dropdown" class="sehir-arama-listesi"></div>
                     </div>
 
@@ -247,8 +378,9 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg px-5 py-4 mt-4 flex items-center justify-center gap-2 transition duration-200"><i class="fa-solid fa-shield-virus"></i> Yapay Zeka Risk Analizini Başlat</button>
             </form>
+
             <div id="result-panel" class="result-panel">
                 <div class="animated-counter-box">
                     <div id="animated-score" class="animated-score">%0</div>
@@ -260,43 +392,45 @@
                 </div>
 
                 <div class="oneriler-title">
-                    <i class="fa-solid fa-stethoscope text-gradient"></i> Klinik Karar Destek Önerileri:
+                    <i class="fa-solid fa-stethoscope text-red-500"></i> Klinik Karar Destek Önerileri:
                 </div>
                 <ul id="oneriler-list" class="oneriler-list"></ul>
 
-                <div class="action-buttons">
-                    <button id="btn-pdf" class="btn btn-outline" style="flex: 1; justify-content: center;"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Düzenli Sayfada Aç</button>
-                    <a id="btn-emergency" href="#" target="_blank" class="btn btn-primary" style="flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; display: none !important; align-items: center; gap: 8px;"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
+                <div class="action-buttons flex flex-col sm:flex-row gap-4">
+                    <button id="btn-pdf" class="flex-1 bg-transparent hover:bg-gray-800 text-gray-300 border border-gray-700 rounded-lg py-3 flex items-center justify-center gap-2 transition duration-200"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Düzenli Sayfada Aç</button>
+                    <a id="btn-emergency" href="#" target="_blank" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg py-3 flex items-center justify-center gap-2 transition duration-200"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- HAMBURGER MENÜ TETİKLEME MOTORU ---
-        const hamburgerTrigger = document.getElementById('hamburger-trigger');
-        const mobileNavMenu = document.getElementById('mobile-nav-menu');
+        // --- HAMBURGER MENÜ TETİKLEME MOTORU (Tailwind Yapısıyla %100 Uyumlu) ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
 
-        hamburgerTrigger.addEventListener('click', function(e) {
-            e.stopPropagation();
-            mobileNavMenu.classList.toggle('active');
-            
-            // Hamburger ikonunu dinamik değiştirir (Menü açıkken X yapar)
-            const icon = hamburgerTrigger.querySelector('i');
-            if (mobileNavMenu.classList.contains('active')) {
-                icon.className = 'fa-solid fa-xmark';
-            } else {
-                icon.className = 'fa-solid fa-bars';
-            }
-        });
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('open');
+                
+                // Hamburger ikonunu dinamik değiştirir (Menü açıkken X yapar)
+                if (mobileMenu.classList.contains('open')) {
+                    menuIcon.className = 'fa-solid fa-xmark text-xl';
+                } else {
+                    menuIcon.className = 'fa-solid fa-bars text-xl';
+                }
+            });
 
-        // Menü açıkken dışarı tıklanırsa kapatır
-        document.addEventListener('click', function(e) {
-            if (!mobileNavMenu.contains(e.target) && e.target !== hamburgerTrigger) {
-                mobileNavMenu.classList.remove('active');
-                hamburgerTrigger.querySelector('i').className = 'fa-solid fa-bars';
-            }
-        });
+            // Menü açıkken dışarı tıklanırsa kapatır
+            document.addEventListener('click', function(e) {
+                if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                    mobileMenu.classList.remove('open');
+                    menuIcon.className = 'fa-solid fa-bars text-xl';
+                }
+            });
+        }
 
         // --- ŞEHİR VE BÖLGE VERİ HAVUZU ---
         const tumSehirlerDizisi = {
@@ -411,9 +545,9 @@
                 if(riskSeviye === "KRİTİK" || riskSeviye === "YÜKSEK RİSK") {
                     badge.classList.add(riskSeviye === "KRİTİK" ? 'badge-kritik' : 'badge-yuksek');
                     
-                    // Mobilde ezilip kaybolmasını önleyen kararlı inline stil ataması
+                    // Mobilde ve masaüstünde esnemeden, tam genişlikte flex yerleşim sağlar
                     emergencyBtn.setAttribute("style", "display: flex !important; flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; align-items: center; gap: 8px;");
-                    emergencyBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(payload.sehir + ' devlet hastanesi eğitim araştırma hastanesi')}`;
+                    emergencyBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(payload.sehir + ' devlet hastanesi acil servis')}`;
                 } else {
                     badge.classList.add('badge-dusuk');
                     emergencyBtn.setAttribute("style", "display: none !important;");
@@ -430,7 +564,7 @@
                 ];
                 
                 varsayilanOneriler.forEach(oneri => {
-                    onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.6rem; color:var(--primary); margin-right:8px; vertical-align: middle;"></i> <span>${oneri}</span></li>`;
+                    onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.6rem; color:#ef4444; margin-right:8px; vertical-align: middle;"></i> <span>${oneri}</span></li>`;
                 });
 
                 // --- PREMIUM MEDİKAL PDF RAPOR MODÜLÜ ---
@@ -542,3 +676,4 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
+        
