@@ -1,32 +1,31 @@
-Harika, profil kodunun 2. parçasını da aldım. `localStorage` ve `fetch` mekanizmalarını inceledim. Kodunun içerisindeki o kaba duran eski klasör logolu boş durum şablonlarını tamamen temizledim.
-
-Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde ortaya çıkan o büyük kutuları ve yazıları, ilk başta paylaştığın temiz ve minimal görsel tasarıma (kullanıcı başlığı, kompakt listeleme şablonları vb.) tam uyumlu hale getirdim.
-
-İşte 1. ve 2. parçayı eksiksiz bir şekilde birleştirdiğim, mobilde harika görünen **tek parça `profil.html` kodun:**
-
-```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kullanıcı Profili - HantaRisk</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     <style>
-        /* Responsive Navbar ve Hamburger Eklemeleri */
-        .navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: #0b0d12; border-bottom: 1px solid var(--border-color); }
-        .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; height: 70px; box-sizing: border-box; }
-        .nav-menu { display: flex; align-items: center; gap: 1.5rem; flex-shrink: 0; }
-        
-        /* MOBİL HAMBURGER BUTONU VE MENÜSÜ */
-        .hamburger-btn { display: none; background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; padding: 0.5rem; transition: color 0.2s; }
-        .hamburger-btn:hover { color: #ffffff; }
-        .mobile-nav-menu { display: none; position: absolute; top: 70px; left: 0; width: 100%; background: #0b0d12; border-bottom: 1px solid var(--border-color); padding: 1rem 1.5rem; box-sizing: border-box; flex-direction: column; gap: 1rem; box-shadow: 0 15px 30px rgba(0,0,0,0.5); z-index: 999; }
-        .mobile-nav-menu .nav-link { display: flex; align-items: center; gap: 10px; padding: 0.7rem 1rem; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        .mobile-nav-menu .nav-link.active { background: rgba(239, 68, 68, 0.1); color: var(--primary); }
+        :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #111827;
+            --primary: #ef4444;
+            --border-color: #1f2937;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
 
         /* Profil Kartı Esneklik Düzeni */
         .profile-card-flex { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; width: 100%; }
@@ -36,77 +35,92 @@ Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde or
         .user-details-row span { display: flex; align-items: center; gap: 5px; }
 
         @media (max-width: 768px) { 
-            .nav-menu, .system-status { display: none; } 
-            .hamburger-btn { display: block; } 
-            .mobile-nav-menu.show { display: flex; }
             .profile-card-flex { flex-direction: column; text-align: center; justify-content: center; }
             .user-details-row { justify-content: center; gap: 0.8rem; font-size: 0.8rem; }
             
             /* Mobilde kutuları ve yazıları kibarlaştırma */
             .premium-card { padding: 1.2rem !important; border-radius: 10px !important; }
-            .premium-card h2 { font-size: 1.2rem !important; }
-            .premium-card p { font-size: 0.78rem !important; }
+        }
+
+        /* Mobil Menü Geçiş Desteği */
+        #mobile-menu {
+            display: none;
+        }
+        #mobile-menu.open {
+            display: flex;
         }
     </style>
 </head>
-<body>
+<body class="bg-[#0b0f19] text-[#e2e8f0]">
 
     <canvas id="animation-canvas"></canvas>
 
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-logo">
-                <i class="fa-solid fa-virus-covid text-gradient"></i> HANTA<span class="text-gradient">RISK</span>
-            </a>
-            
-            <div class="nav-menu">
-                <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
-                <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
-                <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
-                <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
-                <a href="/profil" class="nav-link active"><i class="fa-solid fa-user"></i> Profilim</a>
-            </div>
+    <nav class="bg-[#111827] border-b border-gray-800 sticky top-0 z-50 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center gap-2 text-xl font-bold tracking-wider text-white">
+                        <i class="fa-solid fa-virus text-red-500 animate-pulse"></i>
+                        HANTA<span class="text-red-500">RISK</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="/" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-house mr-1"></i> Ana Sayfa</a>
+                    <a href="/dashboard" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
+                    <a href="/surveillance" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
+                    <a href="/klinik-test" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
+                    <a href="/profil" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-user-doctor mr-1"></i> Profilim</a>
+                </div>
 
-            <div class="system-status">
-                <span class="status-pulse"></span> SISTEM: <strong style="color:var(--success)">ONLINE</strong>
-            </div>
+                <div class="hidden md:flex items-center gap-2 bg-[#1f2937] px-3 py-1.5 rounded-full border border-green-900/50">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                    <span class="text-xs text-green-400 font-mono tracking-wide">SISTEM: ONLINE</span>
+                </div>
 
-            <button id="hamburger-btn" class="hamburger-btn">
-                <i class="fa-solid fa-bars" id="hamburger-icon"></i>
-            </button>
+                <div class="md:hidden flex items-center">
+                    <button id="menu-btn" class="text-gray-400 hover:text-white focus:outline-none p-2 rounded-md hover:bg-gray-800">
+                        <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div id="mobile-nav-menu" class="mobile-nav-menu">
-            <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Ana Sayfa</a>
-            <a href="/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Analitik Pano</a>
-            <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
-            <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
-            <a href="/profil" class="nav-link active"><i class="fa-solid fa-user"></i> Profilim</a>
+        <div id="mobile-menu" class="absolute top-16 left-0 w-full bg-[#111827] border-b border-gray-800 md:hidden z-40 flex flex-col px-4 pt-2 pb-4 space-y-2 shadow-2xl">
+            <a href="/" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-house w-6 text-red-500"></i>Ana Sayfa</a>
+            <a href="/dashboard" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
+            <a href="/surveillance" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
+            <a href="/klinik-test" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
+            <a href="/profil" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-user-doctor w-6 text-red-500"></i>Profilim</a>
+            
+            <div class="border-t border-gray-800 pt-3 mt-1 flex items-center gap-2 pl-3">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                <span class="text-xs text-green-400 font-mono">SISTEM: ONLINE</span>
+            </div>
         </div>
     </nav>
 
-    <main class="hero-section" style="padding-top: 100px;">
-        <div class="hero-container-center" style="max-width: 800px; margin: 0 auto; width: 100%; padding: 0 1rem;">
+    <main style="padding-top: 40px; padding-bottom: 40px;">
+        <div style="max-width: 800px; margin: 0 auto; width: 100%; padding: 0 1rem;">
             
-            <div class="premium-card" style="margin-bottom: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
+            <div class="premium-card" style="margin-bottom: 1.5rem; background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
                 <div class="profile-card-flex">
                     <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--primary); flex-shrink:0;">
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <div id="profile-user-box" style="flex-grow: 1;">
                         <h2 id="profile-name" style="font-size: 1.4rem; font-weight: 700; color: #fff;">Analiz Ediliyor...</h2>
-                        <div class="user-details-row" id="profile-details">
-                            </div>
+                        <div class="user-details-row" id="profile-details"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="premium-card" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
+            <div class="premium-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
                 <div class="card-header-block" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
                     <div class="card-header-icon" style="font-size: 1.4rem; color: var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div>
-                        <h2 style="font-size: 1.3rem; font-weight: 700; color: #fff;">Son 3 Klinik Analiz Geçmişiniz</h2>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Sistem havuzunda eşleşen son 3 tahmin skorunuz</p>
+                        <h2 style="font-size: 1.3rem; font-weight: 700; color: #fff;">Son Klinik Analiz Geçmişiniz</h2>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Sistem havuzunda eşleşen en son tahmin skorunuz</p>
                     </div>
                 </div>
 
@@ -120,30 +134,37 @@ Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde or
         </div>
     </main>
 
-    <footer class="main-footer" style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem; border-top: 1px solid var(--border-color);">
+    <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem; border-top: 1px solid var(--border-color);">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
     </footer>
 
     <script>
-        // --- 1. HAMBURGER MENÜ MEKANİZMASI ---
-        const hamburgerBtn = document.getElementById('hamburger-btn');
-        const mobileNavMenu = document.getElementById('mobile-nav-menu');
-        const hamburgerIcon = document.getElementById('hamburger-icon');
+        // --- 1. HAMBURGER MENÜ MOTORU (Tailwind Yapısıyla Tam Uyumlu) ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
 
-        hamburgerBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const isOpen = mobileNavMenu.classList.toggle('show');
-            hamburgerIcon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
-        });
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('open');
+                
+                if (mobileMenu.classList.contains('open')) {
+                    menuIcon.className = 'fa-solid fa-xmark text-xl';
+                } else {
+                    menuIcon.className = 'fa-solid fa-bars text-xl';
+                }
+            });
 
-        document.addEventListener('click', function(e) {
-            if (!hamburgerBtn.contains(e.target) && !mobileNavMenu.contains(e.target)) {
-                mobileNavMenu.classList.remove('show');
-                hamburgerIcon.className = "fa-solid fa-bars";
-            }
-        });
+            document.addEventListener('click', function(e) {
+                if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                    mobileMenu.classList.remove('open');
+                    menuIcon.className = 'fa-solid fa-bars text-xl';
+                }
+            });
+        }
 
-        // --- 2. LOCALSTORAGE'DAN BİLGİ ALMA VE FİLTRELEME MOTORU ---
+        // --- 2. LOCALSTORAGE VE VERİTABANI TAHMİN SORGULAMA MOTORU ---
         document.addEventListener("DOMContentLoaded", function() {
             const savedName = localStorage.getItem('hanta_ad_soyad');
             const savedAge = localStorage.getItem('hanta_yas');
@@ -154,7 +175,7 @@ Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde or
             const profileDetails = document.getElementById('profile-details');
             const liste = document.getElementById("gecmis-listesi");
 
-            // Eğer kullanıcı daha önce hiç test yapmadıysa (isim yoksa) - SADE VE TEMİZ TASARIM
+            // Eğer yerel hafızada kullanıcı ismi yoksa
             if (!savedName) {
                 profileName.innerText = "Kullanıcı Kaydı Bulunamadı";
                 profileDetails.innerHTML = `<span><i class="fa-solid fa-triangle-exclamation" style="color:var(--primary)"></i> Lütfen önce Klinik Karar Testi sayfasından bir analiz gerçekleştirin.</span>`;
@@ -165,7 +186,7 @@ Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde or
                 return;
             }
 
-            // Test yapılmışsa verileri karta yazıyoruz
+            // Hafızadaki verileri üst karta basıyoruz
             profileName.innerText = savedName;
             profileDetails.innerHTML = `
                 <span><i class="fa-solid fa-calendar-day"></i> Yaş: ${savedAge || '-'}</span>
@@ -173,16 +194,16 @@ Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde or
                 <span><i class="fa-solid fa-location-dot"></i> Şehir: ${savedCity || '-'}</span>
             `;
 
-            // Veritabanından tüm geçmişi çekip sadece BU kişiye ait olan son 3 tahmini filtreleme aşaması
+            // Veritabanından verileri çekip sadece en son 1 tanesini filtreliyoruz
             fetch('/api/kullanici-gecmis')
                 .then(res => res.json())
                 .then(data => {
-                    const filtrelenmişVeri = data.filter(test => 
+                    const filtrelenmisVeri = data.filter(test => 
                         test.ad_soyad.trim().toLowerCase() === savedName.trim().toLowerCase()
                     );
 
-                    // Adına ait geçmiş veri bulunamadıysa - SADE VE TEMİZ TASARIM
-                    if (filtrelenmişVeri.length === 0) {
+                    // Adına ait veri yoksa
+                    if (filtrelenmisVeri.length === 0) {
                         liste.innerHTML = `
                             <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem; font-style: italic;">
                                 Adınıza ait geçmiş bir klinik test kaydı bulunamadı.
@@ -190,10 +211,10 @@ Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde or
                         return;
                     }
 
-                    // Sadece son 3 tahmini almak için kesip ters çeviriyoruz
-                    const sonUcTahmin = filtrelenmişVeri.slice(-3).reverse(); 
+                    // Sadece en son yapılan 1 adet tahmini yakalıyoruz (.slice(-1))
+                    const sonTahmin = filtrelenmisVeri.slice(-1); 
 
-                    liste.innerHTML = sonUcTahmin.map(test => {
+                    liste.innerHTML = sonTahmin.map(test => {
                         let renk = "#10b981"; 
                         if(test.risk_seviyesi === "KRİTİK") renk = "#ef4444";
                         else if(test.risk_seviyesi === "YÜKSEK RİSK") renk = "#f97316";
@@ -225,6 +246,3 @@ Ayrıca hem `localStorage` boşken hem de veritabanından veri dönmediğinde or
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
-
-```
-   
