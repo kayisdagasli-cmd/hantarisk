@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klinik Skor Merkezi - HantaRisk</title>
+    <title>Klinik Analiz Geçmişi - HantaRisk</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -55,7 +55,7 @@
                     <a href="/dashboard" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
                     <a href="/surveillance" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
                     <a href="/klinik-test" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
-                    <a href="/profil" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-square-poll-vertical mr-1"></i> Klinik Skor Merkezi</a>
+                    <a href="/profil" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Analiz Geçmişi</a>
                 </div>
 
                 <div class="hidden md:flex items-center gap-2 bg-[#1f2937] px-3 py-1.5 rounded-full border border-green-900/50">
@@ -76,60 +76,28 @@
             <a href="/dashboard" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
             <a href="/surveillance" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
             <a href="/klinik-test" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
-            <a href="/profil" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-square-poll-vertical w-6 text-red-500"></i>Klinik Skor Merkezi</a>
+            <a href="/profil" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-clock-rotate-left w-6 text-red-500"></i>Analiz Geçmişi</a>
         </div>
     </nav>
 
+    <!-- Ana Panel Alanı -->
     <main style="padding-top: 40px; padding-bottom: 40px;">
         <div style="max-width: 800px; margin: 0 auto; width: 100%; padding: 0 1rem;">
             
-            <!-- YENİ ÜST BÖLÜM: Profesyonel İndikatör Kartları (Bilgilendirme yerine eklendi) -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div class="bg-[#111827] border border-gray-800 p-4 rounded-xl flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-semibold text-gray-400 tracking-wider">AI GÜVEN SEVİYESİ</span>
-                        <i class="fa-solid fa-brain text-purple-500 text-sm"></i>
-                    </div>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-xl font-bold text-white font-mono">%94.2</span>
-                        <span class="text-[10px] text-green-400"><i class="fa-solid fa-caret-up"></i> Kararlı</span>
-                    </div>
-                </div>
-                <div class="bg-[#111827] border border-gray-800 p-4 rounded-xl flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-semibold text-gray-400 tracking-wider">AKTİF MONITORING</span>
-                        <i class="fa-solid fa-heart-pulse text-red-500 text-sm"></i>
-                    </div>
-                    <div class="flex items-baseline gap-1">
-                        <span id="indikator-durum" class="text-base font-bold text-gray-300">VERİ YOK</span>
-                    </div>
-                </div>
-                <div class="bg-[#111827] border border-gray-800 p-4 rounded-xl flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-semibold text-gray-400 tracking-wider">KLİNİK VERİ HAVUZU</span>
-                        <i class="fa-solid fa-database text-blue-500 text-sm"></i>
-                    </div>
-                    <div class="flex items-baseline gap-1">
-                        <span id="indikator-adet" class="text-xl font-bold text-white font-mono">0</span>
-                        <span class="text-[10px] text-gray-500">Analiz</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Son 3 Tahmini Gösteren Dinamik Alan -->
-            <div class="premium-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
-                <div class="card-header-block" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-                    <div class="card-header-icon" style="font-size: 1.4rem; color: var(--primary);"><i class="fa-solid fa-chart-list"></i></div>
+            <!-- Temiz, Sade ve Kurumsal Geçmiş Kartı -->
+            <div class="premium-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 12px;">
+                <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.2rem;">
+                    <div style="font-size: 1.5rem; color: var(--primary);"><i class="fa-solid fa-chart-line"></i></div>
                     <div>
-                        <h2 style="font-size: 1.3rem; font-weight: 700; color: #fff;">Son 3 Klinik Analiz Kaydı</h2>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Klinik Karar Testi sayfasından yaptığınız en son 3 tahminin gerçek zamanlı dökümü</p>
+                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff; tracking-wide">Son 3 Risk Analiziniz</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">Klinik Karar Testi modülünden gönderilen ve veritabanında güncellenen son tahminleriniz</p>
                     </div>
                 </div>
 
-                <!-- Son 3 Tahminin Sıralanacağı Alan -->
-                <div id="gecmis-listesi" class="space-y-3">
-                    <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem;">
-                        <i class="fa-solid fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Klinik kayıtlar veritabanından çekiliyor...
+                <!-- Veritabanından Gelen Son 3 Tahminin Gerçek Zamanlı Listeleneceği Yer -->
+                <div id="gecmis-listesi" class="space-y-4">
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="margin-right: 8px; color: var(--primary);"></i> Veritabanı sorgulanıyor...
                     </div>
                 </div>
 
@@ -137,12 +105,12 @@
         </div>
     </main>
 
-    <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem; border-top: 1px solid var(--border-color);">
+    <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; margin-top: 4rem; border-top: 1px solid var(--border-color);">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
     </footer>
 
     <script>
-        // --- 1. HAMBURGER MENÜ MOTORU ---
+        // --- 1. MOBIL MENU MOTORU ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
@@ -166,68 +134,46 @@
             });
         }
 
-        // --- 2. DİNAMİK VERİTABANI MOTORU (SON 3 TAHMİNİ LİSTELEME) ---
+        // --- 2. TAMAMEN GERÇEK ZAMANLI VERİTABANI MOTORU ---
         document.addEventListener("DOMContentLoaded", function() {
+            // Klinik Karar Testi sayfasında kullanıcının en son doldurduğu isim bilgisini alıyoruz
             const savedName = localStorage.getItem('hanta_ad_soyad');
-            const savedAge = localStorage.getItem('hanta_yas');
-            const savedGender = localStorage.getItem('hanta_cinsiyet');
-            const savedCity = localStorage.getItem('hanta_sehir');
-            
             const liste = document.getElementById("gecmis-listesi");
-            const indDurum = document.getElementById("indikator-durum");
-            const indAdet = document.getElementById("indikator-adet");
 
-            // Eğer lokal hafızada hiç kayıt yoksa henüz test çözülmemiştir
+            // Tarayıcıda aktif bir isim/test oturumu yoksa
             if (!savedName) {
                 liste.innerHTML = `
-                    <div class="text-center text-gray-400 p-6 text-sm italic border border-gray-800 rounded-xl bg-gray-900/20">
-                        <i class="fa-solid fa-notes-medical text-gray-600 block text-2xl mb-2"></i>
-                        Sistemde adınıza ait klinik profil kaydı bulunamadı. Lütfen önce 'Klinik Karar Testi' sayfasından risk analizi yapın.
+                    <div class="text-center text-gray-400 p-8 text-sm italic border border-gray-800/60 rounded-xl bg-gray-900/10">
+                        <i class="fa-solid fa-folder-open text-gray-600 block text-3xl mb-3"></i>
+                        Sistemde aktif bir analiz oturumu bulunamadı. Lütfen önce <a href="/klinik-test" class="text-red-400 underline hover:text-red-300">Klinik Karar Testi</a> sayfasından bir analiz gerçekleştirin.
                     </div>`;
                 return;
             }
 
-            // Flask API uç noktasından tüm geçmiş veriyi çekiyoruz
+            // Flask backend API'sine istek atıyoruz
             fetch('/api/kullanici-gecmis')
                 .then(res => res.json())
                 .then(data => {
-                    // Kullanıcının ismine göre filtreleme yapıyoruz
+                    // Sadece o an testi çözen aktif kullanıcının verilerini filtrele
                     const filtrelenmisVeri = data.filter(test => 
                         test.ad_soyad.trim().toLowerCase() === savedName.trim().toLowerCase()
                     );
 
-                    // Eğer veritabanında isim eşleşmediyse (API bağlantı aşamasındaysa emniyet simülasyonu)
+                    // Eğer veritabanında bu isme ait hiç kayıt yoksa (Durağan/sabit sahte veri göstermiyoruz)
                     if (filtrelenmisVeri.length === 0) {
-                        indDurum.innerText = "LOKAL AKTİF";
-                        indDurum.className = "text-base font-bold text-amber-400";
-                        indAdet.innerText = "1";
-
                         liste.innerHTML = `
-                            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-left: 4px solid #f97316; padding: 1.2rem; border-radius: 8px;">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h4 class="text-white text-sm font-semibold"><i class="fa-solid fa-circle-user text-orange-400 mr-1"></i> Son Aktif Profil: ${savedName}</h4>
-                                    <span class="bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded border border-orange-500/20">KLİNİK TEST BAĞLANTISI BEKLENİYOR</span>
-                                </div>
-                                <p class="text-xs text-gray-400 mb-2">Yaş: ${savedAge || '-'} | Cinsiyet: ${savedGender || '-'} | Konum: ${savedCity || '-'}</p>
-                                <p class="text-xs text-gray-500 leading-relaxed"><i class="fa-solid fa-circle-info mr-1"></i> Klinik Karar Testini tamamladığınızda skorunuz buraya anlık yansıyacaktır. Şu an Flask API veritabanı yanıtı bekleniyor.</p>
+                            <div class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
+                                <i class="fa-solid fa-database text-amber-500 block text-3xl mb-3"></i>
+                                <span class="text-white font-medium block mb-1">Kayıt Bekleniyor: ${savedName}</span>
+                                Klinik Karar Testi sayfasından veri tabanına henüz bir veri yazılmadı veya API senkronizasyonu tamamlanmadı.
                             </div>`;
                         return;
                     }
 
-                    // --- KRİTİK NOKTA: Diziyi ters çevirip (en yeniler üste gelsin diye) İLK 3 TANESİNİ ALIYORUZ ---
+                    // Veritabanındaki tüm testleri ters çeviriyoruz (en son yapılan en üste gelsin diye) ve ilk 3 tanesini alıyoruz
                     const sonUcTahmin = filtrelenmisVeri.reverse().slice(0, 3);
 
-                    // Üstteki profesyonel indikatör kartlarını dinamik olarak besleyelim
-                    indAdet.innerText = filtrelenmisVeri.length; // Toplam kaç test çözdüyse
-                    
-                    const enSonRisk = sonUcTahmin[0].risk_seviyesi; // En son yaptığı testin risk seviyesi
-                    indDurum.innerText = enSonRisk;
-                    if(enSonRisk === "KRİTİK") indDurum.className = "text-base font-bold text-red-500";
-                    else if(enSonRisk === "YÜKSEK RİSK") indDurum.className = "text-base font-bold text-orange-500";
-                    else if(enSonRisk === "ORTA RİSK") indDurum.className = "text-base font-bold text-yellow-500";
-                    else indDurum.className = "text-base font-bold text-green-500";
-
-                    // Ekrana son 3 tahmini basıyoruz
+                    // Döngüye girip son 3 tahmini ekrana kurumsal kartlar halinde basıyoruz
                     liste.innerHTML = sonUcTahmin.map((test, index) => {
                         let renk = "#10b981"; 
                         if(test.risk_seviyesi === "KRİTİK") renk = "#ef4444";
@@ -235,24 +181,24 @@
                         else if(test.risk_seviyesi === "ORTA RİSK") renk = "#eab308";
 
                         return `
-                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.2rem; border-radius: 8px;" class="transition hover:bg-gray-800/30">
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.2rem; border-radius: 8px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #1f2937; padding-bottom: 0.5rem;">
-                                    <span style="font-size: 0.85rem; color: #fff; font-weight: 600;">
-                                        <i class="fa-solid fa-id-card-clip" style="color: ${renk}; margin-right: 5px;"></i> 
-                                        Kayıt #${filtrelenmisVeri.length - index} - ${test.ad_soyad} (${savedAge || '30'} Yaş / ${savedGender || 'Belirtilmedi'})
+                                    <span style="font-size: 0.88rem; color: #fff; font-weight: 600;">
+                                        <i class="fa-solid fa-file-invoice-dollar" style="color: ${renk}; margin-right: 6px;"></i> 
+                                        Analiz #${filtrelenmisVeri.length - index} — ${test.ad_soyad}
                                     </span>
-                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.5rem; border-radius: 4px; tracking-wide">${test.risk_seviyesi}</span>
+                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.6rem; border-radius: 4px; letter-spacing: 0.5px;">${test.risk_seviyesi}</span>
                                 </div>
                                 
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem;">
-                                    <h4 style="color: #fff; font-size:0.9rem; font-weight:600;">
-                                        <i class="fa-solid fa-wave-square" style="margin-right:5px; color:${renk};"></i> Yapay Zeka Hesaplanan Risk Skoru: <span style="color:${renk}">%${test.risk_skoru}</span>
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <h4 style="color: #fff; font-size: 0.92rem; font-weight: 600;">
+                                        Yapay Zeka Risk Skoru: <span style="color:${renk}">%${test.risk_skoru}</span>
                                     </h4>
                                 </div>
                                 
-                                <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.6rem;">
-                                    <span><i class="fa-solid fa-map-location-dot"></i> Bölge: ${test.ulke || 'Türkiye'} / ${test.sehir}</span>
-                                    <span><i class="fa-solid fa-clock"></i> Analiz Zamanı: ${test.tarih}</span>
+                                <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.01); pt: 0.4rem;">
+                                    <span><i class="fa-solid fa-earth-europe"></i> Bölge: ${test.ulke || 'Türkiye'} / ${test.sehir}</span>
+                                    <span><i class="fa-solid fa-calendar-check"></i> Test Tarihi: ${test.tarih}</span>
                                 </div>
                             </div>
                         `;
@@ -260,8 +206,9 @@
                 })
                 .catch(() => {
                     liste.innerHTML = `
-                        <div style="text-align: center; color: var(--primary); padding: 1.5rem; font-size:0.85rem;">
-                            <i class="fa-solid fa-circle-exclamation mr-1"></i> Veritabanı veri havuzuna bağlanırken hata oluştu.
+                        <div class="text-center text-red-400 p-6 text-sm border border-red-900/30 rounded-xl bg-red-950/10">
+                            <i class="fa-solid fa-circle-exclamation text-xl block mb-2"></i>
+                            Veritabanı API uç noktasına (`/api/kullanici-gecmis`) bağlanırken bir hata meydana geldi.
                         </div>`;
                 });
         });
