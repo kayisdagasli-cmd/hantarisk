@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import csv  # Pandas yerine sunucuyu yormayan gömülü kütüphane
-from datetime import datetime  # Düzgün tarih formatlama için eklendi
+from datetime import datetime, timedelta  # Türkiye saati farkı için timedelta eklendi
 from flask import Flask, render_template, jsonify, request
 import requests
 
@@ -42,14 +42,13 @@ def veritabanı_hazırla():
     ''')
     conn.commit()
 
-    # Eğer tablo boşsa CSV dosyasından verileri yükle (Pandas olmadan hızlı sürüm)
+    # Eğer tablo boşsa CSV dosyasından verileri yükle
     cursor.execute("SELECT COUNT(*) FROM vakalar")
     if cursor.fetchone()[0] == 0 and os.path.exists(CSV_FILE):
         try:
             with open(CSV_FILE, mode='r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 
-                # Sütun isimlerini temizle ve küçük harfe çevir
                 headers = [h.strip().lower() for h in reader.fieldnames]
                 reader.fieldnames = headers
                 
@@ -85,7 +84,7 @@ def veritabanı_hazırla():
             print(f"CSV yükleme hatası: {e}")
     conn.close()
 
-# Uygulama başlarken veritabanını doldur (Hata düzeltildi, doğru yere alındı)
+# Uygulama başlarken veritabanını doldur
 veritabanı_hazırla()
 
 # --- SAYFA YÖNLENDİRMELERİ ---
@@ -97,15 +96,16 @@ def ana_sayfa():
 def klinik_test_sayfasi():
     return render_template('klinik-test.html')
 
-# --- TÜRKİYE SAATİNE GÖRE GÜNCELLENEN PROFIL ROTASI ---
+# --- SUNUCU BAĞIMSIZ %100 TÜRKİYE SAATİ AYARLI PROFIL ROTASI ---
 @app.route('/profil')
 def profil_sayfasi():
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        # datetime(tarih, 'localtime') ile Türkiye saatine çeviriyoruz
+        
+        # Ham UTC tarihini çekiyoruz, işletim sistemi ayarlarına güvenmiyoruz
         cursor.execute("""
-            SELECT ad_soyad, risk_skoru, risk_seviyesi, sehir, datetime(tarih, 'localtime') 
+            SELECT ad_soyad, risk_skoru, risk_seviyesi, sehir, tarih 
             FROM klinik_testler 
             ORDER BY tarih DESC LIMIT 3
         """)
@@ -114,14 +114,16 @@ def profil_sayfasi():
 
         son_analizler = []
         for r in rows:
-            ham_tarih = r[4]  # Artık yerel saat formatında geliyor
+            ham_tarih = r[4]  # Örn veritabanından gelen: "2026-06-02 14:03:00"
             formatli_tarih = ham_tarih
 
-            # TERTEMİZ GERÇEK TARİH FORMATLAMA MOTORU
             if ham_tarih:
                 try:
+                    # Tarihi objeye dönüştür
                     dt = datetime.strptime(ham_tarih.split('.')[0], "%Y-%m-%d %H:%M:%S")
-                    formatli_tarih = dt.strftime("%d.%m.%Y — %H:%M")
+                    # Sunucu nerede olursa olsun el ile tam 3 saat ekleyerek Türkiye saatine sabitliyoruz
+                    dt_turkiye = dt + timedelta(hours=3)
+                    formatli_tarih = dt_turkiye.strftime("%d.%m.%Y — %H:%M")
                 except Exception:
                     formatli_tarih = ham_tarih
 
@@ -386,14 +388,14 @@ def klinik_analiz():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# --- API GEÇMİŞİ DE TÜRKİYE YEREL SAATİNE GÖRE AYARLANDI ---
+# --- API GEÇMİŞİ DE TÜRKİYE YEREL SAATİNE SABİTLENDİ ---
 @app.route('/api/kullanici-gecmis')
 def kullanici_gecmis():
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT ad_soyad, yas, cinsiyet, ulke, sehir, risk_skoru, risk_seviyesi, datetime(tarih, 'localtime') 
+            SELECT ad_soyad, yas, cinsiyet, ulke, sehir, risk_skoru, risk_seviyesi, tarih 
             FROM klinik_testler 
             ORDER BY tarih DESC LIMIT 3
         """)
@@ -402,10 +404,20 @@ def kullanici_gecmis():
 
         gecmis = []
         for r in rows:
+            ham_tarih = r[7]
+            formatli_tarih = ham_tarih
+            if ham_tarih:
+                try:
+                    dt = datetime.strptime(ham_tarih.split('.')[0], "%Y-%m-%d %H:%M:%S")
+                    dt_turkiye = dt + timedelta(hours=3)
+                    formatli_tarih = dt_turkiye.strftime("%Y-%m-%d %H:%M:%S")
+                except Exception:
+                    formatli_tarih = ham_tarih
+
             gecmis.append({
                 "ad_soyad": r[0], "yas": r[1], "cinsiyet": r[2],
                 "ulke": r[3], "sehir": r[4], "risk_skoru": r[5],
-                "risk_seviyesi": r[6], "tarih": r[7]
+                "risk_seviyesi": r[6], "tarih": formatli_tarih
             })
         return jsonify(gecmis)
     except Exception as e:
