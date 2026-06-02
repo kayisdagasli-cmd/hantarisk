@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Modal Görünürlük Ayarı (Bozulan Kısmın Tamiri) */
+        /* Modal Görünürlük ve Tam Ortalanma Ayarı */
         .modal {
             display: none; 
             position: fixed;
@@ -17,9 +17,27 @@
             background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(5px);
             z-index: 9999;
+            /* İçeriği tam ortalamak için flex düzeni ekledik */
+            justify-content: center;
+            align-items: center;
         }
         .modal.active {
-            display: block !important;
+            display: flex !important; /* Blok yerine flex yaparak ortalıyoruz */
+        }
+        .modal-content {
+            width: 100%;
+            max-width: 600px; /* Maksimum genişlik sınırı */
+            background: var(--bg-card, #1e1e2f);
+            border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: fadeInModal 0.3s ease;
+        }
+
+        @keyframes fadeInModal {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         /* Telefonda Çok Büyük ve Düzensiz Görünen Yazılar İçin Mobil Optimizasyon (Responsive) */
@@ -55,8 +73,7 @@
                 padding: 0 15px;
             }
             .modal-content {
-                width: 95% !important;
-                margin: 10% auto !important;
+                width: 90% !important;
                 padding: 1.5rem !important;
             }
         }
@@ -146,11 +163,12 @@
         </div>
     </section>
 
+    <!-- Hantavirüs Bilgilendirme Rehberi -->
     <div id="info-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-book-medical"></i> Hantavirüs Bilgilendirme Rehberi</h3>
-                <span class="close-modal" style="cursor: pointer; font-size: 1.5rem;">&times;</span>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;"><i class="fa-solid fa-book-medical"></i> Hantavirüs Bilgilendirme Rehberi</h3>
+                <span class="close-modal" style="cursor: pointer; font-size: 1.5rem; color: var(--text-muted);">&times;</span>
             </div>
             <div class="modal-body">
                 <h4>Hantavirüs Nedir?</h4>
@@ -160,7 +178,7 @@
                 <ul style="padding-left: 0;">
                     <li><i class="fa-solid fa-temperature-high" style="color: var(--primary);"></i> Ani başlayan yüksek ateş ve titreme</li>
                     <li><i class="fa-solid fa-crutch" style="color: var(--primary);"></i> Şiddetli kas ve sırt ağrıları</li>
-                    <li><i class="fa-solid fa-lungs" style="color: var(--primary);"></i> İlerleyen safhalarda nefes darlığı og kuru öksürük</li>
+                    <li><i class="fa-solid fa-lungs" style="color: var(--primary);"></i> İlerleyen safhalarda nefes darlığı ve kuru öksürük</li>
                     <li><i class="fa-solid fa-stomach" style="color: var(--primary);"></i> Bulantı, kusma ve karın ağrısı</li>
                 </ul>
 
