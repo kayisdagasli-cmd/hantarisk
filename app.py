@@ -1,11 +1,14 @@
 import os
 import sqlite3
 import csv  # Pandas yerine sunucuyu yormayan gömülü kütüphane
+import uuid  # Her cihazı benzersiz şekilde kimliklendirmek için eklendi
 from datetime import datetime, timedelta  # Türkiye saati farkı için timedelta eklendi
-from flask import Flask, render_template, jsonify, request
-import requests
+from flask import Flask, render_template, jsonify, request, session
 
 app = Flask(__name__)
+
+# Session (Oturum) verilerinin güvenli şifrelenmesi için gizli anahtar
+app.secret_key = 'hantarisk_ultra_secret_key_2026'
 
 DATABASE = 'hantavirus.db'
 CSV_FILE = 'global_hantavirus_surveillance_dataset_2026.csv'
@@ -37,9 +40,17 @@ def veritabanı_hazırla():
             cevre_tipi TEXT,
             risk_skoru INTEGER,
             risk_seviyesi TEXT,
-            tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            session_id TEXT
         )
     ''')
+    
+    # Eski veritabanı kullananlar için dinamik kolon kontrolü (Hata vermemesi için)
+    try:
+        cursor.execute("ALTER TABLE klinik_testler ADD COLUMN session_id TEXT")
+    except sqlite3.OperationalError:
+        pass  # Kolon zaten varsa hata vermez, es geçer
+
     conn.commit()
 
     # Eğer tablo boşsa CSV dosyasından verileri yükle
@@ -87,6 +98,12 @@ def veritabanı_hazırla():
 # Uygulama başlarken veritabanını doldur
 veritabanı_hazırla()
 
+# Her istek öncesi cihaza özel benzersiz bir session_id tanımlayan fonksiyon
+@app.before_request
+def cihaz_oturum_kontrol():
+    if 'device_token' not in session:
+        session['device_token'] = str(uuid.uuid4())
+
 # --- SAYFA YÖNLENDİRMELERİ ---
 @app.route('/')
 def ana_sayfa():
@@ -96,32 +113,32 @@ def ana_sayfa():
 def klinik_test_sayfasi():
     return render_template('klinik-test.html')
 
-# --- SUNUCU BAĞIMSIZ %100 TÜRKİYE SAATİ AYARLI PROFIL ROTASI ---
+# --- SUNUCU BAĞIMSIZ %100 TÜRKİYE SAATİ VE CİHAZ TABANLI PROFIL ROTASI ---
 @app.route('/profil')
 def profil_sayfasi():
     try:
+        current_device = session.get('device_token', '')
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         
-        # Ham UTC tarihini çekiyoruz, işletim sistemi ayarlarına güvenmiyoruz
+        # Sadece bu cihazın session_id değerine ait son 3 analizi çekiyoruz
         cursor.execute("""
             SELECT ad_soyad, risk_skoru, risk_seviyesi, sehir, tarih 
             FROM klinik_testler 
+            WHERE session_id = ?
             ORDER BY tarih DESC LIMIT 3
-        """)
+        """, (current_device,))
         rows = cursor.fetchall()
         conn.close()
 
         son_analizler = []
         for r in rows:
-            ham_tarih = r[4]  # Örn veritabanından gelen: "2026-06-02 14:03:00"
+            ham_tarih = r[4]  # Örn: "2026-06-02 14:03:00"
             formatli_tarih = ham_tarih
 
             if ham_tarih:
                 try:
-                    # Tarihi objeye dönüştür
                     dt = datetime.strptime(ham_tarih.split('.')[0], "%Y-%m-%d %H:%M:%S")
-                    # Sunucu nerede olursa olsun el ile tam 3 saat ekleyerek Türkiye saatine sabitliyoruz
                     dt_turkiye = dt + timedelta(hours=3)
                     formatli_tarih = dt_turkiye.strftime("%d.%m.%Y — %H:%M")
                 except Exception:
@@ -371,12 +388,15 @@ def klinik_analiz():
                 "Hijyen kurallarına uymaya ve gıdalarınızı kemirgenlerden uzak, kapalı kaplarda saklamaya özen gösterin."
             ]
 
+        # O anki aktif cihaz kimliğini alıp veritabanına mühürlüyoruz
+        current_device = session.get('device_token', '')
+
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO klinik_testler (ad_soyad, yas, cinsiyet, ulke, sehir, cevre_tipi, risk_skoru, risk_seviyesi)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ad, yas, cinsiyet, bolge, sehir, cevre_tipi, skor, risk_seviyesi))
+            INSERT INTO klinik_testler (ad_soyad, yas, cinsiyet, ulke, sehir, cevre_tipi, risk_skoru, risk_seviyesi, session_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (ad, yas, cinsiyet, bolge, sehir, cevre_tipi, skor, risk_seviyesi, current_device))
         conn.commit()
         conn.close()
 
@@ -388,17 +408,19 @@ def klinik_analiz():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# --- API GEÇMİŞİ DE TÜRKİYE YEREL SAATİNE SABİTLENDİ ---
+# --- API GEÇMİŞİ DE SADECE BU CİHAZA ÖZEL FİLTRELENDİ ---
 @app.route('/api/kullanici-gecmis')
 def kullanici_gecmis():
     try:
+        current_device = session.get('device_token', '')
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
             SELECT ad_soyad, yas, cinsiyet, ulke, sehir, risk_skoru, risk_seviyesi, tarih 
             FROM klinik_testler 
+            WHERE session_id = ?
             ORDER BY tarih DESC LIMIT 3
-        """)
+        """, (current_device,))
         rows = cursor.fetchall()
         conn.close()
 
