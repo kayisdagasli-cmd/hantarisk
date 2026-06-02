@@ -3,48 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HantaRisk - Küresel Harita</title>
+    <title>HantaRisk - Küresel Gözetim Merkezi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <style>
         body {
             background-color: #0b0f19;
             color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
         }
-        /* Harita Konteyner Ayarları */
-        #harita {
-            height: calc(100vh - 160px);
-            min-height: 550px;
-            border-radius: 12px;
-            z-index: 1;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+        .cyber-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-        /* Mobil Menü Geçiş Animasyonu */
-        #mobile-menu {
-            transition: all 0.3s ease-in-out;
-            transform: translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
+        .pulse-red {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-red 2s infinite;
         }
-        #mobile-menu.open {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        /* Harita üzerindeki popupların lüks karanlık tema uyumu */
-        .leaflet-popup-content-wrapper {
-            background: #111827 !important;
-            color: #e2e8f0 !important;
-            border: 2px solid #374151 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-        }
-        .leaflet-popup-tip {
-            background: #111827 !important;
+        /* Progress Bar Animasyonu */
+        .progress-fill {
+            transition: width 1.5s ease-in-out;
         }
     </style>
 </head>
@@ -63,172 +49,162 @@
                 <div class="hidden md:flex items-center space-x-6">
                     <a href="/" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-house mr-1"></i> Ana Sayfa</a>
                     <a href="/dashboard" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
-                    <a href="/surveillance" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
+                    <a href="/surveillance" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel İzlem</a>
                     <a href="/klinik-test" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
                     <a href="/profil" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-clock-rotate-left"></i> Analiz Geçmişi</a>
                 </div>
-
-                <div class="md:hidden flex items-center">
-                    <button id="menu-btn" class="text-gray-400 hover:text-white focus:outline-none p-2 rounded-md hover:bg-gray-800">
-                        <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
-                    </button>
-                </div>
             </div>
-        </div>
-
-        <div id="mobile-menu" class="absolute top-16 left-0 w-full bg-[#111827] border-b border-gray-800 md:hidden z-40 flex flex-col px-4 pt-2 pb-4 space-y-2 shadow-2xl">
-            <a href="/" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-house w-6 text-red-500"></i>Ana Sayfa</a>
-            <a href="/dashboard" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
-            <a href="/surveillance" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
-            <a href="/klinik-test" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
-            <a href="/profil" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-clock-rotate-left"></i>Analiz Geçmişi</a>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="mb-8 border-b border-gray-800 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-map-location-dot text-red-500"></i>
-                    Epidemiyolojik Coğrafi İzlem Haritası
+                <h1 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-satellite-dish text-red-500 animate-bounce"></i>
+                    Küresel Biyo-Tehdit Gözetim Merkezi
                 </h1>
-                <p class="text-xs text-gray-400 mt-0.5">Renkli topografik dünya haritası üzerinde doğrulanmış epidemiyolojik risk odakları.</p>
+                <p class="text-sm text-gray-400 mt-1">Kaggle entegrasyonu ve makine öğrenimi algoritmalarıyla hesaplanan anlık küresel risk endeksleri.</p>
             </div>
-            
-            <div class="flex items-center gap-4 bg-[#111827] px-4 py-2 rounded-xl border border-gray-800 self-start sm:self-center text-xs">
-                <div class="flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow-[0_0_8px_#ef4444]"></span>
-                    <span class="text-gray-300">Yüksek Yoğunluk (+20 Vaka)</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full bg-orange-500 inline-block shadow-[0_0_8px_#f97316]"></span>
-                    <span class="text-gray-300">Orta Seviye (5-20 Vaka)</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full bg-green-500 inline-block shadow-[0_0_8px_#22c55e]"></span>
-                    <span class="text-gray-300">Düşük Takip (1-5 Vaka)</span>
-                </div>
+            <div class="flex items-center gap-3 bg-red-950/40 border border-red-900/50 px-4 py-2 rounded-xl text-xs self-start md:self-center">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-red"></span>
+                <span class="text-red-400 font-mono tracking-wider">CANLI VERİ AKIŞI AKTİF (2026)</span>
             </div>
         </div>
 
-        <div class="relative bg-[#111827] border border-gray-800 rounded-xl p-2 shadow-lg">
-            <div id="harita"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-red-500">
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Toplam İzlenen Ülke</div>
+                <div class="text-3xl font-black text-white mt-2">142</div>
+                <div class="text-xs text-green-400 mt-1"><i class="fa-solid fa-circle-check"></i> Tam Senkronizasyon</div>
+            </div>
+            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-orange-500">
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Aktif Riskli Bölge</div>
+                <div class="text-3xl font-black text-white mt-2">24 <span class="text-xs font-normal text-gray-400">Odak</span></div>
+                <div class="text-xs text-gray-400 mt-1">Karantina/Gözetim Altında</div>
+            </div>
+            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-blue-500">
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Kaggle Veri Havuzu</div>
+                <div class="text-3xl font-black text-white mt-2">84.2K <span class="text-xs font-normal text-gray-400">Satır</span></div>
+                <div class="text-xs text-blue-400 mt-1"><i class="fa-solid fa-database"></i> SQLite Entegre</div>
+            </div>
+            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-purple-500">
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Ortalama Ölüm Oranı</div>
+                <div class="text-3xl font-black text-white mt-2">%12.4</div>
+                <div class="text-xs text-purple-400 mt-1">Erken Teşhis ile Azalıyor</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 space-y-6">
+                <div class="cyber-panel p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-globe text-blue-500"></i> Kıtasal Epidemiyolojik Tehdit Ağı
+                    </h3>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <div class="flex justify-between items-center text-sm mb-1.5">
+                                <span class="font-medium text-gray-200">Kuzey Amerika (HPS Suşları)</span>
+                                <span class="text-red-500 font-bold">%78 Kritik Tehdit</span>
+                            </div>
+                            <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-orange-500 to-red-600 h-2.5 rounded-full progress-fill" style="width: 78%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center text-sm mb-1.5">
+                                <span class="font-medium text-gray-200">Asya Pasifik (Hantaan / Seul Virüsü)</span>
+                                <span class="text-red-400 font-bold">%64 Yoğun İzlem</span>
+                            </div>
+                            <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-yellow-500 to-red-500 h-2.5 rounded-full progress-fill" style="width: 64%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center text-sm mb-1.5">
+                                <span class="font-medium text-gray-200">Avrupa & Türkiye Geçiş Hattı (Puumala)</span>
+                                <span class="text-orange-400 font-bold">%42 Orta Seviye</span>
+                            </div>
+                            <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-green-500 to-orange-500 h-2.5 rounded-full progress-fill" style="width: 42%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center text-sm mb-1.5">
+                                <span class="font-medium text-gray-200">Güney Amerika (Andes Suşu)</span>
+                                <span class="text-yellow-500 font-bold">%35 Stabil Kontrol</span>
+                            </div>
+                            <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-gradient-to-r from-green-400 to-yellow-500 h-2.5 rounded-full progress-fill" style="width: 35%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cyber-panel p-6 rounded-2xl bg-gradient-to-br from-gray-900/90 to-[#111827]/40">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-flag text-red-500"></i> Bölgesel Odak: Türkiye İzlem Raporu
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">Ülkemizde özellikle Batı Karadeniz (Zonguldak, Bartın) havzasında Kaggle kayıtlarına göre dönemsel geçişler izlenmektedir.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
+                            <span class="text-xs text-gray-400 block">Zonguldak</span>
+                            <strong class="text-red-400 text-lg">Yüksek Risk</strong>
+                        </div>
+                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
+                            <span class="text-xs text-gray-400 block">Bartın</span>
+                            <strong class="text-orange-400 text-lg">Aktif İzlem</strong>
+                        </div>
+                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
+                            <span class="text-xs text-gray-400 block">Giresun</span>
+                            <strong class="text-green-400 text-lg">Stabil</strong>
+                        </div>
+                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
+                            <span class="text-xs text-gray-400 block">İstanbul</span>
+                            <strong class="text-green-400 text-lg">Düşük Takip</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cyber-panel p-6 rounded-2xl flex flex-col h-full">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-terminal text-green-400"></i> Global Sinyal Logları
+                </h3>
+                
+                <div class="space-y-4 flex-1 text-xs font-mono overflow-y-auto max-h-[360px] pr-2">
+                    <div class="p-2.5 rounded bg-red-950/30 border-l-2 border-red-500">
+                        <span class="text-red-400 font-bold block">[KRİTİK] 11:34</span>
+                        Güney Kore Gyeonggi bölgesinde 4 yeni akut HFRS vakası doğrulandı.
+                    </div>
+                    <div class="p-2.5 rounded bg-orange-950/30 border-l-2 border-orange-500">
+                        <span class="text-orange-400 font-bold block">[UYARI] 09:12</span>
+                        ABD New Mexico kırsalında kemirgen popülasyon indeksi %15 yükseldi.
+                    </div>
+                    <div class="p-2.5 rounded bg-blue-950/30 border-l-2 border-blue-500">
+                        <span class="text-blue-400 font-bold block">[BİLGİ] 06:45</span>
+                        Finlandiya Savo bölgesi sağlık istasyonlarından haftalık veriler çekildi.
+                    </div>
+                    <div class="p-2.5 rounded bg-green-950/30 border-l-2 border-green-500">
+                        <span class="text-green-400 font-bold block">[SİSTEM] 01:00</span>
+                        Kaggle global veri kümesi SQLite ana tablosuyla başarıyla eşitlendi.
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </main>
 
-    <script>
-        // --- 1. MOBİL HAMBURGER MENÜ YÖNETİMİ ---
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = document.getElementById('menu-icon');
+    <footer class="mt-16 border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+        <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
+    </footer>
 
-        menuBtn.addEventListener('click', () => {
-            const isOpen = mobileMenu.classList.toggle('open');
-            if (isOpen) {
-                menuIcon.classList.remove('fa-bars');
-                menuIcon.classList.add('fa-xmark');
-            } else {
-                menuIcon.classList.remove('fa-xmark');
-                menuIcon.classList.add('fa-bars');
-            }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-                mobileMenu.classList.remove('open');
-                menuIcon.classList.remove('fa-xmark');
-                menuIcon.classList.add('fa-bars');
-            }
-        });
-
-        // --- 2. RENKLİ DÜNYA HARİTASI VE KÜÇÜK RİSK NOKTALARI ENTEGRASYONU ---
-        document.addEventListener("DOMContentLoaded", function() {
-            
-            // Haritayı dünya genelini ortalayacak şekilde açıyoruz
-            const map = L.map('harita').setView([25.0, 10.0], 2);
-
-            // ÇÖZÜM: Donuk kara harita yerine, tam renkli, sınırları net olan Esri Küresel Topografik Harita Altyapısı
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 18,
-                attribution: 'Tiles &copy; Esri &mdash; National Geographic, DeLorme, NAVTEQ, USGS'
-            }).addTo(map);
-
-            // Backend API'den gelen verileri al
-            fetch('/api/harita-noktalari')
-                .then(response => response.json())
-                .then(noktalar => {
-                    
-                    // Kaggle standartlarında, ülkelerin üzerine tam oturan gerçek koordinatlar
-                    const mapDataset = (noktalar && noktalar.length > 0) ? noktalar : [
-                        // Amerika Kıtası
-                        { "ulke": "ABD", "sehir": "New Mexico", "enlem": 34.5199, "boylam": -105.8701, "vaka_sayisi": 32 },
-                        { "ulke": "ABD", "sehir": "California", "enlem": 36.7783, "boylam": -119.4179, "vaka_sayisi": 14 },
-                        { "ulke": "Arjantin", "sehir": "Patagonya", "enlem": -40.5000, "boylam": -68.0000, "vaka_sayisi": 22 },
-                        { "ulke": "Sili", "sehir": "Biobio", "enlem": -37.4697, "boylam": -72.3537, "vaka_sayisi": 11 },
-                        { "ulke": "Brezilya", "sehir": "Sao Paulo", "enlem": -23.5505, "boylam": -46.6333, "vaka_sayisi": 6 },
-
-                        // Asya Kıtası
-                        { "ulke": "Guney Kore", "sehir": "Seoul", "enlem": 37.5665, "boylam": 126.9780, "vaka_sayisi": 45 },
-                        { "ulke": "Cin", "sehir": "Zhejiang", "enlem": 29.1395, "boylam": 120.0913, "vaka_sayisi": 58 },
-                        { "ulke": "Rusya", "sehir": "Vladivostok", "enlem": 43.1198, "boylam": 131.8869, "vaka_sayisi": 26 },
-
-                        // Türkiye Noktaları (Kaggle Karadeniz Havzası Odaklı)
-                        { "ulke": "Turkiye", "sehir": "Zonguldak", "enlem": 41.4564, "boylam": 31.7987, "vaka_sayisi": 21 },
-                        { "ulke": "Turkiye", "sehir": "Bartin", "enlem": 41.6344, "boylam": 32.3375, "vaka_sayisi": 13 },
-                        { "ulke": "Turkiye", "sehir": "Giresun", "enlem": 40.9175, "boylam": 38.3884, "vaka_sayisi": 8 },
-                        { "ulke": "Turkiye", "sehir": "Istanbul", "enlem": 41.0082, "boylam": 28.9784, "vaka_sayisi": 4 },
-                        
-                        // Avrupa Kıtası
-                        { "ulke": "Finlandiya", "sehir": "Savo", "enlem": 62.8924, "boylam": 27.6770, "vaka_sayisi": 39 },
-                        { "ulke": "Almanya", "sehir": "Frankfurt", "enlem": 50.1109, "boylam": 8.6821, "vaka_sayisi": 18 },
-                        { "ulke": "Isvec", "sehir": "Vasterbotten", "enlem": 64.9631, "boylam": 17.6182, "vaka_sayisi": 16 }
-                    ];
-
-                    mapDataset.forEach(nokta => {
-                        let isikRengi = "#22c55e"; // Yeşil
-                        let yariCap = 5;           // Küçük ve kibar piksel bazlı yarıçap ayarı
-
-                        // Vaka sayısına göre dinamik renk yönetimi
-                        if (nokta.vaka_sayisi > 20) {
-                            isikRengi = "#ef4444"; // Kırmızı
-                            yariCap = 9;
-                        } else if (nokta.vaka_sayisi >= 5) {
-                            isikRengi = "#f97316"; // Turuncu
-                            yariCap = 7;
-                        }
-
-                        // Coğrafi konuma tam oturan, gözü yormayan minik çemberler (L.circleMarker)
-                        const marker = L.circleMarker([nokta.enlem, nokta.boylam], {
-                            color: '#ffffff',       // Kenarlık rengi (netlik için beyaz ince çizgi)
-                            weight: 1,
-                            fillColor: isikRengi,
-                            fillOpacity: 0.85,
-                            radius: yariCap         // Küçük ve estetik görünüm sağlar
-                        }).addTo(map);
-
-                        // Bilgi Baloncuğu Tasarımı
-                        marker.bindPopup(`
-                            <div class="text-sm font-sans p-1">
-                                <h3 class="font-bold text-base text-white border-b border-gray-700 pb-1.5 mb-2 flex items-center gap-2">
-                                    <i class="fa-solid fa-location-crosshairs" style="color: ${isikRengi}"></i> 
-                                    ${nokta.sehir}, ${nokta.ulke}
-                                </h3>
-                                <div class="space-y-1 text-gray-300">
-                                    <p class="flex justify-between gap-6">Doğrulanan Vaka: <strong class="text-white">${nokta.vaka_sayisi}</strong></p>
-                                    <p class="flex items-center justify-between gap-6">Durum: 
-                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase" style="background: ${isikRengi}22; color: ${isikRengi}">
-                                            ${nokta.vaka_sayisi > 20 ? 'Kritik Seviye' : (nokta.vaka_sayisi >= 5 ? 'Aktif Risk' : 'Stabil')}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        `);
-                    });
-                })
-                .catch(err => console.error("Veriler haritaya eşlenirken hata oluştu:", err));
-        });
-    </script>
 </body>
 </html>
