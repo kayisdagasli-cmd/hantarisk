@@ -32,7 +32,6 @@
 </head>
 <body class="bg-[#0b0f19] text-[#e2e8f0]">
 
-    <!-- Üst Menü / Navigasyon -->
     <nav class="bg-[#111827] border-b border-gray-800 sticky top-0 z-50 w-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -64,7 +63,6 @@
             </div>
         </div>
 
-        <!-- Mobil Menü -->
         <div id="mobile-menu" class="absolute top-16 left-0 w-full bg-[#111827] border-b border-gray-800 md:hidden z-40 flex flex-col px-4 pt-2 pb-4 space-y-2 shadow-2xl">
             <a href="/" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-house w-6 text-red-500"></i>Ana Sayfa</a>
             <a href="/dashboard" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
@@ -74,7 +72,6 @@
         </div>
     </nav>
 
-    <!-- Ana Panel Alanı -->
     <main style="padding-top: 40px; padding-bottom: 40px;">
         <div style="max-width: 800px; margin: 0 auto; width: 100%; padding: 0 1rem;">
             
@@ -83,18 +80,17 @@
                     <div style="font-size: 1.5rem; color: var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div>
                         <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff; tracking-wide">Klinik Analiz Geçmişi</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">Bu cihaz üzerinden gerçekleştirilen en son 3 risk tahmin skoru</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">Sistem genelinde gerçekleştirilen en son 3 risk tahmin skoru</p>
                     </div>
                 </div>
 
-                <!-- TAHMİNLERİN JINJA DÖNGÜSÜ İLE SIRALANDIĞI ALAN -->
                 <div class="space-y-4">
                     {% if son_analizler %}
                         {% for analiz in son_analizler %}
                             
-                            {# Risk seviyesine göre dinamik renk ataması #}
+                            {# Risk durumuna göre dinamik renk tanımlaması #}
                             {% set renk = '#10b981' %}
-                            {% if 'YÜKSEK' in analiz.risk_seviyesi.upper() or 'KRİTİK' in analiz.risk_seviyesi.upper() %}
+                            {% if 'KRİTİK' in analiz.risk_seviyesi.upper() or 'YÜKSEK' in analiz.risk_seviyesi.upper() %}
                                 {% set renk = '#ef4444' %}
                             {% elif 'ORTA' in analiz.risk_seviyesi.upper() %}
                                 {% set renk = '#eab308' %}
@@ -125,7 +121,6 @@
 
                         {% endfor %}
                     {% else %}
-                        <!-- Eğer veritabanı tamamen boşsa gösterilecek alan -->
                         <div class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
                             <i class="fa-solid fa-notes-medical text-gray-600 block text-3xl mb-3"></i>
                             Henüz kayıtlı bir analiz geçmişi bulunmamaktadır.
@@ -139,10 +134,9 @@
 
     <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; margin-top: 4rem; border-top: 1px solid var(--border-color);">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
-    </footer >
+    </footer>
 
     <script>
-        // Mobil Menü Açma/Kapatma Scripti
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
