@@ -145,61 +145,62 @@
             }
         });
 
-        // --- 2. DOĞRU KÜRESEL COĞRAFİ VERİ VE SİBER HARİTA ENTEGRASYONU ---
+        // --- 2. HARİTA VE VERİ ENTEGRASYONU (Hatasız İngilizce Değişken Yapısı) ---
         document.addEventListener("DOMContentLoaded", function() {
             
-            // Haritayı dünya genelini geniş ve estetik kadrajda görecek şekilde başlatıyoruz
-            const map = L.map('harita').setView([25.0, 10.0], 2.5);
+            // Haritayı başlat
+            const map = L.map('harita').setView([20.0, 0.0], 2);
 
-            // Geliştirme: Işıkları ve parlamaları ön plana çıkaran premium koyu tema (CartoDB DarkMatter)
+            // Karanlık tema harita katmanı yüklemesi
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                 maxZoom: 18,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                attribution: '&copy; OpenStreetMap &copy; CARTO'
             }).addTo(map);
 
-            // Python API'den verileri talep et
+            // Backend API'den gelen verileri dinle
             fetch('/api/harita-noktalari')
                 .then(response => response.json())
                 .then(noktalar => {
                     
-                    // Kaggle standartlarında, dünyadaki gerçek hantavirüs rezervuarları ve vaka odakları dağılımı
-                    const gerçek KüreselVeriler = noktalar.length > 0 ? noktalar : [
-                        // --- KUZEY VE GÜNEY AMERİKA (Hantavirüs Pulmoner Sendromu Odakları) ---
+                    // Türkçe karakter barındırmayan temiz global yedek dizi ismi (globalData)
+                    const globalData = (noktalar && noktalar.length > 0) ? noktalar : [
+                        // ABD ve Amerika Kıtası Odakları
                         { "ulke": "ABD", "sehir": "New Mexico", "enlem": 34.5199, "boylam": -105.8701, "vaka_sayisi": 32 },
                         { "ulke": "ABD", "sehir": "California", "enlem": 36.7783, "boylam": -119.4179, "vaka_sayisi": 14 },
                         { "ulke": "Arjantin", "sehir": "Patagonya", "enlem": -40.5000, "boylam": -68.0000, "vaka_sayisi": 22 },
-                        { "ulke": "Şili", "sehir": "Biobío", "enlem": -37.4697, "boylam": -72.3537, "vaka_sayisi": 11 },
-                        { "ulke": "Brezilya", "sehir": "São Paulo", "enlem": -23.5505, "boylam": -46.6333, "vaka_sayisi": 6 },
+                        { "ulke": "Sili", "sehir": "Biobio", "enlem": -37.4697, "boylam": -72.3537, "vaka_sayisi": 11 },
+                        { "ulke": "Brezilya", "sehir": "Sao Paulo", "enlem": -23.5505, "boylam": -46.6333, "vaka_sayisi": 6 },
 
-                        // --- ASYA ODAGI (Hantaan Virüsü - Yoğun Hemorojik Ateş) ---
-                        { "ulke": "Güney Kore", "sehir": "Gyeonggi (Hantaan Nehri)", "enlem": 37.8850, "boylam": 127.1450, "vaka_sayisi": 45 },
-                        { "ulke": "Çin", "sehir": "Zhejiang", "enlem": 29.1395, "boylam": 120.0913, "vaka_sayisi": 58 },
-                        { "ulke": "Rusya", "sehir": "Vladivostok (Uzak Doğu)", "enlem": 43.1198, "boylam": 131.8869, "vaka_sayisi": 26 },
+                        // Asya Grubu
+                        { "ulke": "Guney Kore", "sehir": "Gyeonggi", "enlem": 37.8850, "boylam": 127.1450, "vaka_sayisi": 45 },
+                        { "ulke": "Cin", "sehir": "Zhejiang", "enlem": 29.1395, "boylam": 120.0913, "vaka_sayisi": 58 },
+                        { "ulke": "Rusya", "sehir": "Vladivostok", "enlem": 43.1198, "boylam": 131.8869, "vaka_sayisi": 26 },
 
-                        // --- AVRUPA VE TÜRKİYE ODAGI (Puumala / Dobrava Suşları) ---
-                        { "ulke": "Türkiye", "sehir": "Zonguldak", "enlem": 41.4564, "boylam": 31.7987, "vaka_sayisi": 21 },
-                        { "ulke": "Türkiye", "sehir": "Bartın", "enlem": 41.6344, "boylam": 32.3375, "vaka_sayisi": 13 },
-                        { "ulke": "Türkiye", "sehir": "Giresun", "enlem": 40.9175, "boylam": 38.3884, "vaka_sayisi": 8 },
-                        { "ulke": "Türkiye", "sehir": "İstanbul", "enlem": 41.0082, "boylam": 28.9784, "vaka_sayisi": 4 },
+                        // Türkiye Odakları (Zonguldak, Bartın, Giresun, İstanbul)
+                        { "ulke": "Turkiye", "sehir": "Zonguldak", "enlem": 41.4564, "boylam": 31.7987, "vaka_sayisi": 21 },
+                        { "ulke": "Turkiye", "sehir": "Bartin", "enlem": 41.6344, "boylam": 32.3375, "vaka_sayisi": 13 },
+                        { "ulke": "Turkiye", "sehir": "Giresun", "enlem": 40.9175, "boylam": 38.3884, "vaka_sayisi": 8 },
+                        { "ulke": "Turkiye", "sehir": "Istanbul", "enlem": 41.0082, "boylam": 28.9784, "vaka_sayisi": 4 },
+                        
+                        // Avrupa Grubu
                         { "ulke": "Finlandiya", "sehir": "Savo", "enlem": 62.8924, "boylam": 27.6770, "vaka_sayisi": 39 },
-                        { "ulke": "Almanya", "sehir": "Baden-Württemberg", "enlem": 48.6616, "boylam": 9.3501, "vaka_sayisi": 18 },
-                        { "ulke": "İsveç", "sehir": "Västerbotten", "enlem": 64.9631, "boylam": 17.6182, "vaka_sayisi": 16 }
+                        { "ulke": "Almanya", "sehir": "Baden-Wurttemberg", "enlem": 48.6616, "boylam": 9.3501, "vaka_sayisi": 18 },
+                        { "ulke": "Isvec", "sehir": "Vasterbotten", "enlem": 64.9631, "boylam": 17.6182, "vaka_sayisi": 16 }
                     ];
 
-                    gerçekKüreselVeriler.forEach(nokta => {
-                        let isikRengi = "#22c55e"; // Düşük - Yeşil
-                        let yariCap = 180000;      // Harita zoom seviyesine uygun dengeli yarıçap alanı
+                    // Temiz değişken ile haritaya basım döngüsü
+                    globalData.forEach(nokta => {
+                        let isikRengi = "#22c55e"; 
+                        let yariCap = 180000;      
 
-                        // Vaka yoğunluk ölçeğine göre dinamik neon renk ve etki alanı ölçeklemesi
                         if (nokta.vaka_sayisi > 20) {
-                            isikRengi = "#ef4444"; // Kritik - Kırmızı
+                            isikRengi = "#ef4444"; 
                             yariCap = 380000;
                         } else if (nokta.vaka_sayisi >= 5) {
-                            isikRengi = "#f97316"; // Orta - Turuncu
+                            isikRengi = "#f97316"; 
                             yariCap = 280000;
                         }
 
-                        // Katman: Haritaya tam oturan, parlayan mat dairelerin konumlandırılması
                         const daire = L.circle([nokta.enlem, nokta.boylam], {
                             color: isikRengi,
                             fillColor: isikRengi,
@@ -208,7 +209,6 @@
                             radius: yariCap
                         }).addTo(map);
 
-                        // Pop-up Bilgi pencerelerinin lüks tasarım detayları
                         daire.bindPopup(`
                             <div class="text-sm font-sans p-1">
                                 <h3 class="font-bold text-base text-white border-b border-gray-700 pb-1.5 mb-2 flex items-center gap-2">
@@ -216,10 +216,10 @@
                                     ${nokta.sehir}, ${nokta.ulke}
                                 </h3>
                                 <div class="space-y-1.5 text-gray-300">
-                                    <p class="flex justify-between gap-4">Kayıtlı Akut Vaka: <strong class="text-white">${nokta.vaka_sayisi}</strong></p>
-                                    <p class="flex items-center justify-between gap-4">İzlem Statüsü: 
+                                    <p class="flex justify-between gap-4">Kayitli Akut Vaka: <strong class="text-white">${nokta.vaka_sayisi}</strong></p>
+                                    <p class="flex items-center justify-between gap-4">Izlem Statusu: 
                                         <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wide" style="background: ${isikRengi}22; color: ${isikRengi}; border: 1px solid ${isikRengi}44">
-                                            ${nokta.vaka_sayisi > 20 ? 'Kritik Seviye' : (nokta.vaka_sayisi >= 5 ? 'Aktif Risk' : 'Stabil İzlem')}
+                                            ${nokta.vaka_sayisi > 20 ? 'Kritik Seviye' : (nokta.vaka_sayisi >= 5 ? 'Aktif Risk' : 'Stabil Izlem')}
                                         </span>
                                     </p>
                                 </div>
@@ -227,7 +227,9 @@
                         `);
                     });
                 })
-                .catch(err => console.error("Küresel izlem verileri yüklenirken senkronizasyon hatası:", err));
+                .catch(err => {
+                    console.error("Harita verileri okunamadi:", err);
+                });
         });
     </script>
 </body>
