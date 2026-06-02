@@ -165,7 +165,7 @@ def surveillance_sayfasi():
 
 # --- API UÇ NOKTALARI ---
 
-# %100 GERÇEKÇİ VE TIBBİ LİTERATÜRE UYGUN HANTAVİRÜS HABERLERİ
+# %100 HANTAVİRÜS ODAKLI AKADEMİK HABERLER
 @app.route('/api/guncel-haberler')
 def guncel_haberler():
     hantavirus_odakli_haberler = [
