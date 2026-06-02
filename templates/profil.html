@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -80,7 +80,7 @@
                     <div style="font-size: 1.5rem; color: var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div>
                         <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff; tracking-wide">Klinik Analiz Geçmişi</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">Sistem genelinde gerçekleştirilen en son 3 risk tahmin skoru</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">Bu cihazda gerçekleştirilen en son risk tahmin skorları</p>
                     </div>
                 </div>
 
@@ -96,7 +96,8 @@
                                 {% set renk = '#eab308' %}
                             {% endif %}
 
-                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid {{ renk }}; padding: 1.2rem; border-radius: 8px;">
+                            {# data-device attribute'u ile cihaz kontrolü sağlandı #}
+                            <div class="analiz-karti" data-device-id="{{ analiz.device_id }}" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid {{ renk }}; padding: 1.2rem; border-radius: 8px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #1f2937; padding-bottom: 0.5rem;">
                                     <span style="font-size: 0.88rem; color: #fff; font-weight: 600;">
                                         <i class="fa-solid fa-id-card" style="color: {{ renk }}; margin-right: 6px;"></i> 
@@ -121,11 +122,16 @@
 
                         {% endfor %}
                     {% else %}
-                        <div class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
+                        <div id="no-data-msg" class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
                             <i class="fa-solid fa-notes-medical text-gray-600 block text-3xl mb-3"></i>
                             Henüz kayıtlı bir analiz geçmişi bulunmamaktadır.
                         </div>
                     {% endif %}
+
+                    <div id="device-no-data-msg" class="hidden text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
+                        <i class="fa-solid fa-notes-medical text-gray-600 block text-3xl mb-3"></i>
+                        Bu cihazda gerçekleştirilen bir analiz geçmişi bulunmamaktadır.
+                    </div>
                 </div>
 
             </div>
@@ -137,6 +143,7 @@
     </footer>
 
     <script>
+        // Mobil Menü Kodu
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
@@ -148,6 +155,41 @@
                 menuIcon.className = mobileMenu.classList.contains('open') ? 'fa-solid fa-xmark text-xl' : 'fa-solid fa-bars text-xl';
             });
         }
+
+        // CİHAZ BAZLI FİLTRELEME SİSTEMİ (Önemli Kısım)
+        document.addEventListener("DOMContentLoaded", function() {
+            // Tarayıcıya özel benzersiz bir cihaz kimliği oluştur veya var olanı al
+            let currentDeviceId = localStorage.getItem('hantarisk_device_id');
+            if (!currentDeviceId) {
+                currentDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+                localStorage.setItem('hantarisk_device_id', currentDeviceId);
+            }
+
+            // Test formun varsa (klinik-test sayfası) backend'e bu id'yi göndermek için kullanabilirsin.
+            // Analizleri listelerken sadece bu cihazın id'sine ait olanları gösteriyoruz:
+            const analizKartlari = document.querySelectorAll('.analiz-karti');
+            let gorunurKartSayisi = 0;
+
+            analizKartlari.forEach(kart => {
+                const kartDeviceId = kart.getAttribute('data-device-id');
+                
+                // Eğer karttaki cihaz id'si mevcut cihazla eşleşiyorsa göster, eşleşmiyorsa gizle
+                if (kartDeviceId === currentDeviceId || kartDeviceId === "" || !kartDeviceId) {
+                    kart.style.display = 'block';
+                    gorunurKartSayisi++;
+                } else {
+                    kart.style.display = 'none';
+                }
+            });
+
+            // Eğer bu cihaza ait hiç veri kalmadıysa kullanıcıya uyarı mesajı göster
+            const deviceMsg = document.getElementById('device-no-data-msg');
+            const normalMsg = document.getElementById('no-data-msg');
+            
+            if (gorunurKartSayisi === 0 && !normalMsg) {
+                if (deviceMsg) deviceMsg.classList.remove('hidden');
+            }
+        });
     </script>
 </body>
 </html>
