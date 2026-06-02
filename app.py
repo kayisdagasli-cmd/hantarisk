@@ -85,7 +85,7 @@ def veritabanı_hazırla():
             print(f"CSV yükleme hatası: {e}")
     conn.close()
 
-# Uygulama başlarken veritabanını doldur
+# Uygulama başlarken veritabanını doldur (Hata düzeltildi, doğru yere alındı)
 veritabanı_hazırla()
 
 # --- SAYFA YÖNLENDİRMELERİ ---
@@ -97,15 +97,15 @@ def ana_sayfa():
 def klinik_test_sayfasi():
     return render_template('klinik-test.html')
 
-# --- YENİLENEN PROFIL ROTASI (JINJA MOTORU VE TARİH FORMATLAYICI) ---
+# --- TÜRKİYE SAATİNE GÖRE GÜNCELLENEN PROFIL ROTASI ---
 @app.route('/profil')
 def profil_sayfasi():
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
-        # En son yapılan en güncel 3 analizi veritabanından çekiyoruz
+        # datetime(tarih, 'localtime') ile Türkiye saatine çeviriyoruz
         cursor.execute("""
-            SELECT ad_soyad, risk_skoru, risk_seviyesi, sehir, tarih 
+            SELECT ad_soyad, risk_skoru, risk_seviyesi, sehir, datetime(tarih, 'localtime') 
             FROM klinik_testler 
             ORDER BY tarih DESC LIMIT 3
         """)
@@ -114,7 +114,7 @@ def profil_sayfasi():
 
         son_analizler = []
         for r in rows:
-            ham_tarih = r[4]  # SQLite'taki varsayılan biçim: "YYYY-MM-DD HH:MM:SS"
+            ham_tarih = r[4]  # Artık yerel saat formatında geliyor
             formatli_tarih = ham_tarih
 
             # TERTEMİZ GERÇEK TARİH FORMATLAMA MOTORU
@@ -133,7 +133,6 @@ def profil_sayfasi():
                 "tarih": formatli_tarih
             })
 
-        # Verileri doğrudan profil.html dosyasına gönderiyoruz
         return render_template('profil.html', son_analizler=son_analizler)
     except Exception as e:
         print(f"Profil veri çekme hatası: {e}")
@@ -387,13 +386,14 @@ def klinik_analiz():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- API GEÇMİŞİ DE TÜRKİYE YEREL SAATİNE GÖRE AYARLANDI ---
 @app.route('/api/kullanici-gecmis')
 def kullanici_gecmis():
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT ad_soyad, yas, cinsiyet, ulke, sehir, risk_skoru, risk_seviyesi, tarih 
+            SELECT ad_soyad, yas, cinsiyet, ulke, sehir, risk_skoru, risk_seviyesi, datetime(tarih, 'localtime') 
             FROM klinik_testler 
             ORDER BY tarih DESC LIMIT 3
         """)
