@@ -84,17 +84,53 @@
                     </div>
                 </div>
 
-                <div id="analiz-listesi-container" class="space-y-4">
-                    
-                    <div id="backend-data" class="hidden" 
-                         data-ad-soyad="{{ son_analizler[0].ad_soyad if son_analizler else '' }}"
-                         data-risk-seviyesi="{{ son_analizler[0].risk_seviyesi if son_analizler else '' }}"
-                         data-risk-skoru="{{ son_analizler[0].risk_skoru if son_analizler else '' }}"
-                         data-sehir="{{ son_analizler[0].sehir if son_analizler else '' }}"
-                         data-tarih="{{ son_analizler[0].tarih if son_analizler else '' }}">
-                    </div>
+                <div id="analiz-container" class="space-y-4">
+                    {% if son_analizler %}
+                        {% for analiz in son_analizler %}
+                            
+                            {# Risk durumuna göre dinamik renk tanımlaması #}
+                            {% set renk = '#10b981' %}
+                            {% if 'KRİTİK' in analiz.risk_seviyesi.upper() or 'YÜKSEK' in analiz.risk_seviyesi.upper() %}
+                                {% set renk = '#ef4444' %}
+                            {% elif 'ORTA' in analiz.risk_seviyesi.upper() %}
+                                {% set renk = '#eab308' %}
+                            {% endif %}
 
+                            <div class="analiz-karti" 
+                                 data-tarih="{{ analiz.tarih }}" 
+                                 data-isim="{{ analiz.ad_soyad }}"
+                                 style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid {{ renk }}; padding: 1.2rem; border-radius: 8px; display: none;">
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #1f2937; padding-bottom: 0.5rem;">
+                                    <span style="font-size: 0.88rem; color: #fff; font-weight: 600;">
+                                        <i class="fa-solid fa-id-card" style="color: {{ renk }}; margin-right: 6px;"></i> 
+                                        Hasta: {{ analiz.ad_soyad }}
+                                    </span>
+                                    <span style="background: {{ renk }}; color: {% if 'ORTA' in analiz.risk_seviyesi.upper() %}#000{% else %}#fff{% endif %}; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.6rem; border-radius: 4px; letter-spacing: 0.5px;">
+                                        {{ analiz.risk_seviyesi.upper() }}
+                                    </span>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <h4 style="color: #fff; font-size: 0.92rem; font-weight: 600;">
+                                        Yapay Zeka Risk Skoru: <span style="color:{{ renk }}">%{{ analiz.risk_skoru }}</span>
+                                    </h4>
+                                </div>
+                                
+                                <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.6rem;">
+                                    <span><i class="fa-solid fa-map-location-dot"></i> Konum: {{ analiz.sehir }}</span>
+                                    <span><i class="fa-solid fa-calendar-alt"></i> Analiz Tarihi: {{ analiz.tarih }}</span>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+                    {% endif %}
+
+                    <div id="bos-gecmis-mesaji" class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10" style="display: none;">
+                        <i class="fa-solid fa-notes-medical text-gray-600 block text-3xl mb-3"></i>
+                        Bu cihazda gerçekleştirilen bir analiz geçmişi bulunmamaktadır.
                     </div>
+                </div>
 
             </div>
         </div>
@@ -105,7 +141,7 @@
     </footer>
 
     <script>
-        // Mobil Menü İşlemleri
+        // Mobil Menü Kodu
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
@@ -118,78 +154,48 @@
             });
         }
 
-        // KESİN CİHAZ AYRIMI VE LOKAL GÖSTERİM SİSTEMİ
+        // AKILLI CİHAZ EŞLEŞTİRME SİSTEMİ
         document.addEventListener("DOMContentLoaded", function() {
-            const container = document.getElementById('analiz-listesi-container');
+            const kartlar = document.querySelectorAll('.analiz-karti');
+            const bosMesaj = document.getElementById('bos-gecmis-mesaji');
             
-            // 1. Eğer test sayfasından yeni bir sonuç geldiyse onu yerel hafızaya ekle
-            const bData = document.getElementById('backend-data');
-            const bAdSoyad = bData.getAttribute('data-ad-soyad');
-            
-            let yerelGecmis = JSON.parse(localStorage.getItem('hantarisk_history')) || [];
+            // Bu cihaza özel lokal hafıza anahtarlarını alıyoruz
+            let cihazGecmisi = JSON.parse(localStorage.getItem('hantarisk_local_logs')) || [];
 
-            if (bAdSoyad && bAdSoyad.trim() !== "") {
-                const yeniAnaliz = {
-                    ad_soyad: bAdSoyad,
-                    risk_seviyesi: bData.getAttribute('data-risk-seviyesi'),
-                    risk_skoru: bData.getAttribute('data-risk-skoru'),
-                    sehir: bData.getAttribute('data-sehir'),
-                    tarih: bData.getAttribute('data-tarih')
-                };
+            // Eğer veritabanından gelen yeni bir analiz varsa ve listede en üstteyse, bu cihazın hafızasına mühürle
+            if (kartlar.length > 0) {
+                const enSonKart = kartlar[0];
+                const enSonId = enSonKart.getAttribute('data-isim') + '_' + enSonKart.getAttribute('data-tarih');
                 
-                // Aynı analizin mükerrer eklenmesini önle
-                const var Mi = yerelGecmis.some(a => a.tarih === yeniAnaliz.tarih && a.ad_soyad === yeniAnaliz.ad_soyad);
-                if (!varMi) {
-                    yerelGecmis.unshift(yeniAnaliz); // En başa ekle
-                    if (yerelGecmis.length > 3) yerelGecmis.pop(); // Sadece son 3 taneyi tut
-                    localStorage.setItem('hantarisk_history', JSON.stringify(yerelGecmis));
+                // Eğer bu cihazda son yapılan test hafızaya eklenmemişse ekle
+                if (!cihazGecmisi.includes(enSonId)) {
+                    // Sayfa ilk kez 'klinik-test' yönlendirmesinden geldiyse bu cihaza ait olduğunu anlıyoruz
+                    if (document.referrer.includes('klinik-test') || cihazGecmisi.length === 0) {
+                        cihazGecmisi.push(enSonId);
+                        localStorage.setItem('hantarisk_local_logs', JSON.stringify(cihazGecmisi));
+                    }
                 }
             }
 
-            // 2. Sadece bu cihaza ait geçmişi HTML olarak ekrana bas
-            if (yerelGecmis.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
-                        <i class="fa-solid fa-notes-medical text-gray-600 block text-3xl mb-3"></i>
-                        Bu cihazda gerçekleştirilen bir analiz geçmişi bulunmamaktadır.
-                    </div>`;
+            // Filtreleme: Sadece bu cihazın hafızasında mühürlü olan analiz kartlarını görünür yap
+            let ekranaBasilanKartSayisi = 0;
+            
+            kartlar.forEach(kart => {
+                const kartId = kart.getAttribute('data-isim') + '_' + kart.getAttribute('data-tarih');
+                
+                if (cihazGecmisi.includes(kartId)) {
+                    kart.style.display = 'block';
+                    ekranaBasilanKartSayisi++;
+                } else {
+                    kart.style.style.display = 'none';
+                }
+            });
+
+            // Eğer bu cihaza ait hiçbir analiz kartı eşleşmediyse boş geçmiş uyarısını göster
+            if (ekranaBasilanKartSayisi === 0) {
+                if (bosMesaj) bosMesaj.style.display = 'block';
             } else {
-                let htmlContent = "";
-                yerelGecmis.forEach(analiz => {
-                    let renk = '#10b981';
-                    if (analiz.risk_seviyesi.toUpperCase().includes('KRİTİK') || analiz.risk_seviyesi.toUpperCase().includes('YÜKSEK')) {
-                        renk = '#ef4444';
-                    } else if (analiz.risk_seviyesi.toUpperCase().includes('ORTA')) {
-                        renk = '#eab308';
-                    }
-
-                    let fontColor = analiz.risk_seviyesi.toUpperCase().includes('ORTA') ? '#000' : '#fff';
-
-                    htmlContent += `
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.2rem; border-radius: 8px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #1f2937; padding-bottom: 0.5rem;">
-                                <span style="font-size: 0.88rem; color: #fff; font-weight: 600;">
-                                    <i class="fa-solid fa-id-card" style="color: ${renk}; margin-right: 6px;"></i> 
-                                    Hasta: ${analiz.ad_soyad}
-                                </span>
-                                <span style="background: ${renk}; color: ${fontColor}; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.6rem; border-radius: 4px; letter-spacing: 0.5px;">
-                                    ${analiz.risk_seviyesi.toUpperCase()}
-                                </span>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
-                                <h4 style="color: #fff; font-size: 0.92rem; font-weight: 600;">
-                                    Yapay Zeka Risk Skoru: <span style="color:${renk}">%${analiz.risk_skoru}</span>
-                                </h4>
-                            </div>
-                            
-                            <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.6rem;">
-                                <span><i class="fa-solid fa-map-location-dot"></i> Konum: ${analiz.sehir}</span>
-                                <span><i class="fa-solid fa-calendar-alt"></i> Analiz Tarihi: ${analiz.tarih}</span>
-                            </div>
-                        </div>`;
-                });
-                container.innerHTML = htmlContent;
+                if (bosMesaj) bosMesaj.style.display = 'none';
             }
         });
     </script>
