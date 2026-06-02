@@ -3,7 +3,7 @@ import sqlite3
 import csv
 import uuid
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request, session
+from flask import Flask, render_template, jsonify, request, session, make_response
 
 app = Flask(__name__)
 
@@ -165,7 +165,7 @@ def surveillance_sayfasi():
 
 # --- API UÇ NOKTALARI ---
 
-# %100 HANTAVİRÜS ODAKLI AKADEMİK HABERLER
+# %100 HANTAVİRÜS ODAKLI AKADEMİK HABERLER (TARAYICI ÖNBELLEK ENGELLEMELİ)
 @app.route('/api/guncel-haberler')
 def guncel_haberler():
     hantavirus_odakli_haberler = [
@@ -188,7 +188,13 @@ def guncel_haberler():
             "kaynak": "The Lancet Infectious Diseases"
         }
     ]
-    return jsonify({"articles": hantavirus_odakli_haberler})
+    
+    # Tarayıcının eski haberleri cache'ten getirmesini kesin olarak engelleyen başlıklar
+    response = make_response(jsonify({"articles": hantavirus_odakli_haberler}))
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 @app.route('/api/lokasyonlar')
 def lokasyonlar():
