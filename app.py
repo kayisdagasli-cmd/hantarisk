@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import csv  # Pandas yerine sunucuyu yormayan gömülü kütüphane
+from datetime import datetime  # Düzgün tarih formatlama için eklendi
 from flask import Flask, render_template, jsonify, request
 import requests
 
@@ -96,9 +97,47 @@ def ana_sayfa():
 def klinik_test_sayfasi():
     return render_template('klinik-test.html')
 
+# --- YENİLENEN PROFIL ROTASI (JINJA MOTORU VE TARİH FORMATLAYICI) ---
 @app.route('/profil')
 def profil_sayfasi():
-    return render_template('profil.html')
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        # En son yapılan en güncel 3 analizi veritabanından çekiyoruz
+        cursor.execute("""
+            SELECT ad_soyad, risk_skoru, risk_seviyesi, sehir, tarih 
+            FROM klinik_testler 
+            ORDER BY tarih DESC LIMIT 3
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+
+        son_analizler = []
+        for r in rows:
+            ham_tarih = r[4]  # SQLite'taki varsayılan biçim: "YYYY-MM-DD HH:MM:SS"
+            formatli_tarih = ham_tarih
+
+            # TERTEMİZ GERÇEK TARİH FORMATLAMA MOTORU
+            if ham_tarih:
+                try:
+                    dt = datetime.strptime(ham_tarih.split('.')[0], "%Y-%m-%d %H:%M:%S")
+                    formatli_tarih = dt.strftime("%d.%m.%Y — %H:%M")
+                except Exception:
+                    formatli_tarih = ham_tarih
+
+            son_analizler.append({
+                "ad_soyad": r[0] if r[0] else "Gizli Kullanıcı",
+                "risk_skoru": r[1],
+                "risk_seviyesi": r[2] if r[2] else "DÜŞÜK RİSK",
+                "sehir": r[3] if r[3] else "Belirtilmedi",
+                "tarih": formatli_tarih
+            })
+
+        # Verileri doğrudan profil.html dosyasına gönderiyoruz
+        return render_template('profil.html', son_analizler=son_analizler)
+    except Exception as e:
+        print(f"Profil veri çekme hatası: {e}")
+        return render_template('profil.html', son_analizler=[])
 
 @app.route('/dashboard')
 def dashboard_sayfasi():
@@ -112,8 +151,6 @@ def surveillance_sayfasi():
 
 @app.route('/api/guncel-haberler')
 def guncel_haberler():
-    # Haber kalitesini uçurmak için spesifik hantavirüs, salgın ve vaka odaklı yeni arama sorgusu
-    # En son yayınlanan sıkıcı makaleler yerine en alakalı/popüler olanları getirmesi için sortBy=relevance yapıldı.
     url = f"https://newsapi.org/v2/everything?q=hantavirus+AND+(outbreak+OR+cases+OR+rodent+OR+warning)&language=en&sortBy=relevance&pageSize=15&apiKey={NEWS_API_KEY}"
     try:
         response = requests.get(url, timeout=5)
@@ -125,7 +162,6 @@ def guncel_haberler():
                 title = art.get('title', '')
                 desc = art.get('description', '')
                 
-                # Başlığı veya içeriği silinmiş olan gereksiz verileri eliyoruz
                 if title and "[Removed]" not in title and len(title) > 10:
                     filtrelenmis_haberler.append({
                         "baslik": title,
@@ -133,20 +169,15 @@ def guncel_haberler():
                         "link": art.get('url'),
                         "kaynak": art.get('source', {}).get('name', 'CDC Global')
                     })
-                # En kaliteli ve çarpıcı 3 hantavirüs haberi yakalandığında döngüyü kesiyoruz
                 if len(filtrelenmis_haberler) == 3:
                     break
                     
-        # Eğer API'den gelen haber sayısı 3'ten azsa veya arama terimi tam oturmadıysa
-        # arayüzün kalitesini bozmamak için jilet gibi hazırlanmış yedek senaryolar devreye girer
         if len(filtrelenmis_haberler) < 3:
             raise Exception("Yetersiz veya kalitesiz içerik")
             
         return jsonify({"articles": filtrelenmis_haberler})
     except Exception as e:
         print(f"Haber filtreleme veya çekme hatası: {e}")
-        # API'den çok teorik/sıkıcı başlıklar gelirse veya kota dolarsa gösterilecek 
-        # doğrudan hantavirüs salgın risklerine, klinik teşhise ve korunmaya odaklanan yedek haber seti:
         yedek_haberler = [
             {
                 "baslik": "Hantavirus Outbreak Alerts: Increased Rodent Populations Spark Regional Warnings",
@@ -221,7 +252,6 @@ def grafik_verileri():
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         
-        # 1. Sadece Türkiye'nin Yıllık Gerçek Vaka Değişimi
         cursor.execute("""
             SELECT yil, COUNT(*) 
             FROM vakalar 
@@ -233,12 +263,10 @@ def grafik_verileri():
         turkiye_yillar = [r[0] for r in tr_yil_rows]
         turkiye_vaka_sayilari = [r[1] for r in tr_yil_rows]
 
-        # Eğer veritabanında hiç Türkiye verisi yoksa panonun boş kalmaması için güvenli varsayılanlar üretelim
         if not turkiye_yillar:
             turkiye_yillar = [2022, 2023, 2024, 2025, 2026]
             turkiye_vaka_sayilari = [4, 9, 15, 11, 23]
 
-        # 2. Sadece Türkiye'nin Klinik Sonuç Dağılımı (Sayaçlar ve Ölüm Oranı için)
         cursor.execute("""
             SELECT sonuc, COUNT(*) 
             FROM vakalar 
@@ -257,9 +285,7 @@ def grafik_verileri():
             turkiye_toplam_vaka = 62
             turkiye_vefat = 3
 
-        # 3. Türkiye Aylık Dağılımı (Sallamasyon olmaması için gerçek epidemiyolojik eğriye dayalı simülasyon)
         turkiye_aylar = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
-        
         oranlar = [0.02, 0.03, 0.05, 0.10, 0.18, 0.22, 0.17, 0.12, 0.06, 0.03, 0.02, 0.02]
         turkiye_aylik_vaka_sayilari = [max(1, round(turkiye_toplam_vaka * o)) for o in oranlar]
 
