@@ -28,7 +28,6 @@
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        /* Progress Bar Animasyonu */
         .progress-fill {
             transition: width 1.5s ease-in-out;
         }
@@ -45,7 +44,6 @@
                         HANTA<span class="text-red-500">RISK</span>
                     </a>
                 </div>
-                
                 <div class="hidden md:flex items-center space-x-6">
                     <a href="/" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-house mr-1"></i> Ana Sayfa</a>
                     <a href="/dashboard" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
@@ -62,112 +60,76 @@
         <div class="mb-8 border-b border-gray-800 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-satellite-dish text-red-500 animate-bounce"></i>
-                    Küresel Biyo-Tehdit Gözetim Merkezi
+                    <i class="fa-solid fa-database text-red-500"></i>
+                    Dinamik Kaggle Veri Gözetimi
                 </h1>
-                <p class="text-sm text-gray-400 mt-1">Kaggle entegrasyonu ve makine öğrenimi algoritmalarıyla hesaplanan anlık küresel risk endeksleri.</p>
+                <p class="text-sm text-gray-400 mt-1">global_hantavirus_surveillance_dataset_2026.csv kaynaklı gerçek veritabanı özet matrisi.</p>
             </div>
-            <div class="flex items-center gap-3 bg-red-950/40 border border-red-900/50 px-4 py-2 rounded-xl text-xs self-start md:self-center">
-                <span class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-red"></span>
-                <span class="text-red-400 font-mono tracking-wider">CANLI VERİ AKIŞI AKTİF (2026)</span>
+            <div class="flex items-center gap-3 bg-green-950/40 border border-green-900/50 px-4 py-2 rounded-xl text-xs self-start md:self-center">
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500 pulse-red"></span>
+                <span class="text-green-400 font-mono tracking-wider">KAGGLER REAL-TIME SYNC</span>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-red-500">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Toplam İzlenen Ülke</div>
-                <div class="text-3xl font-black text-white mt-2">142</div>
-                <div class="text-xs text-green-400 mt-1"><i class="fa-solid fa-circle-check"></i> Tam Senkronizasyon</div>
-            </div>
-            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-orange-500">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Aktif Riskli Bölge</div>
-                <div class="text-3xl font-black text-white mt-2">24 <span class="text-xs font-normal text-gray-400">Odak</span></div>
-                <div class="text-xs text-gray-400 mt-1">Karantina/Gözetim Altında</div>
-            </div>
             <div class="cyber-panel p-5 rounded-2xl border-l-4 border-blue-500">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Kaggle Veri Havuzu</div>
-                <div class="text-3xl font-black text-white mt-2">84.2K <span class="text-xs font-normal text-gray-400">Satır</span></div>
-                <div class="text-xs text-blue-400 mt-1"><i class="fa-solid fa-database"></i> SQLite Entegre</div>
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">İzlenen Toplam Ülke</div>
+                <div id="stat-ulke" class="text-3xl font-black text-white mt-2">Hesaplanıyor...</div>
+                <div class="text-xs text-blue-400 mt-1"><i class="fa-solid fa-globe"></i> Benzersiz Coğrafya</div>
+            </div>
+            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-red-500">
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Sistemdeki Toplam Vaka</div>
+                <div id="stat-vaka" class="text-3xl font-black text-white mt-2">Hesaplanıyor...</div>
+                <div class="text-xs text-red-400 mt-1"><i class="fa-solid fa-file-medical"></i> Gerçek Satır Sayısı</div>
             </div>
             <div class="cyber-panel p-5 rounded-2xl border-l-4 border-purple-500">
-                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Ortalama Ölüm Oranı</div>
-                <div class="text-3xl font-black text-white mt-2">%12.4</div>
-                <div class="text-xs text-purple-400 mt-1">Erken Teşhis ile Azalıyor</div>
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Türkiye Kayıtlı Vaka</div>
+                <div id="stat-tr-vaka" class="text-3xl font-black text-white mt-2">...</div>
+                <div class="text-xs text-purple-400 mt-1"><i class="fa-solid fa-flag"></i> Yerel Veri Havuzu</div>
+            </div>
+            <div class="cyber-panel p-5 rounded-2xl border-l-4 border-orange-500">
+                <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider">Yerel Takip Durumu</div>
+                <div id="stat-tr-durum" class="text-xl font-bold text-white mt-3">Hesaplanıyor...</div>
+                <div class="text-xs text-orange-400 mt-1"><i class="fa-solid fa-shield-virus"></i> Otomatik Karar</div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
             <div class="lg:col-span-2 space-y-6">
                 <div class="cyber-panel p-6 rounded-2xl">
                     <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-globe text-blue-500"></i> Kıtasal Epidemiyolojik Tehdit Ağı
+                        <i class="fa-solid fa-chart-pie text-red-500"></i> CSV Veri Dağılım Payı (Yüzdesel)
                     </h3>
                     
                     <div class="space-y-5">
                         <div>
                             <div class="flex justify-between items-center text-sm mb-1.5">
-                                <span class="font-medium text-gray-200">Kuzey Amerika (HPS Suşları)</span>
-                                <span class="text-red-500 font-bold">%78 Kritik Tehdit</span>
+                                <span class="font-medium text-gray-200">Amerika Kıtası Suşları (HPS)</span>
+                                <span id="txt-risk-amerika" class="text-red-500 font-bold">...</span>
                             </div>
                             <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-orange-500 to-red-600 h-2.5 rounded-full progress-fill" style="width: 78%"></div>
+                                <div id="bar-risk-amerika" class="bg-gradient-to-r from-orange-500 to-red-600 h-2.5 rounded-full progress-fill" style="width: 0%"></div>
                             </div>
                         </div>
 
                         <div>
                             <div class="flex justify-between items-center text-sm mb-1.5">
-                                <span class="font-medium text-gray-200">Asya Pasifik (Hantaan / Seul Virüsü)</span>
-                                <span class="text-red-400 font-bold">%64 Yoğun İzlem</span>
+                                <span class="font-medium text-gray-200">Asya Pasifik Odakları (Hantaan/Seul)</span>
+                                <span id="txt-risk-asya" class="text-red-400 font-bold">...</span>
                             </div>
                             <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-yellow-500 to-red-500 h-2.5 rounded-full progress-fill" style="width: 64%"></div>
+                                <div id="bar-risk-asya" class="bg-gradient-to-r from-yellow-500 to-red-500 h-2.5 rounded-full progress-fill" style="width: 0%"></div>
                             </div>
                         </div>
 
                         <div>
                             <div class="flex justify-between items-center text-sm mb-1.5">
-                                <span class="font-medium text-gray-200">Avrupa & Türkiye Geçiş Hattı (Puumala)</span>
-                                <span class="text-orange-400 font-bold">%42 Orta Seviye</span>
+                                <span class="font-medium text-gray-200">Avrupa ve Türkiye Kuşağı (Puumala)</span>
+                                <span id="txt-risk-avrupa" class="text-orange-400 font-bold">...</span>
                             </div>
                             <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-green-500 to-orange-500 h-2.5 rounded-full progress-fill" style="width: 42%"></div>
+                                <div id="bar-risk-avrupa" class="bg-gradient-to-r from-green-500 to-orange-500 h-2.5 rounded-full progress-fill" style="width: 0%"></div>
                             </div>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between items-center text-sm mb-1.5">
-                                <span class="font-medium text-gray-200">Güney Amerika (Andes Suşu)</span>
-                                <span class="text-yellow-500 font-bold">%35 Stabil Kontrol</span>
-                            </div>
-                            <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-green-400 to-yellow-500 h-2.5 rounded-full progress-fill" style="width: 35%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="cyber-panel p-6 rounded-2xl bg-gradient-to-br from-gray-900/90 to-[#111827]/40">
-                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-flag text-red-500"></i> Bölgesel Odak: Türkiye İzlem Raporu
-                    </h3>
-                    <p class="text-xs text-gray-400 mb-4">Ülkemizde özellikle Batı Karadeniz (Zonguldak, Bartın) havzasında Kaggle kayıtlarına göre dönemsel geçişler izlenmektedir.</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
-                            <span class="text-xs text-gray-400 block">Zonguldak</span>
-                            <strong class="text-red-400 text-lg">Yüksek Risk</strong>
-                        </div>
-                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
-                            <span class="text-xs text-gray-400 block">Bartın</span>
-                            <strong class="text-orange-400 text-lg">Aktif İzlem</strong>
-                        </div>
-                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
-                            <span class="text-xs text-gray-400 block">Giresun</span>
-                            <strong class="text-green-400 text-lg">Stabil</strong>
-                        </div>
-                        <div class="bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
-                            <span class="text-xs text-gray-400 block">İstanbul</span>
-                            <strong class="text-green-400 text-lg">Düşük Takip</strong>
                         </div>
                     </div>
                 </div>
@@ -175,36 +137,48 @@
 
             <div class="cyber-panel p-6 rounded-2xl flex flex-col h-full">
                 <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-terminal text-green-400"></i> Global Sinyal Logları
+                    <i class="fa-solid fa-terminal text-green-400"></i> SQLite SQL Log Çıktısı
                 </h3>
-                
-                <div class="space-y-4 flex-1 text-xs font-mono overflow-y-auto max-h-[360px] pr-2">
-                    <div class="p-2.5 rounded bg-red-950/30 border-l-2 border-red-500">
-                        <span class="text-red-400 font-bold block">[KRİTİK] 11:34</span>
-                        Güney Kore Gyeonggi bölgesinde 4 yeni akut HFRS vakası doğrulandı.
-                    </div>
-                    <div class="p-2.5 rounded bg-orange-950/30 border-l-2 border-orange-500">
-                        <span class="text-orange-400 font-bold block">[UYARI] 09:12</span>
-                        ABD New Mexico kırsalında kemirgen popülasyon indeksi %15 yükseldi.
-                    </div>
-                    <div class="p-2.5 rounded bg-blue-950/30 border-l-2 border-blue-500">
-                        <span class="text-blue-400 font-bold block">[BİLGİ] 06:45</span>
-                        Finlandiya Savo bölgesi sağlık istasyonlarından haftalık veriler çekildi.
-                    </div>
-                    <div class="p-2.5 rounded bg-green-950/30 border-l-2 border-green-500">
-                        <span class="text-green-400 font-bold block">[SİSTEM] 01:00</span>
-                        Kaggle global veri kümesi SQLite ana tablosuyla başarıyla eşitlendi.
-                    </div>
+                <div id="log-container" class="space-y-3 flex-1 text-xs font-mono overflow-y-auto max-h-[250px] pr-2 text-gray-400">
+                    <p class="text-blue-400">[SORGULANIYOR] hantavirus.db tablosuna SELECT sorgusu atılıyor...</p>
                 </div>
             </div>
-
         </div>
 
     </main>
 
-    <footer class="mt-16 border-t border-gray-800 py-6 text-center text-xs text-gray-500">
-        <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
-    </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('/api/kuresel-ozet')
+                .then(response => response.json())
+                .then(data => {
+                    if(data.error) {
+                        document.getElementById('log-container').innerHTML += `<p class="text-red-500">[HATA] Veri okunurken sorun oluştu: ${data.error}</p>`;
+                        return;
+                    }
 
+                    document.getElementById('stat-ulke').innerText = data.toplam_ulke;
+                    document.getElementById('stat-vaka').innerText = data.toplam_vaka;
+                    document.getElementById('stat-tr-vaka').innerText = data.turkiye_vaka_sayisi + " Vaka";
+                    document.getElementById('stat-tr-durum').innerText = data.turkiye_durum;
+
+                    document.getElementById('txt-risk-amerika').innerText = "%" + data.amerika_risk;
+                    document.getElementById('bar-risk-amerika').style.width = data.amerika_risk + "%";
+
+                    document.getElementById('txt-risk-asya').innerText = "%" + data.asya_risk;
+                    document.getElementById('bar-risk-asya').style.width = data.asya_risk + "%";
+
+                    document.getElementById('txt-risk-avrupa').innerText = "%" + data.avrupa_risk;
+                    document.getElementById('bar-risk-avrupa').style.width = data.avrupa_risk + "%";
+
+                    const logBox = document.getElementById('log-container');
+                    logBox.innerHTML += `<p class="text-green-400">[BAŞARILI] SQL sorgusu tamamlandı. Toplam ${data.toplam_vaka} satırlık Kaggle kümesi doğrulandı.</p>`;
+                })
+                .catch(err => {
+                    console.error("Hata:", err);
+                    document.getElementById('log-container').innerHTML += `<p class="text-red-500">[BAĞLANTI HATASI] Backend servis yanıt vermiyor.</p>`;
+                });
+        });
+    </script>
 </body>
 </html>
