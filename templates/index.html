@@ -99,13 +99,6 @@
                 <a href="/surveillance" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Küresel Harita</a>
                 <a href="/klinik-test" class="nav-link"><i class="fa-solid fa-stethoscope"></i> Klinik Karar Testi</a>
                 <a href="/profil" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Analiz Geçmişi</a>
-                
-                <div class="hamburger-only-modules" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted); padding-left: 15px; text-transform: uppercase; letter-spacing: 1px;">Analiz Modülleri</span>
-                    <a href="#" class="nav-link" style="font-size: 0.9rem; opacity: 0.8;"><i class="fa-solid fa-microscope"></i> Risk Korelasyonu</a>
-                    <a href="#" class="nav-link" style="font-size: 0.9rem; opacity: 0.8;"><i class="fa-solid fa-map-location-dot"></i> Lokasyon Filtresi</a>
-                    <a href="#" class="nav-link" style="font-size: 0.9rem; opacity: 0.8;"><i class="fa-solid fa-chart-pie"></i> Gerçek Zamanlı Trendler</a>
-                </div>
             </div>
             
             <div class="system-status">
@@ -159,34 +152,7 @@
                 </ul>
 
                 <h4 style="margin-top: 1.5rem;">Korunma Yöntemleri</h4>
-                <p>Depo, bodrum ve ambar gibi kemirgenlerin bulunabileceği alanları temizlemeden önce mutlaka havalandırın, temizlik esnasında maske ve eldiven kullanın. Kemirgenlerin ev içine girmesini engelleyecek önlemler alın.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary close-modal-btn" style="padding: 0.6rem 2rem;"><i class="fa-solid fa-check"></i> Anladım</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="info-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-book-medical"></i> Hantavirüs Bilgilendirme Rehberi</h3>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <h4>Hantavirüs Nedir?</h4>
-                <p>Hantavirüsler, çoğunlukla kemirgenler (fareler, sıçanlar) tarafından taşınan ve insanlara virüs barındıran dışkı, idrar veya tükürükle temas ya da bunların havaya karışan partiküllerinin solunması yoluyla bulaşan tehlikeli bir virüs ailesidir.</p>
-                
-                <h4 style="margin-top: 1.5rem;">En Sık Görülen Belirtiler</h4>
-                <ul style="padding-left: 0;">
-                    <li><i class="fa-solid fa-temperature-high" style="color: var(--primary);"></i> Ani başlayan yüksek ateş ve titreme</li>
-                    <li><i class="fa-solid fa-crutch" style="color: var(--primary);"></i> Şiddetli kas ve sırt ağrıları</li>
-                    <li><i class="fa-solid fa-lungs" style="color: var(--primary);"></i> İlerleyen safhalarda nefes darlığı ve kuru öksürük</li>
-                    <li><i class="fa-solid fa-sink" style="color: var(--primary);"></i> Bulantı, kusma ve karın ağrısı</li>
-                </ul>
-
-                <h4 style="margin-top: 1.5rem;">Korunma Yöntemleri</h4>
-                <p>Depo, bodrum ve ambar gibi kemirgenlerin bulunabileceği alanları temizlemeden önce mutlaka havalandırın, temizlik esnasında maske ve eldiven kullanın. Kemirgenlerin ev içine girmesini engelleyecek önlemler alın.</p>
+                <p>Depo, bodrum and ambar gibi kemirgenlerin bulunabileceği alanları temizlemeden önce mutlaka havalandırın, temizlik esnasında maske ve eldiven kullanın. Kemirgenlerin ev içine girmesini engelleyecek önlemler alın.</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary close-modal-btn" style="padding: 0.6rem 2rem;"><i class="fa-solid fa-check"></i> Anladım</button>
@@ -210,7 +176,6 @@
                         
                         // En fazla 3 adet hantavirüs haberini listeliyoruz
                         data.articles.slice(0, 3).forEach(article => {
-                            // app.py mimarisindeki anahtarlarla tam eşitleme (baslik, ozet, link, kaynak)
                             const date = new Date().toLocaleDateString('tr-TR'); // Güncel tarih basımı
                             const title = article.baslik ? (article.baslik.length > 60 ? article.baslik.substring(0, 60) + '...' : article.baslik) : 'Hantavirüs Gelişmesi';
                             const desc = article.ozet ? (article.ozet.length > 120 ? article.ozet.substring(0, 120) + '...' : article.ozet) : 'Detaylar için kaynak bağlantıyı ziyaret ediniz.';
