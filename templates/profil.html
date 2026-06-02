@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kullanıcı Profili - HantaRisk</title>
+    <title>Klinik Bilgi & Son Analizim - HantaRisk</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -27,18 +27,7 @@
             min-height: 100vh;
         }
 
-        /* Profil Kartı Esneklik Düzeni */
-        .profile-card-flex { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; width: 100%; }
-        
-        /* Durum Kartı Detay Bilgileri */
-        .user-details-row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.9rem; }
-        .user-details-row span { display: flex; align-items: center; gap: 5px; }
-
         @media (max-width: 768px) { 
-            .profile-card-flex { flex-direction: column; text-align: center; justify-content: center; }
-            .user-details-row { justify-content: center; gap: 0.8rem; font-size: 0.8rem; }
-            
-            /* Mobilde kutuları ve yazıları kibarlaştırma */
             .premium-card { padding: 1.2rem !important; border-radius: 10px !important; }
         }
 
@@ -70,7 +59,7 @@
                     <a href="/dashboard" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
                     <a href="/surveillance" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
                     <a href="/klinik-test" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
-                    <a href="/profil" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-user-doctor mr-1"></i> Profilim</a>
+                    <a href="/profil" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-book-medical mr-1"></i> Bilgi & Son Analizim</a>
                 </div>
 
                 <div class="hidden md:flex items-center gap-2 bg-[#1f2937] px-3 py-1.5 rounded-full border border-green-900/50">
@@ -91,36 +80,41 @@
             <a href="/dashboard" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
             <a href="/surveillance" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
             <a href="/klinik-test" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
-            <a href="/profil" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-user-doctor w-6 text-red-500"></i>Profilim</a>
-            
-            <div class="border-t border-gray-800 pt-3 mt-1 flex items-center gap-2 pl-3">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
-                <span class="text-xs text-green-400 font-mono">SISTEM: ONLINE</span>
-            </div>
+            <a href="/profil" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-book-medical w-6 text-red-500"></i>Bilgi & Son Analizim</a>
         </div>
     </nav>
 
     <main style="padding-top: 40px; padding-bottom: 40px;">
         <div style="max-width: 800px; margin: 0 auto; width: 100%; padding: 0 1rem;">
             
+            <!-- Bilgi Odaklı Yeni Bölüm -->
             <div class="premium-card" style="margin-bottom: 1.5rem; background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
-                <div class="profile-card-flex">
-                    <div style="width: 70px; height: 70px; background: rgba(239, 68, 68, 0.1); border: 2px solid var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--primary); flex-shrink:0;">
-                        <i class="fa-solid fa-user"></i>
+                <div class="flex items-center gap-3 mb-4 border-b border-gray-800 pb-3">
+                    <i class="fa-solid fa-circle-info text-xl text-red-500"></i>
+                    <h2 class="text-lg font-bold text-white">Hantavirüs Genel Bilgilendirme</h2>
+                </div>
+                <p class="text-sm text-gray-400 leading-relaxed mb-4">
+                    Hantavirüsler, özellikle kemirgenlerin salgıları yoluyla yayılan ve insanlarda akut solunum yetmezliği veya kanamalı ateş gibi ciddi klinik tablolara yol açabilen viral etkenlerdir. Erken teşhis ve semptom takibi, tedavi süreçlerinde hayati öneme sahiptir.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                    <div class="bg-[#1f2937]/50 p-3 rounded-lg border border-gray-800 flex items-start gap-2.5">
+                        <i class="fa-solid fa-mask text-red-400 mt-1"></i>
+                        <span class="text-xs text-gray-300"><strong>Risk Faktörü:</strong> Kırsal alanlar, tarım arazileri ve kemirgenlerin yaşama ihtimalinin yüksek olduğu kapalı ortamlar birincil risk kaynaklarıdır.</span>
                     </div>
-                    <div id="profile-user-box" style="flex-grow: 1;">
-                        <h2 id="profile-name" style="font-size: 1.4rem; font-weight: 700; color: #fff;">Analiz Ediliyor...</h2>
-                        <div class="user-details-row" id="profile-details"></div>
+                    <div class="bg-[#1f2937]/50 p-3 rounded-lg border border-gray-800 flex items-start gap-2.5">
+                        <i class="fa-solid fa-kit-medical text-red-400 mt-1"></i>
+                        <span class="text-xs text-gray-300"><strong>Klinik Takip:</strong> Şüpheli temas geçmişi bulunan durumlarda ani ateş, kas ağrısı ve solunum sıkıntısı bulguları dikkatle incelenmelidir.</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Son Tahmini Gösteren Dinamik Alan -->
             <div class="premium-card" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px;">
                 <div class="card-header-block" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
                     <div class="card-header-icon" style="font-size: 1.4rem; color: var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div>
-                        <h2 style="font-size: 1.3rem; font-weight: 700; color: #fff;">Son Klinik Analiz Geçmişiniz</h2>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Sistem havuzunda eşleşen en son tahmin skorunuz</p>
+                        <h2 style="font-size: 1.3rem; font-weight: 700; color: #fff;">Son Klinik Analiz Sonucunuz</h2>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Sistem havuzunda adınızla eşleşen en son yapay zeka risk skoru</p>
                     </div>
                 </div>
 
@@ -139,7 +133,7 @@
     </footer>
 
     <script>
-        // --- 1. HAMBURGER MENÜ MOTORU (Tailwind Yapısıyla Tam Uyumlu) ---
+        // --- 1. HAMBURGER MENÜ MOTORU ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
@@ -164,35 +158,22 @@
             });
         }
 
-        // --- 2. LOCALSTORAGE VE VERİTABANI TAHMİN SORGULAMA MOTORU ---
+        // --- 2. VERİTABANI TAHMİN SORGULAMA MOTORU (SADECE EN SON TAHMİN) ---
         document.addEventListener("DOMContentLoaded", function() {
             const savedName = localStorage.getItem('hanta_ad_soyad');
             const savedAge = localStorage.getItem('hanta_yas');
             const savedGender = localStorage.getItem('hanta_cinsiyet');
             const savedCity = localStorage.getItem('hanta_sehir');
-
-            const profileName = document.getElementById('profile-name');
-            const profileDetails = document.getElementById('profile-details');
             const liste = document.getElementById("gecmis-listesi");
 
-            // Eğer yerel hafızada kullanıcı ismi yoksa
+            // Eğer lokalde isim kaydı yoksa test çözülmemiştir
             if (!savedName) {
-                profileName.innerText = "Kullanıcı Kaydı Bulunamadı";
-                profileDetails.innerHTML = `<span><i class="fa-solid fa-triangle-exclamation" style="color:var(--primary)"></i> Lütfen önce Klinik Karar Testi sayfasından bir analiz gerçekleştirin.</span>`;
                 liste.innerHTML = `
                     <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem; font-style: italic;">
-                        Eşleşen profil verisi olmadığı için geçmiş tahminler listelenemiyor.
+                        Sistemde kayıtlı analiziniz bulunmamaktadır. Lütfen önce Klinik Karar Testi sayfasından bir analiz gerçekleştirin.
                     </div>`;
                 return;
             }
-
-            // Hafızadaki verileri üst karta basıyoruz
-            profileName.innerText = savedName;
-            profileDetails.innerHTML = `
-                <span><i class="fa-solid fa-calendar-day"></i> Yaş: ${savedAge || '-'}</span>
-                <span><i class="fa-solid fa-venus-mars"></i> Cinsiyet: ${savedGender || '-'}</span>
-                <span><i class="fa-solid fa-location-dot"></i> Şehir: ${savedCity || '-'}</span>
-            `;
 
             // Veritabanından verileri çekip sadece en son 1 tanesini filtreliyoruz
             fetch('/api/kullanici-gecmis')
@@ -202,37 +183,51 @@
                         test.ad_soyad.trim().toLowerCase() === savedName.trim().toLowerCase()
                     );
 
-                    // Adına ait veri yoksa
+                    // Adına ait veritabanında henüz kayıt yoksa (API aktif değilse emniyet kartı)
                     if (filtrelenmisVeri.length === 0) {
                         liste.innerHTML = `
-                            <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.85rem; font-style: italic;">
-                                Adınıza ait geçmiş bir klinik test kaydı bulunamadı.
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid #64748b; padding: 1.2rem; border-radius: 8px;">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-white text-sm font-semibold"><i class="fa-solid fa-user-clock text-gray-400 mr-1"></i> Son Test Sahibi: ${savedName}</h4>
+                                    <span class="bg-gray-700 text-white text-[10px] font-bold px-2 py-0.5 rounded">YEREL VERİ</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mb-2">Yaş: ${savedAge || '-'} | Cinsiyet: ${savedGender || '-'} | Konum: ${savedCity || '-'}</p>
+                                <div class="text-xs text-amber-500 font-medium bg-amber-500/10 p-2 rounded border border-amber-500/20">
+                                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Test veriniz tarayıcıda mevcut ancak veritabanı API bağlantısı kurulmadığı için skor dökümü alınamadı.
+                                </div>
                             </div>`;
                         return;
                     }
 
-                    // Sadece en son yapılan 1 adet tahmini yakalıyoruz (.slice(-1))
-                    const sonTahmin = filtrelenmisVeri.slice(-1); 
+                    // Dizi içerisinden sadece en son yapılan 1 adet tahmini yakalıyoruz (.slice(-1)[0])
+                    const sonTahmin = filtrelenmisVeri.slice(-1)[0]; 
 
-                    liste.innerHTML = sonTahmin.map(test => {
-                        let renk = "#10b981"; 
-                        if(test.risk_seviyesi === "KRİTİK") renk = "#ef4444";
-                        else if(test.risk_seviyesi === "YÜKSEK RİSK") renk = "#f97316";
-                        else if(test.risk_seviyesi === "ORTA RİSK") renk = "#eab308";
+                    let renk = "#10b981"; 
+                    if(sonTahmin.risk_seviyesi === "KRİTİK") renk = "#ef4444";
+                    else if(sonTahmin.risk_seviyesi === "YÜKSEK RİSK") renk = "#f97316";
+                    else if(sonTahmin.risk_seviyesi === "ORTA RİSK") renk = "#eab308";
 
-                        return `
-                            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
-                                    <h4 style="color: #fff; font-size:0.9rem; font-weight:600;"><i class="fa-solid fa-file-medical" style="margin-right:5px; color:${renk};"></i> Analiz Sonucu (Skor: %${test.risk_skoru})</h4>
-                                    <span style="background: ${renk}; color: ${test.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px;">${test.risk_seviyesi}</span>
-                                </div>
-                                <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap;">
-                                    <span><i class="fa-solid fa-location-dot"></i> Konum: ${test.ulke} / ${test.sehir}</span>
-                                    <span><i class="fa-solid fa-calendar-day"></i> Tarih: ${test.tarih}</span>
-                                </div>
+                    liste.innerHTML = `
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.2rem; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #1f2937; padding-bottom: 0.6rem;">
+                                <span style="font-size: 0.85rem; color: #fff; font-weight: 600;">
+                                    <i class="fa-solid fa-id-card-clip" style="color: ${renk}; margin-right: 5px;"></i> Hasta: ${sonTahmin.ad_soyad} (${savedAge || '-'} Yaş / ${savedGender || '-'})
+                               span>
+                                <span style="background: ${renk}; color: ${sonTahmin.risk_seviyesi === 'ORTA RİSK' ? '#000' : '#fff'}; font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px;">${sonTahmin.risk_seviyesi}</span>
                             </div>
-                        `;
-                    }).join("");
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                <h4 style="color: #fff; font-size:0.9rem; font-weight:600;">
+                                    <i class="fa-solid fa-file-medical" style="margin-right:5px; color:${renk};"></i> Analiz Sonucu Skoru: <span style="color:${renk}">%${sonTahmin.risk_skoru}</span>
+                                </h4>
+                            </div>
+                            
+                            <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.6rem;">
+                                <span><i class="fa-solid fa-location-dot"></i> Konum: ${sonTahmin.ulke || 'Türkiye'} / ${sonTahmin.sehir}</span>
+                                <span><i class="fa-solid fa-calendar-day"></i> Tarih: ${sonTahmin.tarih}</span>
+                            </div>
+                        </div>
+                    `;
                 })
                 .catch(() => {
                     liste.innerHTML = `
