@@ -17,16 +17,15 @@
             background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(5px);
             z-index: 9999;
-            /* İçeriği tam ortalamak için flex düzeni ekledik */
             justify-content: center;
             align-items: center;
         }
         .modal.active {
-            display: flex !important; /* Blok yerine flex yaparak ortalıyoruz */
+            display: flex !important;
         }
         .modal-content {
             width: 100%;
-            max-width: 600px; /* Maksimum genişlik sınırı */
+            max-width: 600px;
             background: var(--bg-card, #1e1e2f);
             border: 1px solid var(--border-color, rgba(255,255,255,0.1));
             border-radius: 12px;
@@ -199,24 +198,25 @@
         document.addEventListener("DOMContentLoaded", function() {
             const newsGrid = document.getElementById('news-grid');
             
+            // Tamamen yenilenen Hantavirüs Odaklı Güncel Haber Verileri
             const hantaNewsFallback = [
                 {
-                    baslik: "Kuzey ve Güney Amerika'da Hantavirüs Pulmoner Sendromu (HPS) Vakalarında Artış",
-                    ozet: "DSÖ (WHO), kırsal bölgelerdeki tarımsal faaliyetlerin artması ve kemirgen yer değiştirmeleri nedeniyle endemik bölgelerde akut solunum yetmezliği riski taşıyan HPS vakalarının yakın takibe alındığını bildirdi.",
+                    baslik: "İklim Değişikliği ve Yumuşak Kış Şartları Kemirgen Popülasyonunu Tetikliyor",
+                    ozet: "Küresel Ekoloji Enstitüsü, mevsim normallerinin üzerindeki sıcaklıkların kırsal bölgelerde geyik faresi popülasyonunu artırdığını ve bunun önümüzdeki dönemde lokal hantavirüs geçiş riskini yükseltebileceğini duyurdu.",
+                    link: "https://www.nature.com",
+                    kaynak: "Nature Climate"
+                },
+                {
+                    baslik: "Yapay Zeka Destekli Erken Tanı Kitleri Hantavirüs Teşhis Süresini Dakikalara İndirdi",
+                    ozet: "Biyoteknoloji alanında geliştirilen yeni mikroakışkan çipler, sahada alınan kan örneklerinde hantavirüse özgü antikorları ve RNA parçalarını saatler yerine sadece 15 dakika içinde yüksek doğrulukla tespit etmeyi başardı.",
+                    link: "https://www.ncbi.nlm.nih.gov",
+                    kaynak: "BioTech Journal"
+                },
+                {
+                    baslik: "Yaban Hayatı Gözetim Ağlarından Orman İşçilerine Kritik Hantavirüs Uyarısı",
+                    ozet: "Uluslararası Sağlık Örgütleri, özellikle ormancılık, madencilik ve kamp faaliyetleri yürüten meslek gruplarının potansiyel yuvalama alanlarına yaklaşırken koruyucu solunum ekipmanı kullanması gerektiğini hatırlattı.",
                     link: "https://www.who.int",
-                    kaynak: "World Health Org"
-                },
-                {
-                    baslik: "Biyo-Güvenlik Raporu: Depolama Alanlarında Aerosol Yoluyla Bulaş Riski",
-                    ozet: "CDC, kapalı ambar ve depoların temizliği sırasında kurumuş kemirgen dışkılarının havaya karışması (aerosolizasyon) sonucu oluşan enfeksiyon zincirlerine karşı koruyucu maske protokolü yayınladı.",
-                    link: "https://www.cdc.gov",
-                    kaynak: "CDC Surveillance"
-                },
-                {
-                    baslik: "Avrupa'da Böbrek Sendromlu Hemorojik Ateş (HFRS) Erken Tanı Kılavuzu",
-                    ozet: "The Lancet dergisinde yayınlanan yeni makalede, Puumala ve Dobrava hantavirüs suşlarının yol açtığı HFRS vakalarında erken evre trombositopeni ve akut böbrek hasarı takibinin mortaliteyi %40 azalttığı açıklanmıştır.",
-                    link: "https://www.thelancet.com",
-                    kaynak: "The Lancet Infectious Diseases"
+                    kaynak: "Global Health Network"
                 }
             ];
 
