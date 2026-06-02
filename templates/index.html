@@ -160,6 +160,33 @@
         </div>
     </div>
 
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-book-medical"></i> Hantavirüs Bilgilendirme Rehberi</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h4>Hantavirüs Nedir?</h4>
+                <p>Hantavirüsler, çoğunlukla kemirgenler (fareler, sıçanlar) tarafından taşınan ve insanlara virüs barındıran dışkı, idrar veya tükürükle temas ya da bunların havaya karışan partiküllerinin solunması yoluyla bulaşan tehlikeli bir virüs ailesidir.</p>
+                
+                <h4 style="margin-top: 1.5rem;">En Sık Görülen Belirtiler</h4>
+                <ul style="padding-left: 0;">
+                    <li><i class="fa-solid fa-temperature-high" style="color: var(--primary);"></i> Ani başlayan yüksek ateş ve titreme</li>
+                    <li><i class="fa-solid fa-crutch" style="color: var(--primary);"></i> Şiddetli kas ve sırt ağrıları</li>
+                    <li><i class="fa-solid fa-lungs" style="color: var(--primary);"></i> İlerleyen safhalarda nefes darlığı ve kuru öksürük</li>
+                    <li><i class="fa-solid fa-stomach" style="color: var(--primary);"></i> Bulantı, kusma og karın ağrısı</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">Korunma Yöntemleri</h4>
+                <p>Depo, bodrum and ambar gibi kemirgenlerin bulunabileceği alanları temizlemeden önce mutlaka havalandırın, temizlik esnasında maske ve eldiven kullanın. Kemirgenlerin ev içine girmesini engelleyecek önlemler alın.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary close-modal-btn" style="padding: 0.6rem 2rem;"><i class="fa-solid fa-check"></i> Anladım</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="main-footer">
         <p>&copy; 2026 HantaRisk Global Surveillance Platform. Tüm Hakları Saklıdır.</p>
     </footer>
@@ -168,7 +195,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             const newsGrid = document.getElementById('news-grid');
             
-            // Tamamen hantavirüs odaklı, tıbbi ve bilimsel 3 adet özel yedek haber veri seti
+            // Tamamen hantavirüs odaklı yedek veri seti (API başarısız olursa diye hazır bekliyor)
             const hantaNewsFallback = [
                 {
                     baslik: "CDC, Kırsal Tarım Alanlarında Hantavirüs Taramalarını Artırdı",
@@ -194,8 +221,12 @@
                 newsGrid.innerHTML = '';
                 articles.forEach(article => {
                     const date = new Date().toLocaleDateString('tr-TR');
-                    const title = article.baslik ? (article.baslik.length > 65 ? article.baslik.substring(0, 65) + '...' : article.baslik) : 'Hantavirüs Gelişmesi';
-                    const desc = article.ozet ? (article.ozet.length > 130 ? article.ozet.substring(0, 130) + '...' : article.ozet) : 'Detaylar için kaynak bağlantıyı ziyaret ediniz.';
+                    // app.py içerisindeki Türkçe karakterli veya karaktersiz anahtarları tam kontrolle eşleştiriyoruz
+                    const titleRaw = article.baslik || article.baslik || 'Hantavirüs Gelişmesi';
+                    const descRaw = article.ozet || article.ozet || 'Detaylar için kaynak bağlantıyı ziyaret ediniz.';
+                    
+                    const title = titleRaw.length > 65 ? titleRaw.substring(0, 65) + '...' : titleRaw;
+                    const desc = descRaw.length > 130 ? descRaw.substring(0, 130) + '...' : descRaw;
                     const url = article.link || '#';
                     const source = article.kaynak || 'Epidemiyoloji Bülteni';
                     
@@ -213,17 +244,16 @@
                 });
             }
 
-            // Backend'den çekmeye çalış, eğer gelen veri hantavirüs ile ilgili değilse veya boşsa direkt korumalı veriyi bas
-            fetch('/api/guncel-haberler')
+            // Tarayıcı önbelleğini kırmak için dinamik milisaniye zaman parametresi ekliyoruz (?t=...)
+            fetch(`/api/guncel-haberler?t=${new Date().getTime()}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.articles && data.articles.length > 0) {
-                        // Gelen ilk haberin başlığında veya özetinde siyasi kelimeler kontrolü yapıyoruz (chp, parti, secim vb.)
                         const ilkHaberKontrol = JSON.stringify(data.articles[0]).toLowerCase();
+                        // Gelen veride alakasız içerik veya filtre kaçamağı kontrolü
                         const hataliHaberVarMi = ilkHaberKontrol.includes('chp') || ilkHaberKontrol.includes('siyaset') || !ilkHaberKontrol.includes('hanta');
                         
                         if (hataliHaberVarMi) {
-                            // Siyasi saçmalık yakalanırsa güvenli hantavirüs haber setini basıyoruz
                             renderNews(hantaNewsFallback);
                         } else {
                             renderNews(data.articles.slice(0, 3));
@@ -233,7 +263,7 @@
                     }
                 })
                 .catch((err) => {
-                    console.warn("Canlı API hatası, korumalı haber akışı devreye alınıyor:", err);
+                    console.warn("Canlı API verisi çekilemedi, yerel hantavirüs akışı yükleniyor:", err);
                     renderNews(hantaNewsFallback);
                 });
         });
