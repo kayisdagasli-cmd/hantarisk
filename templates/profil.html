@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klinik Analiz Geçmişi - HantaRisk</title>
+    <title>Analiz Geçmişi - HantaRisk</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -39,7 +39,6 @@
 
     <canvas id="animation-canvas"></canvas>
 
-    <!-- Üst Menü -->
     <nav class="bg-[#111827] border-b border-gray-800 sticky top-0 z-50 w-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -80,7 +79,6 @@
         </div>
     </nav>
 
-    <!-- Ana Panel Alanı -->
     <main style="padding-top: 40px; padding-bottom: 40px;">
         <div style="max-width: 800px; margin: 0 auto; width: 100%; padding: 0 1rem;">
             
@@ -88,12 +86,11 @@
                 <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.2rem;">
                     <div style="font-size: 1.5rem; color: var(--primary);"><i class="fa-solid fa-clock-rotate-left"></i></div>
                     <div>
-                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff; tracking-wide">Son 3 Klinik Analiziniz</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">Klinik Karar Testi tamamlandıkça veritabanından güncellenen en son 3 kayıt</p>
+                        <h2 style="font-size: 1.4rem; font-weight: 700; color: #fff; tracking-wide">Klinik Analiz Geçmişi</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">Bu cihaz üzerinden gerçekleştirilen en son 3 risk tahmin skoru</p>
                     </div>
                 </div>
 
-                <!-- Veritabanından Doğrudan Akacak Gerçek Liste -->
                 <div id="gecmis-listesi" class="space-y-4">
                     <div style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
                         <i class="fa-solid fa-circle-notch fa-spin" style="margin-right: 8px; color: var(--primary);"></i> Veritabanı sorgulanıyor...
@@ -133,73 +130,103 @@
             });
         }
 
-        // --- 2. KESİNTİSİZ VERİTABANI BAĞLANTI MOTORU ---
+        // --- 2. CİHAZA ÖZEL GÜVENLİ VERİTABANI MOTORU ---
         document.addEventListener("DOMContentLoaded", function() {
             const liste = document.getElementById("gecmis-listesi");
+            
+            // Cihaz bazlı eşleşme için isim alıyoruz
+            const currentDeviceName = localStorage.getItem('hanta_ad_soyad');
 
-            // Flask backend API'sine istek atıyoruz
+            // Eğer bu cihazda hiç test çözülmediyse direkt boş geçmiş göster
+            if (!currentDeviceName) {
+                liste.innerHTML = `
+                    <div class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
+                        <i class="fa-solid fa-notes-medical text-gray-600 block text-3xl mb-3"></i>
+                        Bu cihazda henüz kayıtlı bir analiz geçmişi bulunmamaktadır. 
+                        Lütfen önce <a href="/klinik-test" class="text-red-400 underline hover:text-red-300">Klinik Karar Testi</a> yapın.
+                    </div>`;
+                return;
+            }
+
+            // Veritabanından tüm havuzu çekip sadece BU cihazdaki isimle eşleşenleri alıyoruz
             fetch('/api/kullanici-gecmis')
                 .then(res => res.json())
                 .then(data => {
-                    // Eğer veritabanı tamamen boşsa veya API'den boş dizi döndüyse
                     if (!data || data.length === 0) {
                         liste.innerHTML = `
                             <div class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
                                 <i class="fa-solid fa-database text-amber-500 block text-3xl mb-3"></i>
-                                Veritabanında henüz kayıtlı klinik analiz bulunmamaktadır. Lütfen önce test sayfasını kullanın.
+                                Analiz kaydı bekleniyor...
                             </div>`;
                         return;
                     }
 
-                    // KRİTİK DÜZELTME: İsim eşleştirme filtresini kaldırıyoruz! 
-                    // Veritabanındaki tüm verileri en son eklenenden eskiye doğru sıralayıp (reverse) ilk 3 tanesini çekiyoruz.
-                    // Böylece test sayfasında hangi isimle test yaparsan yap, ANINDA buraya düşecek.
-                    const sonUcTahmin = data.reverse().slice(0, 3);
+                    // CIHAZ GÜVENLİĞİ: Sadece bu tarayıcıda girilen isme ait verileri getir (Başka cihazın son kaydı araya karışamaz)
+                    const cihazaOzelVeri = data.filter(test => {
+                        const dbName = (test.ad_soyad || test.isim || "").toString().trim().toLowerCase();
+                        return dbName === currentDeviceName.trim().toLowerCase();
+                    });
 
-                    // Döngüye girip son 3 tahmini ekrana kurumsal kartlar halinde basıyoruz
+                    if (cihazaOzelVeri.length === 0) {
+                        liste.innerHTML = `
+                            <div class="text-center text-gray-400 p-8 text-sm border border-gray-800/60 rounded-xl bg-gray-900/10">
+                                <i class="fa-solid fa-notes-medical text-gray-600 block text-3xl mb-3"></i>
+                                Bu cihaz için veritabanında güncel bir eşleşme bulunamadı.
+                            </div>`;
+                        return;
+                    }
+
+                    // En yeni test en üstte olacak şekilde ters çevirip ilk 3 tanesini kesiyoruz
+                    const sonUcTahmin = cihazaOzelVeri.reverse().slice(0, 3);
+
                     liste.innerHTML = sonUcTahmin.map((test, index) => {
                         let renk = "#10b981"; 
                         if(test.risk_seviyesi === "KRİTİK" || test.risk_seviyesi === "YÜKSEK") renk = "#ef4444";
                         else if(test.risk_seviyesi === "YÜKSEK RİSK") renk = "#f97316";
                         else if(test.risk_seviyesi === "ORTA RİSK" || test.risk_seviyesi === "ORTA") renk = "#eab308";
 
-                        // Veritabanından gelen alan adlarının doğruluğundan emin olmak için alternatifli okuma yapıyoruz
-                        const hastaAdi = test.ad_soyad || test.isim || "Bilinmeyen Hasta";
+                        const hastaAdi = test.ad_soyad || test.isim || currentDeviceName;
                         const riskSkoru = test.risk_skoru || test.skor || "0";
                         const riskDurumu = test.risk_seviyesi || test.durum || "BELİRSİZ";
                         const testSehir = test.sehir || "Belirtilmedi";
-                        const testTarih = test.tarih || "Yakın Zamanda";
+                        
+                        // TARİH DÜZELTME DOKUNUŞU: Eğer veritabanından gelen tarih hatalıysa veya yoksa tarayıcının yerel canlı tarihini basıyoruz
+                        let gosterilecekTarih = test.tarih;
+                        if (!gosterilecekTarih || gosterilecekTarih.includes("undefined") || gosterilecekTarih.length < 5) {
+                            const simdi = new Date();
+                            gosterilecekTarih = simdi.toLocaleDateString('tr-TR') + " " + simdi.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+                        }
 
                         return `
                             <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-left: 4px solid ${renk}; padding: 1.2rem; border-radius: 8px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #1f2937; padding-bottom: 0.5rem;">
                                     <span style="font-size: 0.88rem; color: #fff; font-weight: 600;">
                                         <i class="fa-solid fa-id-card" style="color: ${renk}; margin-right: 6px;"></i> 
-                                        Hasta Bilgisi: ${hastaAdi}
+                                        Hasta: ${hastaAdi}
                                     </span>
                                     <span style="background: ${renk}; color: ${riskDurumu.includes('ORTA') ? '#000' : '#fff'}; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.6rem; border-radius: 4px; letter-spacing: 0.5px;">${riskDurumu}</span>
                                 </div>
                                 
                                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
                                     <h4 style="color: #fff; font-size: 0.92rem; font-weight: 600;">
-                                        Hesaplanan Risk Skoru: <span style="color:${renk}">%${riskSkoru}</span>
+                                        Yapay Zeka Risk Skoru: <span style="color:${renk}">%${riskSkoru}</span>
                                     </h4>
                                 </div>
                                 
                                 <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.6rem;">
                                     <span><i class="fa-solid fa-map-location-dot"></i> Konum: ${testSehir}</span>
-                                    <span><i class="fa-solid fa-calendar-alt"></i> Analiz Tarihi: ${testTarih}</span>
+                                    <span><i class="fa-solid fa-calendar-alt"></i> Analiz Tarihi: ${gosterilecekTarih}</span>
                                 </div>
                             </div>
                         `;
                     }).join("");
                 })
                 .catch((err) => {
-                    console.error("Veritabanı hatası:", err);
+                    console.error("Geçmiş çekme hatası:", err);
                     liste.innerHTML = `
                         <div class="text-center text-red-400 p-6 text-sm border border-red-900/30 rounded-xl bg-red-950/10">
                             <i class="fa-solid fa-circle-exclamation text-xl block mb-2"></i>
-                            Veritabanı bağlantısı sağlanamadı. Lütfen Flask uygulamasının çalıştığından emin olun.
+                            Veritabanı bağlantısı kesildi.
                         </div>`;
                 });
         });
