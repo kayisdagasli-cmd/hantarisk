@@ -112,7 +112,6 @@ def ana_sayfa():
 def klinik_test_sayfasi():
     return render_template('klinik-test.html')
 
-# --- PROFIL ROTASI ---
 @app.route('/profil')
 def profil_sayfasi():
     try:
@@ -165,7 +164,62 @@ def surveillance_sayfasi():
 
 # --- API UÇ NOKTALARI ---
 
-# %100 HANTAVİRÜS ODAKLI AKADEMİK HABERLER (TARAYICI ÖNBELLEK ENGELLEMELİ)
+# %100 GERÇEK KAGGLE ÖZET VERİ APİSİ
+@app.route('/api/kuresel-ozet')
+def kuresel_ozet():
+    try:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*), COUNT(DISTINCT ulke) FROM vakalar")
+        toplam_vaka, toplam_ulke = cursor.fetchone()
+        
+        toplam_vaka = toplam_vaka if toplam_vaka else 0
+        toplam_ulke = toplam_ulke if toplam_ulke else 0
+
+        cursor.execute("SELECT ulke, COUNT(*) FROM vakalar GROUP BY ulke")
+        ulke_dagilimi = cursor.fetchall()
+        
+        cursor.execute("SELECT COUNT(*) FROM vakalar WHERE ulke LIKE '%Turkey%' OR ulke LIKE '%Türkiye%'")
+        tr_vaka = cursor.fetchone()[0]
+        turkiye_durum = "Düşük Takip" if tr_vaka < 5 else ("Aktif İzlem" if tr_vaka <= 20 else "Yüksek Risk")
+
+        conn.close()
+
+        amerika_vakalari = 0
+        asya_vakalari = 0
+        avrupa_vakalari = 0
+        
+        for ulke_adi, vaka_sayisi in ulke_dagilimi:
+            ulke_lower = ulke_adi.lower() if ulke_adi else ""
+            if any(x in ulke_lower for x in ['usa', 'united states', 'brazil', 'argentina', 'chile', 'canada', 'panama']):
+                amerika_vakalari += vaka_sayisi
+            elif any(x in ulke_lower for x in ['china', 'korea', 'russia', 'japan', 'thailand', 'india']):
+                asya_vakalari += vaka_sayisi
+            elif any(x in ulke_lower for x in ['germany', 'finland', 'sweden', 'turkey', 'türkiye', 'france', 'greece']):
+                avrupa_vakalari += vaka_sayisi
+
+        total_classified = amerika_vakalari + asya_vakalari + avrupa_vakalari
+        if total_classified > 0:
+            amerika_risk = round((amerika_vakalari / total_classified) * 100)
+            asya_risk = round((asya_vakalari / total_classified) * 100)
+            avrupa_risk = round((avrupa_vakalari / total_classified) * 100)
+        else:
+            amerika_risk, asya_risk, avrupa_risk = 34, 33, 33
+
+        return jsonify({
+            "toplam_ulke": toplam_ulke,
+            "toplam_vaka": toplam_vaka,
+            "amerika_risk": amerika_risk,
+            "asya_risk": asya_risk,
+            "avrupa_risk": avrupa_risk,
+            "turkiye_durum": turkiye_durum,
+            "turkiye_vaka_sayisi": tr_vaka
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# %100 HANTAVİRÜS ODAKLI AKADEMİK HABERLER
 @app.route('/api/guncel-haberler')
 def guncel_haberler():
     hantavirus_odakli_haberler = [
@@ -189,7 +243,6 @@ def guncel_haberler():
         }
     ]
     
-    # Tarayıcının eski haberleri cache'ten getirmesini kesin olarak engelleyen başlıklar
     response = make_response(jsonify({"articles": hantavirus_odakli_haberler}))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
