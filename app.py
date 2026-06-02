@@ -1,8 +1,8 @@
 import os
 import sqlite3
-import csv  # Pandas yerine sunucuyu yormayan gömülü kütüphane
-import uuid  # Her cihazı benzersiz şekilde kimliklendirmek için eklendi
-from datetime import datetime, timedelta  # Türkiye saati farkı için timedelta eklendi
+import csv
+import uuid
+from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify, request, session
 
 app = Flask(__name__)
@@ -44,11 +44,11 @@ def veritabanı_hazırla():
         )
     ''')
     
-    # Eski veritabanı kullananlar için dinamik kolon kontrolü (Hata vermemesi için)
+    # Eski veritabanı kullananlar için dinamik kolon kontrolü
     try:
         cursor.execute("ALTER TABLE klinik_testler ADD COLUMN session_id TEXT")
     except sqlite3.OperationalError:
-        pass  # Kolon zaten varsa hata vermez, es geçer
+        pass  # Kolon zaten varsa es geçer
 
     conn.commit()
 
@@ -112,7 +112,7 @@ def ana_sayfa():
 def klinik_test_sayfasi():
     return render_template('klinik-test.html')
 
-# --- SUNUCU BAĞIMSIZ %100 TÜRKİYE SAATİ VE CİHAZ TABANLI PROFIL ROTASI ---
+# --- PROFIL ROTASI ---
 @app.route('/profil')
 def profil_sayfasi():
     try:
@@ -120,7 +120,6 @@ def profil_sayfasi():
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         
-        # Sadece bu cihazın session_id değerine ait son 3 analizi çekiyoruz
         cursor.execute("""
             SELECT ad_soyad, risk_skoru, risk_seviyesi, sehir, tarih 
             FROM klinik_testler 
@@ -132,7 +131,7 @@ def profil_sayfasi():
 
         son_analizler = []
         for r in rows:
-            ham_tarih = r[4]  # Örn: "2026-06-02 14:03:00"
+            ham_tarih = r[4]
             formatli_tarih = ham_tarih
 
             if ham_tarih:
@@ -169,8 +168,6 @@ def surveillance_sayfasi():
 # %100 GERÇEKÇİ VE TIBBİ LİTERATÜRE UYGUN HANTAVİRÜS HABERLERİ
 @app.route('/api/guncel-haberler')
 def guncel_haberler():
-    # Platform kalitesini artırmak için doğrudan DSÖ ve CDC terminolojisine uygun
-    # 3 spesifik ve profesyonel hantavirüs epidemiyolojisi haberi kilitlenmiştir.
     hantavirus_odakli_haberler = [
         {
             "baslik": "Kuzey ve Güney Amerika'da Hantavirüs Pulmoner Sendromu (HPS) Vakalarında Artış",
@@ -186,7 +183,7 @@ def guncel_haberler():
         },
         {
             "baslik": "Avrupa'da Böbrek Sendromlu Hemorojik Ateş (HFRS) Erken Tanı Kılavuzu",
-            "ozet": "The Lancet dergisinde yayınlanan yeni makalede, Puumala ve Dobrava hantavirüs suşlarının yol açtığı HFRS vakalarında erken evre trombositopeni ve akut böbrek hasarı takibinin mortaliteyi %40 azalttığı açıklamıştır.",
+            "ozet": "The Lancet dergisinde yayınlanan yeni makalede, Puumala ve Dobrava hantavirüs suşlarının yol açtığı HFRS vakalarında erken evre trombositopeni ve akut böbrek hasarı takibinin mortaliteyi %40 azalttığı açıklanmıştır.",
             "link": "https://www.thelancet.com",
             "kaynak": "The Lancet Infectious Diseases"
         }
@@ -326,4 +323,97 @@ def klinik_analiz():
             skor += 7
 
         if sehir:
-            conn = sqlite
+            conn = sqlite3.connect(DATABASE)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM vakalar WHERE sehir LIKE ?", (f"%{sehir}%",))
+            bolgesel_vaka = cursor.fetchone()[0]
+            conn.close()
+
+            if bolgesel_vaka > 20: skor += 10
+            elif bolgesel_vaka > 5: skor += 5
+
+        skor = max(0, min(skor, 100))
+
+        if skor >= 75: 
+            risk_seviyesi = "KRİTİK"
+        elif skor >= 40: 
+            risk_seviyesi = "YÜKSEK RİSK"
+        else: 
+            risk_seviyesi = "DÜŞÜK RİSK"
+
+        if risk_seviyesi == "KRİTİK":
+            oneriler = [
+                "ACİL DURUM: En yakın tam teşekküllü sağlık kuruluşunun acil servisine hemen başvurun.",
+                "Sağlık personeline kırsal alan/kemirgen maruziyet öykünüzü mutlaka belirtin.",
+                "Solunum yetmezliği gelişebileceğinden dolayı mutlak istirahat edin."
+            ]
+        elif risk_seviyesi == "YÜKSEK RİSK":
+            oneriler = [
+                "Bir uzman hekime başvurarak tam kan sayımı (özellikle trombosit/platelet oranları) yaptırın.",
+                "Kemirgenlerin veya atıklarının bulunabileceği kapalı depo, tavan arası gibi alanlardan uzak durun.",
+                "Semptomlarınızı yakından takip edin; artış olursa vakit kaybetmeden acil servise geçin."
+            ]
+        else:
+            oneriler = [
+                "Şu an için hantavirüs açısından belirgin bir klinik risk tablosu saptanmamıştır.",
+                "Mevcut semptomlarınız devam ederse genel bir muayene için aile hekiminize başvurabilirsiniz.",
+                "Hijyen kurallarına uymaya ve gıdalarınızı kemirgenlerden uzak saklamaya özen gösterin."
+            ]
+
+        current_device = session.get('device_token', '')
+
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO klinik_testler (ad_soyad, yas, cinsiyet, ulke, sehir, cevre_tipi, risk_skoru, risk_seviyesi, session_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (ad, yas, cinsiyet, bolge, sehir, cevre_tipi, skor, risk_seviyesi, current_device))
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "skor": skor,
+            "risk_seviyesi": risk_seviyesi,
+            "oneriler": oneriler
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/kullanici-gecmis')
+def kullanici_gecmis():
+    try:
+        current_device = session.get('device_token', '')
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT ad_soyad, yas, cinsiyet, ulke, sehir, risk_skoru, risk_seviyesi, tarih 
+            FROM klinik_testler 
+            WHERE session_id = ?
+            ORDER BY tarih DESC LIMIT 3
+        """, (current_device,))
+        rows = cursor.fetchall()
+        conn.close()
+
+        gecmis = []
+        for r in rows:
+            ham_tarih = r[7]
+            formatli_tarih = ham_tarih
+            if ham_tarih:
+                try:
+                    dt = datetime.strptime(ham_tarih.split('.')[0], "%Y-%m-%d %H:%M:%S")
+                    dt_turkiye = dt + timedelta(hours=3)
+                    formatli_tarih = dt_turkiye.strftime("%Y-%m-%d %H:%M:%S")
+                except Exception:
+                    formatli_tarih = ham_tarih
+
+            gecmis.append({
+                "ad_soyad": r[0], "yas": r[1], "cinsiyet": r[2],
+                "ulke": r[3], "sehir": r[4], "risk_skoru": r[5],
+                "risk_seviyesi": r[6], "tarih": formatli_tarih
+            })
+        return jsonify(gecmis)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
