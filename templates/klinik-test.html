@@ -211,8 +211,8 @@
         }
 
         .badge-dusuk { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-yuksek { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .badge-kritik { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); animation: pulse 2s infinite; }
+        .badge-orta { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-yuksek { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); animation: pulse 2s infinite; }
 
         .oneriler-title {
             font-size: 1.1rem;
@@ -244,7 +244,6 @@
             display: flex;
             align-items: flex-start;
         }
-
         /* Mobil Menü Geçiş Desteği */
         #mobile-menu {
             display: none;
@@ -276,7 +275,7 @@
                     <a href="/dashboard" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
                     <a href="/surveillance" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
                     <a href="/klinik-test" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
-                    <a href="/profil" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-user-doctor mr-1"></i> Profilim</a>
+                    <a href="/profil" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-user-doctor mr-1"></i> Analiz Geçmişi</a>
                 </div>
 
                 <div class="hidden md:flex items-center gap-2 bg-[#1f2937] px-3 py-1.5 rounded-full border border-green-900/50">
@@ -297,7 +296,7 @@
             <a href="/dashboard" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
             <a href="/surveillance" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
             <a href="/klinik-test" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
-            <a href="/profil" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-user-doctor w-6 text-red-500"></i>Profilim</a>
+            <a href="/profil" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-user-doctor w-6 text-red-500"></i>Analiz Geçmişi</a>
             
             <div class="border-t border-gray-800 pt-3 mt-1 flex items-center gap-2 pl-3">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
@@ -397,7 +396,7 @@
                 <ul id="oneriler-list" class="oneriler-list"></ul>
 
                 <div class="action-buttons flex flex-col sm:flex-row gap-4">
-                    <button id="btn-pdf" class="flex-1 bg-transparent hover:bg-gray-800 text-gray-300 border border-gray-700 rounded-lg py-3 flex items-center justify-center gap-2 transition duration-200"><i class="fa-solid fa-file-invoice"></i> Tıbbi Raporu Düzenli Sayfada Aç</button>
+                    <button id="btn-pdf" class="flex-1 bg-transparent hover:bg-gray-800 text-gray-300 border border-gray-700 rounded-lg py-3 flex items-center justify-center gap-2 transition duration-200"><i class="fa-solid fa-file-invoice"></i> Raporu Aç</button>
                     <a id="btn-emergency" href="#" target="_blank" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg py-3 flex items-center justify-center gap-2 transition duration-200"><i class="fa-solid fa-truck-medical"></i> Acil Sağlık Kuruluşu Bul</a>
                 </div>
             </div>
@@ -537,31 +536,63 @@
                 }, 15);
 
                 const badge = document.getElementById('risk-badge');
-                const riskSeviye = data.risk_seviyesi || (targetScore > 70 ? "KRİTİK" : targetScore > 40 ? "YÜKSEK RİSK" : "DÜŞÜK RİSK");
+                
+                // --- YENİ EŞİK DEĞERLERİ MANTIĞI (%30 altı düşük, %30-%60 arası orta, %60 üstü yüksek) ---
+                let riskSeviye = "";
+                if (targetScore < 30) {
+                    riskSeviye = "DÜŞÜK RİSK";
+                } else if (targetScore >= 30 && targetScore <= 60) {
+                    riskSeviye = "ORTA RİSK";
+                } else {
+                    riskSeviye = "YÜKSEK RİSK";
+                }
+                
+                // API'den gelen özel bir seviye metni varsa onu ezmemek için kontrol
+                if (data.risk_seviyesi) {
+                    if (data.risk_seviyesi === "KRİTİK") {
+                        riskSeviye = "YÜKSEK RİSK"; // İstek doğrultusunda yüksek risk yapıyoruz
+                    } else {
+                        riskSeviye = data.risk_seviyesi;
+                    }
+                }
+
                 badge.innerText = riskSeviye;
                 badge.className = "risk-badge";
                 
                 const emergencyBtn = document.getElementById('btn-emergency');
-                if(riskSeviye === "KRİTİK" || riskSeviye === "YÜKSEK RİSK") {
-                    badge.classList.add(riskSeviye === "KRİTİK" ? 'badge-kritik' : 'badge-yuksek');
-                    
-                    // Mobilde ve masaüstünde esnemeden, tam genişlikte flex yerleşim sağlar
+                
+                // CSS ve Görsel Sınıf Atamaları ile Acil Durum Buton Mantığı
+                if(riskSeviye === "YÜKSEK RİSK") {
+                    badge.classList.add('badge-yuksek');
                     emergencyBtn.setAttribute("style", "display: flex !important; flex: 1; justify-content: center; background: #ef4444; border-color: #ef4444; align-items: center; gap: 8px;");
                     emergencyBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(payload.sehir + ' devlet hastanesi acil servis')}`;
+                } else if (riskSeviye === "ORTA RİSK") {
+                    badge.classList.add('badge-orta');
+                    emergencyBtn.setAttribute("style", "display: none !important;"); // Orta riskte de sağlık kuruluşu acil butonu gizlenir
                 } else {
                     badge.classList.add('badge-dusuk');
-                    emergencyBtn.setAttribute("style", "display: none !important;");
+                    emergencyBtn.setAttribute("style", "display: none !important;"); // %30'un altında (Düşük) acil sağlık kuruluşu önermez
                 }
 
                 const onerilerList = document.getElementById('oneriler-list');
                 onerilerList.innerHTML = '';
                 
-                const varsayilanOneriler = data.oneriler || [
-                    `Sayın ${payload.ad}, semptomlarınız ve konum parametreleriniz klinik algoritmalarımızca taranmıştır.`,
-                    "Kemirgenlerin bulunabileceği ahır, bodrum, depo gibi kapalı alanların temizliğinden ve atıklarından uzak durun.",
-                    "Hantavirüs şüphesi durumunda vakit kaybetmeden en yakın tam teşekküllü hastanenin Enfeksiyon Hastalıkları servisine danışın.",
-                    "Hekiminize başvurduğunuzda kırsal maruziyet geçmişinizi, tarım veya kemirgen temas öykünüzü eksiksiz aktarın."
-                ];
+                // Dinamik öneri havuzu ve %30 altına sağlık kuruluşu yönlendirmesi içermeyen sade tavsiyeler
+                let varsayilanOneriler = [];
+                if (riskSeviye === "DÜŞÜK RİSK") {
+                    varsayilanOneriler = data.oneriler || [
+                        `Şu an için hantavirüs açısından belirgin bir klinik risk tablosu saptanmamıştır.`,
+                        "Mevcut semptomlarınız devam ederse genel bir muayene için aile hekiminize başvurabilirsiniz.",
+                        "Hijyen kurallarına uymaya ve gıdalarınızı kemirgenlerden uzak, kapalı kaplarda saklamaya özen gösterin."
+                    ];
+                } else {
+                    varsayilanOneriler = data.oneriler || [
+                        `Sayın ${payload.ad}, semptomlarınız ve konum parametreleriniz klinik algoritmalarımızca taranmıştır.`,
+                        "Kemirgenlerin bulunabileceği ahır, bodrum, depo gibi kapalı alanların temizliğinden ve atıklarından uzak durun.",
+                        "Belirtilerin artması veya solunum sıkıntısı durumunda en yakın sağlık kuruluşuna enfeksiyon öykünüzü belirterek başvurun.",
+                        "Hekiminize kırsal maruziyet geçmişinizi, tarım veya kemirgen temas öykünüzü eksiksiz aktarın."
+                    ];
+                }
                 
                 varsayilanOneriler.forEach(oneri => {
                     onerilerList.innerHTML += `<li><i class="fa-solid fa-circle-dot" style="font-size:0.6rem; color:#ef4444; margin-right:8px; vertical-align: middle;"></i> <span>${oneri}</span></li>`;
@@ -648,7 +679,7 @@
                                 <div class="skor-kutusu">
                                     <div style="font-size: 12px; color: #7f1d1d; font-weight: 600; text-transform: uppercase;">Yapay Zeka Klinik Hesaplama Skoru</div>
                                     <div class="skor-rakam">%${targetScore}</div>
-                                    <div class="skor-seviye">${riskSeviye}</div>
+                                    <div class="skor-seviye" style="background: ${riskSeviye === 'DÜŞÜK RİSK' ? '#10b981' : riskSeviye === 'ORTA RİSK' ? '#f59e0b' : '#dc2626'}">${riskSeviye}</div>
                                 </div>
 
                                 <div class="bolum-basligi">Hekim Karar Destek Önerileri</div>
@@ -676,4 +707,4 @@
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
-        
+      
