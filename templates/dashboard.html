@@ -44,7 +44,7 @@
                     <a href="/dashboard" class="text-white border-b-2 border-red-500 px-3 py-2 text-sm font-medium"><i class="fa-solid fa-chart-line mr-1"></i> Analitik Pano</a>
                     <a href="/surveillance" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-earth-americas mr-1"></i> Küresel Harita</a>
                     <a href="/klinik-test" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-stethoscope mr-1"></i> Klinik Karar Testi</a>
-                    <a href="/profil" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-user mr-1"></i> Profilim</a>
+                    <a href="/profil" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Analiz Geçmişi</a>
                 </div>
 
                 <div class="hidden md:flex items-center gap-2 bg-[#1f2937] px-3 py-1.5 rounded-full border border-green-900/50">
@@ -65,7 +65,7 @@
             <a href="/dashboard" class="text-white bg-gray-900 block px-3 py-2.5 rounded-md text-base font-medium"><i class="fa-solid fa-chart-line w-6 text-red-500"></i>Analitik Pano</a>
             <a href="/surveillance" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-earth-americas w-6 text-red-500"></i>Küresel Harita</a>
             <a href="/klinik-test" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-stethoscope w-6 text-red-500"></i>Klinik Karar Testi</a>
-            <a href="/profil" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-user w-6 text-red-500"></i>Profilim</a>
+            <a href="/profil" class="text-gray-300 hover:text-white hover:bg-gray-800 block px-3 py-2.5 rounded-md text-base font-medium transition"><i class="fa-solid fa-clock-rotate-left w-6 text-red-500"></i>Analiz Geçmişi</a>
             
             <div class="border-t border-gray-800 pt-3 mt-1 flex items-center gap-2 pl-3">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
@@ -152,7 +152,6 @@
 
         menuBtn.addEventListener('click', () => {
             const isOpen = mobileMenu.classList.toggle('open');
-            // İkonu dinamik değiştir (Üç çizgi / Çarpı)
             if (isOpen) {
                 menuIcon.classList.remove('fa-bars');
                 menuIcon.add('fa-xmark');
@@ -162,7 +161,6 @@
             }
         });
 
-        // Sayfa dışına veya linklere tıklandığında menüyü kapat (Mobil konfor için)
         document.addEventListener('click', (e) => {
             if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
                 mobileMenu.classList.remove('open');
@@ -181,10 +179,7 @@
                         return;
                     }
 
-                    // Grafik Ayarları ve Stil Özelleştirmeleri
                     const ctxYillik = document.getElementById('yillikVakaGrafik').getContext('2d');
-                    
-                    // Çizgi Grafiğinin Altındaki Yumuşak Kırmızı Degrade (Glow) Efekti
                     const gradientTr = ctxYillik.createLinearGradient(0, 0, 0, 300);
                     gradientTr.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
                     gradientTr.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
@@ -200,7 +195,7 @@
                                 borderWidth: 3,
                                 backgroundColor: gradientTr,
                                 fill: true,
-                                tension: 0.4, // Kıvrımlı yumuşak hatlar
+                                tension: 0.4,
                                 pointBackgroundColor: '#ef4444',
                                 pointHoverRadius: 7
                             }]
