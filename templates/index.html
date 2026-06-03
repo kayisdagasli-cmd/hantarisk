@@ -21,7 +21,7 @@
             pointer-events: none;
         }
 
-        /* Sağ Alt Köşe Kemirgen Gözetim Göstergesi */
+        /* Sağ Alt Köşe Temiz Biyo-Gözetim Göstergesi */
         .mouse-radar-container {
             position: fixed;
             bottom: 25px;
@@ -36,7 +36,7 @@
             border: 1px solid rgba(239, 68, 68, 0.3);
             border-radius: 50%;
             color: #ef4444;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
             pointer-events: auto;
             cursor: pointer;
@@ -46,7 +46,7 @@
             background: rgba(239, 68, 68, 0.2);
             transform: scale(1.05);
         }
-        /* Fare Etrafındaki Sinyal Dalgaları */
+        /* Radar Dalgaları */
         .radar-wave {
             position: absolute;
             width: 100%;
@@ -173,11 +173,12 @@
 
     <canvas id="animation-canvas"></canvas>
 
-    <!-- Sağ Alt Fare / Vektör Rezervuarı İndikatörü -->
+    <!-- Sağ Alt Biyo-Gözetim Rezervuar İndikatörü (Yengeç temizlendi, net kemirgen takip odağı) -->
     <div class="mouse-radar-container" title="Hantavirüs Doğal Rezervuar Takibi">
         <div class="radar-wave"></div>
         <div class="radar-wave"></div>
-        <i class="fa-solid fa-otter"></i>
+        <!-- Temiz ve şık laboratuvar/biyo-takip ikonu yerleştirildi -->
+        <i class="fa-solid fa-flask-vial"></i>
     </div>
 
     <nav class="navbar">
@@ -269,7 +270,7 @@
             const ctx = canvas.getContext('2d');
 
             let particlesArray = [];
-            const numberOfParticles = 35; // Net ve sade bir görünüm için optimize edildi
+            const numberOfParticles = 35; 
 
             function resizeCanvas() {
                 canvas.width = window.innerWidth;
@@ -282,18 +283,16 @@
                 constructor() {
                     this.x = Math.random() * canvas.width;
                     this.y = Math.random() * canvas.height;
-                    this.size = Math.random() * 5 + 4; // Hücre çekirdek çapı
-                    this.speedX = Math.random() * 0.2 - 0.1; // Mikroskobik yavaş akış
+                    this.size = Math.random() * 5 + 4; 
+                    this.speedX = Math.random() * 0.2 - 0.1; 
                     this.speedY = Math.random() * 0.2 - 0.1;
                     this.opacity = Math.random() * 0.25 + 0.12;
                     this.angle = Math.random() * Math.PI * 2;
                     this.spinSpeed = Math.random() * 0.004 - 0.002;
                     
-                    // Asimetrik virüs dikenleri (Spike) üretimi
                     this.spikeSeeds = [];
                     const spikesCount = 8;
                     for (let i = 0; i < spikesCount; i++) {
-                        // Her dikenin boyu ve açısı hafif farklı (Doğal kaos)
                         this.spikeSeeds.push({
                             lengthModifier: Math.random() * 0.4 + 1.1,
                             angleOffset: (Math.random() * 0.2 - 0.1)
@@ -305,7 +304,7 @@
                     this.x += this.speedX;
                     this.y += this.speedY;
                     this.angle += this.spinSpeed;
-                    this.deformTime += 0.02; // Zamanla hücre çeperinin dalgalanması için
+                    this.deformTime += 0.02;
 
                     if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
                     if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
@@ -315,7 +314,6 @@
                     ctx.translate(this.x, this.y);
                     ctx.rotate(this.angle);
 
-                    // 1. ASİMETRİK SİVRİ VİRÜS DİKENLERİ (Çiçek görünümü kırıldı)
                     ctx.strokeStyle = `rgba(239, 68, 68, ${this.opacity * 0.95})`;
                     ctx.lineWidth = this.size * 0.18;
                     ctx.lineJoin = "round";
@@ -323,24 +321,20 @@
                     const totalSpikes = this.spikeSeeds.length;
                     for (let i = 0; i < totalSpikes; i++) {
                         const seed = this.spikeSeeds[i];
-                        // Zaman faktörlü dalgalanma ile dinamik amorf yapı oluşturma
                         const dynamicLength = this.size * seed.lengthModifier + Math.sin(this.deformTime + i) * 0.5;
                         const currentAngle = ((Math.PI * 2) / totalSpikes) * i + seed.angleOffset;
 
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
-                        // Keskin biyo-uzantı hatları
                         ctx.lineTo(Math.cos(currentAngle) * dynamicLength, Math.sin(currentAngle) * dynamicLength);
                         ctx.stroke();
 
-                        // Dikenlerin ucundaki çok ufak enfektif protein düğümleri
                         ctx.beginPath();
                         ctx.arc(Math.cos(currentAngle) * dynamicLength, Math.sin(currentAngle) * dynamicLength, this.size * 0.15, 0, Math.PI * 2);
                         ctx.fillStyle = `rgba(239, 68, 68, ${this.opacity * 1.2})`;
                         ctx.fill();
                     }
 
-                    // 2. DOĞAL MİKROSKOBİK DIŞ ZAR (Tam yuvarlak olmayan deforme çeper)
                     ctx.beginPath();
                     for (let i = 0; i <= 12; i++) {
                         const currAng = ((Math.PI * 2) / 12) * i;
@@ -414,7 +408,7 @@
                 },
                 {
                     baslik: "Yapay Zeka Destekli Erken Tanı Kitleri Hantavirüs Teşhis Süresini Dakikalara İndirdi",
-                    ozet: "Biyoteknoloji alanında geliştirilen yeni mikroakışkan çipler, sahada alınan kan örneklerinde hantavirüse özgü antikorları ve RNA parçalarını saatler yerine sadece 15 dakika içinde yüksek doğulukla tespit etmeyi başardı.",
+                    ozet: "Biyoteknoloji alanında geliştirilen yeni mikroakışkan çipler, sahada alınan kan örneklerinde hantavirüse özgü antikorları ve RNA parçalarını saatler yerine sadece 15 dakika içinde yüksek doğrulukla tespit etmeyi başardı.",
                     link: "https://www.ncbi.nlm.nih.gov",
                     kaynak: "BioTech Journal"
                 },
