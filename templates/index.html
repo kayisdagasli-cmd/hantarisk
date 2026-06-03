@@ -207,14 +207,13 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // === VİRÜS PARÇACIKLARI (PARTICLE) ANIMASYON MOTORU ===
+            // === VİRÜS PARÇACIKLARI (BIYOLOJIK ÇIKINTILI) ANIMASYON MOTORU ===
             const canvas = document.getElementById('animation-canvas');
             const ctx = canvas.getContext('2d');
 
             let particlesArray = [];
-            const numberOfParticles = 65; // Yoğunluk miktarı
+            const numberOfParticles = 55; // Optimize edilmiş ideal yoğunluk
 
-            // Ekran boyutuna göre canvas'ı ayarla
             function resizeCanvas() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
@@ -222,34 +221,62 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
 
-            // Virüs Parçacığı Sınıfı
+            // Gerçek Virüs Görünümlü Parçacık Yapısı
             class Particle {
                 constructor() {
                     this.x = Math.random() * canvas.width;
                     this.y = Math.random() * canvas.height;
-                    this.size = Math.random() * 3.5 + 1; // Virüs çekirdek boyutları
-                    this.speedX = Math.random() * 0.6 - 0.3; // Yumuşak x ekseni hareketi
-                    this.speedY = Math.random() * 0.6 - 0.3; // Yumuşak y ekseni hareketi
-                    this.opacity = Math.random() * 0.5 + 0.1;
+                    this.size = Math.random() * 4 + 2; // Virüs merkez gövde çapı
+                    this.speedX = Math.random() * 0.4 - 0.2; // Mikroskobik yavaş süzülme
+                    this.speedY = Math.random() * 0.4 - 0.2;
+                    this.opacity = Math.random() * 0.4 + 0.15;
+                    this.angle = Math.random() * Math.PI * 2; // Kendi etrafında dönme açısı
+                    this.spinSpeed = Math.random() * 0.01 - 0.005; // Dönüş hızı
                 }
                 update() {
                     this.x += this.speedX;
                     this.y += this.speedY;
+                    this.angle += this.spinSpeed; // Virüsün çıkıntılarını yavaşça döndürür
 
-                    // Ekrandan çıkanları zıplat veya tersine döndür
                     if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
                     if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
                 }
                 draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle);
+
+                    // 1. Virüsün Gerçek Çıkıntıları (Spikes)
+                    const spikeCount = 4;
+                    const spikeLength = this.size * 1.5;
+                    
+                    ctx.strokeStyle = `rgba(239, 68, 68, ${this.opacity * 0.7})`;
+                    ctx.lineWidth = 1.2;
+
+                    for (let i = 0; i < spikeCount; i++) {
+                        ctx.rotate((Math.PI * 2) / spikeCount);
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(0, spikeLength);
+                        ctx.stroke();
+
+                        // Çıkıntıların ucundaki küçük protein küreleri
+                        ctx.beginPath();
+                        ctx.arc(0, spikeLength, this.size * 0.4, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(239, 68, 68, ${this.opacity})`;
+                        ctx.fill();
+                    }
+
+                    // 2. Virüsün Merkez Çirdeği/Gövdesi
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    // Temaya uygun siber kırmızı/turuncu virüs parıltısı tonları
-                    ctx.fillStyle = `rgba(239, 68, 68, ${this.opacity})`;
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(220, 38, 38, ${this.opacity})`;
                     ctx.fill();
+
+                    ctx.restore();
                 }
             }
 
-            // Parçacık havuzunu ilk kez doldurma
             function init() {
                 particlesArray = [];
                 for (let i = 0; i < numberOfParticles; i++) {
@@ -257,7 +284,7 @@
                 }
             }
 
-            // Bağlantı çizgilerini çizme (Ağ etkisi)
+            // İnce Epidemiyolojik Ağ Bağlantıları
             function connect() {
                 let opacityValue = 1;
                 for (let a = 0; a < particlesArray.length; a++) {
@@ -265,11 +292,10 @@
                         let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
                                      + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
                         
-                        // İki virüs hücresi birbirine yakınsa ince bağ kur
-                        if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-                            opacityValue = 1 - (distance / 15000);
-                            ctx.strokeStyle = `rgba(239, 68, 68, ${opacityValue * 0.12})`;
-                            ctx.lineWidth = 0.8;
+                        if (distance < (canvas.width / 8) * (canvas.height / 8)) {
+                            opacityValue = 1 - (distance / 18000);
+                            ctx.strokeStyle = `rgba(239, 68, 68, ${opacityValue * 0.08})`;
+                            ctx.lineWidth = 0.6;
                             ctx.beginPath();
                             ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
                             ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
@@ -279,7 +305,6 @@
                 }
             }
 
-            // Döngüsel Çalıştırma Motoru
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 for (let i = 0; i < particlesArray.length; i++) {
@@ -294,7 +319,7 @@
             animate();
 
 
-            // === MEVCUT HABER AKIŞI VE MODAL KODLARIN (DOKUNULMADI) ===
+            // === MEVCUT HABER AKIŞI VE MODAL KODLARI (DOKUNULMADI) ===
             const newsGrid = document.getElementById('news-grid');
             
             const hantaNewsFallback = [
@@ -305,7 +330,7 @@
                     kaynak: "Nature Climate"
                 },
                 {
-                    baslik: "Yacpay Zeka Destekli Erken Tanı Kitleri Hantavirüs Teşhis Süresini Dakikalara İndirdi",
+                    baslik: "Yapay Zeka Destekli Erken Tanı Kitleri Hantavirüs Teşhis Süresini Dakikalara İndirdi",
                     ozet: "Biyoteknoloji alanında geliştirilen yeni mikroakışkan çipler, sahada alınan kan örneklerinde hantavirüse özgü antikorları ve RNA parçalarını saatler yerine sadece 15 dakika içinde yüksek doğrulukla tespit etmeyi başardı.",
                     link: "https://www.ncbi.nlm.nih.gov",
                     kaynak: "BioTech Journal"
