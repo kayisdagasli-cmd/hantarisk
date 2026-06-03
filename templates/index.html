@@ -9,6 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Virüs Animasyonu Canvas Katman ve Arka Plan Ayarları */
+        #animation-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* İçeriklerin arkasında kalması için */
+            background-color: #0b0f19; /* Derin siber karanlık arka plan */
+            pointer-events: none; /* Butonların tıklanmasını engellememesi için */
+        }
+
         /* Modal Görünürlük ve Tam Ortalanma Ayarı */
         .modal {
             display: none; 
@@ -162,7 +174,6 @@
         </div>
     </section>
 
-    <!-- Hantavirüs Bilgilendirme Rehberi -->
     <div id="info-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -196,9 +207,96 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // === VİRÜS PARÇACIKLARI (PARTICLE) ANIMASYON MOTORU ===
+            const canvas = document.getElementById('animation-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let particlesArray = [];
+            const numberOfParticles = 65; // Yoğunluk miktarı
+
+            // Ekran boyutuna göre canvas'ı ayarla
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Virüs Parçacığı Sınıfı
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 3.5 + 1; // Virüs çekirdek boyutları
+                    this.speedX = Math.random() * 0.6 - 0.3; // Yumuşak x ekseni hareketi
+                    this.speedY = Math.random() * 0.6 - 0.3; // Yumuşak y ekseni hareketi
+                    this.opacity = Math.random() * 0.5 + 0.1;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    // Ekrandan çıkanları zıplat veya tersine döndür
+                    if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
+                    if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    // Temaya uygun siber kırmızı/turuncu virüs parıltısı tonları
+                    ctx.fillStyle = `rgba(239, 68, 68, ${this.opacity})`;
+                    ctx.fill();
+                }
+            }
+
+            // Parçacık havuzunu ilk kez doldurma
+            function init() {
+                particlesArray = [];
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particlesArray.push(new Particle());
+                }
+            }
+
+            // Bağlantı çizgilerini çizme (Ağ etkisi)
+            function connect() {
+                let opacityValue = 1;
+                for (let a = 0; a < particlesArray.length; a++) {
+                    for (let b = a; b < particlesArray.length; b++) {
+                        let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+                                     + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                        
+                        // İki virüs hücresi birbirine yakınsa ince bağ kur
+                        if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                            opacityValue = 1 - (distance / 15000);
+                            ctx.strokeStyle = `rgba(239, 68, 68, ${opacityValue * 0.12})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.beginPath();
+                            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            // Döngüsel Çalıştırma Motoru
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particlesArray.length; i++) {
+                    particlesArray[i].update();
+                    particlesArray[i].draw();
+                }
+                connect();
+                requestAnimationFrame(animate);
+            }
+
+            init();
+            animate();
+
+
+            // === MEVCUT HABER AKIŞI VE MODAL KODLARIN (DOKUNULMADI) ===
             const newsGrid = document.getElementById('news-grid');
             
-            // Tamamen yenilenen Hantavirüs Odaklı Güncel Haber Verileri
             const hantaNewsFallback = [
                 {
                     baslik: "İklim Değişikliği ve Yumuşak Kış Şartları Kemirgen Popülasyonunu Tetikliyor",
@@ -207,7 +305,7 @@
                     kaynak: "Nature Climate"
                 },
                 {
-                    baslik: "Yapay Zeka Destekli Erken Tanı Kitleri Hantavirüs Teşhis Süresini Dakikalara İndirdi",
+                    baslik: "Yacpay Zeka Destekli Erken Tanı Kitleri Hantavirüs Teşhis Süresini Dakikalara İndirdi",
                     ozet: "Biyoteknoloji alanında geliştirilen yeni mikroakışkan çipler, sahada alınan kan örneklerinde hantavirüse özgü antikorları ve RNA parçalarını saatler yerine sadece 15 dakika içinde yüksek doğrulukla tespit etmeyi başardı.",
                     link: "https://www.ncbi.nlm.nih.gov",
                     kaynak: "BioTech Journal"
@@ -246,7 +344,6 @@
                 });
             }
 
-            // Backend API'den Haberleri Getir
             fetch(`/api/guncel-haberler?t=${new Date().getTime()}`)
                 .then(response => response.json())
                 .then(data => {
@@ -261,7 +358,6 @@
                     renderNews(hantaNewsFallback);
                 });
 
-            // Mobil Menü Mantığı
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const navMenuContainer = document.getElementById('nav-menu-container');
             if (mobileMenuBtn && navMenuContainer) {
@@ -270,7 +366,6 @@
                 });
             }
 
-            // Hantavirüs Bilgilendirme Rehberi Modal Tetikleyicileri
             const btnInfoModal = document.getElementById('btn-info-modal');
             const infoModal = document.getElementById('info-modal');
             const closeModals = document.querySelectorAll('.close-modal, .close-modal-btn');
@@ -288,7 +383,6 @@
                 });
             });
 
-            // Modal dışına tıklandığında kapanma koruması
             window.addEventListener('click', function(e) {
                 if (e.target === infoModal) {
                     infoModal.classList.remove('active');
