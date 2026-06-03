@@ -174,6 +174,7 @@
         </div>
     </section>
 
+    <!-- Hantavirüs Bilgilendirme Rehberi -->
     <div id="info-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -207,12 +208,12 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // === VİRÜS PARÇACIKLARI (BIYOLOJIK ÇIKINTILI) ANIMASYON MOTORU ===
+            // === LOGO ILE BIREBIR UYUMLU VIRÜS ANIMASYON MOTORU ===
             const canvas = document.getElementById('animation-canvas');
             const ctx = canvas.getContext('2d');
 
             let particlesArray = [];
-            const numberOfParticles = 55; // Optimize edilmiş ideal yoğunluk
+            const numberOfParticles = 40; // Çok kalabalık olmaması için ideal miktar
 
             function resizeCanvas() {
                 canvas.width = window.innerWidth;
@@ -221,23 +222,24 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
 
-            // Gerçek Virüs Görünümlü Parçacık Yapısı
+            // Görseldeki İkon Tasarımına Sahip Hücre Yapısı
             class Particle {
                 constructor() {
                     this.x = Math.random() * canvas.width;
                     this.y = Math.random() * canvas.height;
-                    this.size = Math.random() * 4 + 2; // Virüs merkez gövde çapı
-                    this.speedX = Math.random() * 0.4 - 0.2; // Mikroskobik yavaş süzülme
-                    this.speedY = Math.random() * 0.4 - 0.2;
-                    this.opacity = Math.random() * 0.4 + 0.15;
-                    this.angle = Math.random() * Math.PI * 2; // Kendi etrafında dönme açısı
-                    this.spinSpeed = Math.random() * 0.01 - 0.005; // Dönüş hızı
+                    this.size = Math.random() * 5 + 4; // Küçük küre boyutu
+                    this.speedX = Math.random() * 0.3 - 0.15; // Yumuşak süzülme hızı
+                    this.speedY = Math.random() * 0.3 - 0.15;
+                    this.opacity = Math.random() * 0.35 + 0.15; // Arka planı boğmayan şeffaflık
+                    this.angle = Math.random() * Math.PI * 2; // Dönüş açısı
+                    this.spinSpeed = Math.random() * 0.008 - 0.004; // Kendi etrafında akışkan dönme
                 }
                 update() {
                     this.x += this.speedX;
                     this.y += this.speedY;
-                    this.angle += this.spinSpeed; // Virüsün çıkıntılarını yavaşça döndürür
+                    this.angle += this.spinSpeed;
 
+                    // Ekran sınırlarından sekme kontrolü
                     if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
                     if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
                 }
@@ -246,31 +248,40 @@
                     ctx.translate(this.x, this.y);
                     ctx.rotate(this.angle);
 
-                    // 1. Virüsün Gerçek Çıkıntıları (Spikes)
-                    const spikeCount = 4;
-                    const spikeLength = this.size * 1.5;
+                    // Görseldeki gibi tam 10 adet dairesel başlıklı uzantı (Spikes)
+                    const spikeCount = 10;
+                    const spikeLength = this.size * 1.4; // Kolların dışa uzama mesafesi
                     
-                    ctx.strokeStyle = `rgba(239, 68, 68, ${this.opacity * 0.7})`;
-                    ctx.lineWidth = 1.2;
+                    ctx.strokeStyle = `rgba(239, 68, 68, ${this.opacity})`;
+                    ctx.lineWidth = this.size * 0.22; // Kol kalınlığı
 
                     for (let i = 0; i < spikeCount; i++) {
                         ctx.rotate((Math.PI * 2) / spikeCount);
+                        
+                        // Kolun düz çizgisi
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
                         ctx.lineTo(0, spikeLength);
                         ctx.stroke();
 
-                        // Çıkıntıların ucundaki küçük protein küreleri
+                        // Kolun ucundaki dairesel küçük başlık (Görseldeki gibi)
                         ctx.beginPath();
-                        ctx.arc(0, spikeLength, this.size * 0.4, 0, Math.PI * 2);
+                        ctx.arc(0, spikeLength, this.size * 0.35, 0, Math.PI * 2);
                         ctx.fillStyle = `rgba(239, 68, 68, ${this.opacity})`;
                         ctx.fill();
                     }
 
-                    // 2. Virüsün Merkez Çirdeği/Gövdesi
+                    // Ana Gövde: Dış Çember Çizgisi
                     ctx.beginPath();
                     ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(220, 38, 38, ${this.opacity})`;
+                    ctx.strokeStyle = `rgba(239, 68, 68, ${this.opacity * 1.2})`;
+                    ctx.lineWidth = this.size * 0.25;
+                    ctx.stroke();
+
+                    // Ana Gövde: İç Yarı Şeffaf Dolgu
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size * 0.9, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(185, 28, 28, ${this.opacity * 0.6})`;
                     ctx.fill();
 
                     ctx.restore();
@@ -284,7 +295,7 @@
                 }
             }
 
-            // İnce Epidemiyolojik Ağ Bağlantıları
+            // Arka plandaki ince bağ yapısı (İsteğe bağlı siber ağ görünümü için)
             function connect() {
                 let opacityValue = 1;
                 for (let a = 0; a < particlesArray.length; a++) {
@@ -292,10 +303,10 @@
                         let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
                                      + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
                         
-                        if (distance < (canvas.width / 8) * (canvas.height / 8)) {
-                            opacityValue = 1 - (distance / 18000);
-                            ctx.strokeStyle = `rgba(239, 68, 68, ${opacityValue * 0.08})`;
-                            ctx.lineWidth = 0.6;
+                        if (distance < (canvas.width / 9) * (canvas.height / 9)) {
+                            opacityValue = 1 - (distance / 16000);
+                            ctx.strokeStyle = `rgba(239, 68, 68, ${opacityValue * 0.05})`;
+                            ctx.lineWidth = 0.5;
                             ctx.beginPath();
                             ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
                             ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
